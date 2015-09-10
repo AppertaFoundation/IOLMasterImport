@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!--
+  ~ Hibernate, Relational Persistence for Idiomatic Java
+  ~
+  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later.
+  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+<hibernate-configuration>
+  <session-factory>
+    <!-- Database connection settings -->
+    <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+    <property name="connection.url">jdbc:mysql://localhost:3333/openeyes_qa</property>
+    <property name="connection.username">root</property>
+    <property name="connection.password"/>
+    <!-- JDBC connection pool (use the built-in) -->
+    <property name="connection.pool_size">1</property>
+    <!-- SQL dialect -->
+    <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+    <!-- Disable the second-level cache  -->
+    <property name="cache.provider_class">org.hibernate.cache.internal.NoCacheProvider</property>
+    <!-- Echo all executed SQL to stdout -->
+    <property name="show_sql">true</property>
+    <!-- Drop and re-create the database schema on startup -->
+    <property name="hbm2ddl.auto">validate</property>
+    <!-- Names the annotated entity class -->
+	<mapping class="uk.org.openeyes.models.Contact"/>
+	<mapping class="uk.org.openeyes.models.ContactLabel"/>
+	<mapping class="uk.org.openeyes.models.Disorder"/>
+	<mapping class="uk.org.openeyes.models.DoctorGrade"/>
+	<mapping class="uk.org.openeyes.models.Episode"/>
+	<mapping class="uk.org.openeyes.models.EpisodeStatus"/>
+	<mapping class="uk.org.openeyes.models.EthnicGroup"/>
+	<mapping class="uk.org.openeyes.models.EtOphinbiometryBiometrydat"/>
+	<mapping class="uk.org.openeyes.models.EtOphinbiometryCalculation"/>
+	<mapping class="uk.org.openeyes.models.EtOphinbiometryMeasurement"/>
+	<mapping class="uk.org.openeyes.models.EtOphinbiometrySelection"/>
+	<mapping class="uk.org.openeyes.models.EtOphinbiometryIolRefValues"/>
+	<mapping class="uk.org.openeyes.models.Event"/>
+	<mapping class="uk.org.openeyes.models.EventGroup"/>
+	<mapping class="uk.org.openeyes.models.EventType"/>
+	<mapping class="uk.org.openeyes.models.Eye"/>
+	<mapping class="uk.org.openeyes.models.Firm"/>
+	<mapping class="uk.org.openeyes.models.Gp"/>
+	<mapping class="uk.org.openeyes.models.ImportSource"/>
+	<mapping class="uk.org.openeyes.models.Institution"/>
+	<mapping class="uk.org.openeyes.models.OphinbiometryCalculationFormula"/>
+	<mapping class="uk.org.openeyes.models.OphinbiometryLensPosition"/>
+	<mapping class="uk.org.openeyes.models.OphinbiometryLenstypeLens"/>
+	<mapping class="uk.org.openeyes.models.OphinbiometryMeasurement"/>
+	<mapping class="uk.org.openeyes.models.Patient"/>
+	<mapping class="uk.org.openeyes.models.Practice"/>
+	<mapping class="uk.org.openeyes.models.Service"/>
+	<mapping class="uk.org.openeyes.models.ServiceSubspecialtyAssignment"/>
+	<mapping class="uk.org.openeyes.models.Site"/>
+	<mapping class="uk.org.openeyes.models.Specialty"/>
+	<mapping class="uk.org.openeyes.models.SpecialtyType"/>
+	<mapping class="uk.org.openeyes.models.Subspecialty"/>
+	<mapping class="uk.org.openeyes.models.User"/>
+	
+  </session-factory>
+</hibernate-configuration>

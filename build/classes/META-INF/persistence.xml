@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="OE_IOLMasterImportPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>uk.org.openeyes.models.Subspecialty</class>
+    <class>uk.org.openeyes.models.EventGroup</class>
+    <class>uk.org.openeyes.models.Gp</class>
+    <class>uk.org.openeyes.models.ImportSource</class>
+    <class>uk.org.openeyes.models.Firm</class>
+    <class>uk.org.openeyes.models.OphinbiometryCalculationFormula</class>
+    <class>uk.org.openeyes.models.EtOphinbiometryCalculation</class>
+    <class>uk.org.openeyes.models.Patient</class>
+    <class>uk.org.openeyes.models.Episode</class>
+    <class>uk.org.openeyes.models.ServiceSubspecialtyAssignment</class>
+    <class>uk.org.openeyes.models.Disorder</class>
+    <class>uk.org.openeyes.models.Institution</class>
+    <class>uk.org.openeyes.models.Practice</class>
+    <class>uk.org.openeyes.models.EventType</class>
+    <class>uk.org.openeyes.models.Contact</class>
+    <class>uk.org.openeyes.models.EtOphinbiometryBiometrydat</class>
+    <class>uk.org.openeyes.models.EtOphinbiometrySelection</class>
+    <class>uk.org.openeyes.models.EthnicGroup</class>
+    <class>uk.org.openeyes.models.SpecialtyType</class>
+    <class>uk.org.openeyes.models.OphinbiometryLensPosition</class>
+    <class>uk.org.openeyes.models.OphinbiometryMeasurement</class>
+    <class>uk.org.openeyes.models.DoctorGrade</class>
+    <class>uk.org.openeyes.models.Specialty</class>
+    <class>uk.org.openeyes.models.OphinbiometryLenstypeLens</class>
+    <class>uk.org.openeyes.models.EtOphinbiometryMeasurement</class>
+    <class>uk.org.openeyes.models.Eye</class>
+    <class>uk.org.openeyes.models.Service</class>
+    <class>uk.org.openeyes.models.User</class>
+    <class>uk.org.openeyes.models.Site</class>
+    <class>uk.org.openeyes.models.EpisodeStatus</class>
+    <class>uk.org.openeyes.models.ContactLabel</class>
+    <class>uk.org.openeyes.models.Event</class>
+    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3333/openeyes_qa?zeroDateTimeBehavior=convertToNull"/>
+      <property name="javax.persistence.jdbc.user" value="root"/>
+      <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+      <property name="javax.persistence.jdbc.password" value=""/>
+    </properties>
+  </persistence-unit>
+</persistence>
