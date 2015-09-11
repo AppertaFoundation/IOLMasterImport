@@ -313,6 +313,7 @@ public class DatabaseFunctions {
         // we need to create the new event and the measurement data if the event_id is not set
         if( isEventNew ){
             // just make sure that we have any episode selected
+            System.out.println("Starting event...");
             if(withEpisode && this.selectedEpisode != null){
                 newBiometryEvent.setEpisodeId(selectedEpisode);
             }else{
@@ -333,6 +334,7 @@ public class DatabaseFunctions {
             // let's save it!
             // 1. create new event
             session.save(newBiometryEvent);
+            System.out.println("Event saved...");
      
             // 2. save basic measurement data (et_ophinbiometry_measurement)
             EtOphinbiometryMeasurement newBasicMeasurementData = new EtOphinbiometryMeasurement();
@@ -388,13 +390,19 @@ public class DatabaseFunctions {
             BiometryMeasurementData BiometryMDataLeft = null;
             BiometryMeasurementData BiometryMDataRight = null;
 
+            // TODO: we need to handle multi formula - multi fomula here!!!
+            // there are some files where the lenses stored as FORMULA IOLType, but in that case the A constant is displayed as A0, A1, A2 and pACD const
+            // formulas used in this cases: HofferQ, Haigis L
+            
             if(storedBiometryMeasurementDataLeft.size()> i){
                 BiometryMDataLeft = storedBiometryMeasurementDataLeft.get(i);
                 if(BiometryMDataLeft.getLenseName() != null && !BiometryMDataLeft.getLenseName().equals("")){
+                    System.out.println("Multi lense - single formula format...");
                     lensType = searchForLensData(BiometryMDataLeft.getLenseName(), BiometryMDataLeft.getAConst(), session);
                     //System.out.println(lensType);
                     formulaType = searchForFormulaData(IOLStudy.getFormulaName(), session);
                 }else if(BiometryMDataLeft.getFormulaName() != null && !BiometryMDataLeft.getFormulaName().equals("")){
+                    System.out.println("Multi formula - singe lense format...");
                     formulaType = searchForFormulaData(BiometryMDataLeft.getFormulaName(), session);
                     //System.out.println(formulaType);
                     // TODO: need to handle A const here for single lense format!!!
