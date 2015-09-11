@@ -119,7 +119,7 @@ public class OE_IOLMasterImport  {
                         Patient.setPatientBirth(VR.DA.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                         //debugMessage("Patient's birth date: "+VR.DA.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                     }
-                    // patient sex
+                    // patient gender
                     if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000040")){
                         Patient.setPatientGender(VR.CS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString().charAt(0));
                         //debugMessage("Patient's sex: "+VR.CS.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
@@ -384,7 +384,7 @@ public class OE_IOLMasterImport  {
         Option optionHelp = new Option("h", "help", false,
                             "Display help.");
         Option optionFileName = new Option("f", "file", true,
-                            "Specify a filename to parse.");
+                            "Specify a filename to import.");
         Option optionConfigFile = new Option("c", "config", true,
                             "Specify a Hibernate config file. The default can be found in resources/hibernate.cfg.xml");
         options.addOption(optionHelp);
@@ -423,10 +423,12 @@ public class OE_IOLMasterImport  {
                 main.database.selectActiveEpisode();
                 if(main.database.getSelectedEpisode() != null){
                     // we have a selected episode, we can create an event there
+                    System.out.println("INFO: Creating event with episode");
                     main.database.createBiometryEvent(main.Study.getStudyDateTime(), main.Study, main.Biometry, true);
 
                 }else{
                     // we need to create data without episode_id!!!
+                    System.out.println("INFO: Creating event without episode");
                     main.database.createBiometryEvent(main.Study.getStudyDateTime(), main.Study, main.Biometry, false);
 
                 }

@@ -294,9 +294,11 @@ public class DatabaseFunctions {
         }
         
         Event newBiometryEvent;
+        Boolean isEventNew = true;
                 
         if(currentEventId > 0){
             newBiometryEvent = new Event(currentEventId);
+            isEventNew = false;
         }else{
             newBiometryEvent = new Event();
         }
@@ -309,10 +311,12 @@ public class DatabaseFunctions {
         User selectedUser = searchStudyUser(IOLStudy.getSurgeonName(), session);
         
         // we need to create the new event and the measurement data if the event_id is not set
-        if(! (newBiometryEvent.getId() > 0)){
+        if( isEventNew ){
             // just make sure that we have any episode selected
             if(withEpisode && this.selectedEpisode != null){
                 newBiometryEvent.setEpisodeId(selectedEpisode);
+            }else{
+                newBiometryEvent.setEpisodeId(null);
             }
             newBiometryEvent.setCreatedUserId(selectedUser);
             // search for event type name "Biometry"
@@ -438,5 +442,11 @@ public class DatabaseFunctions {
         // while we are testing it is better to rollback
         //transaction.rollback();
 
+    }
+    
+    public void logAuditData(){
+        Session session = sessionFactory.openSession();
+        Transaction transaction = session.beginTransaction();
+        
     }
 }

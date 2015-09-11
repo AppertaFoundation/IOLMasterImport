@@ -34,6 +34,7 @@
     <class>uk.org.openeyes.models.EpisodeStatus</class>
     <class>uk.org.openeyes.models.ContactLabel</class>
     <class>uk.org.openeyes.models.Event</class>
+    <class>uk.org.openeyes.models.AuditDicomImport</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3333/openeyes_qa?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.user" value="root"/>
