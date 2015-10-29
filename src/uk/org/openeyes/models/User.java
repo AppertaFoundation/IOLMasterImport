@@ -134,10 +134,6 @@ public class User implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
     private Collection<Specialty> specialtyCollection1;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
-    private Collection<EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
-    private Collection<EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection1;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
     private Collection<Episode> episodeCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
     private Collection<Episode> episodeCollection1;
@@ -167,6 +163,10 @@ public class User implements Serializable {
     private Collection<EventType> eventTypeCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
     private Collection<EventType> eventTypeCollection1;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
+    private Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
+    private Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection1;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
     private Collection<Patient> patientCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
@@ -200,13 +200,13 @@ public class User implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
     private Collection<EpisodeStatus> episodeStatusCollection1;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
+    private Collection<OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
+    private Collection<OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection1;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
     private Collection<Gp> gpCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
     private Collection<Gp> gpCollection1;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
-    private Collection<OphinbiometryMeasurement> ophinbiometryMeasurementCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
-    private Collection<OphinbiometryMeasurement> ophinbiometryMeasurementCollection1;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
     private Collection<Eye> eyeCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
@@ -231,10 +231,6 @@ public class User implements Serializable {
     private Collection<OphinbiometryCalculationFormula> ophinbiometryCalculationFormulaCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
     private Collection<OphinbiometryCalculationFormula> ophinbiometryCalculationFormulaCollection1;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
-    private Collection<OphinbiometryLensPosition> ophinbiometryLensPositionCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
-    private Collection<OphinbiometryLensPosition> ophinbiometryLensPositionCollection1;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdUserId")
     private Collection<ImportSource> importSourceCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastModifiedUserId")
@@ -512,24 +508,6 @@ public class User implements Serializable {
     }
 
     @XmlTransient
-    public Collection<EtOphinbiometryBiometrydat> getEtOphinbiometryBiometrydatCollection() {
-        return etOphinbiometryBiometrydatCollection;
-    }
-
-    public void setEtOphinbiometryBiometrydatCollection(Collection<EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection) {
-        this.etOphinbiometryBiometrydatCollection = etOphinbiometryBiometrydatCollection;
-    }
-
-    @XmlTransient
-    public Collection<EtOphinbiometryBiometrydat> getEtOphinbiometryBiometrydatCollection1() {
-        return etOphinbiometryBiometrydatCollection1;
-    }
-
-    public void setEtOphinbiometryBiometrydatCollection1(Collection<EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection1) {
-        this.etOphinbiometryBiometrydatCollection1 = etOphinbiometryBiometrydatCollection1;
-    }
-
-    @XmlTransient
     public Collection<Episode> getEpisodeCollection() {
         return episodeCollection;
     }
@@ -662,6 +640,24 @@ public class User implements Serializable {
 
     public void setEventTypeCollection1(Collection<EventType> eventTypeCollection1) {
         this.eventTypeCollection1 = eventTypeCollection1;
+    }
+
+    @XmlTransient
+    public Collection<EtOphinbiometryIolRefValues> getEtOphinbiometryIolRefValuesCollection() {
+        return etOphinbiometryIolRefValuesCollection;
+    }
+
+    public void setEtOphinbiometryIolRefValuesCollection(Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection) {
+        this.etOphinbiometryIolRefValuesCollection = etOphinbiometryIolRefValuesCollection;
+    }
+
+    @XmlTransient
+    public Collection<EtOphinbiometryIolRefValues> getEtOphinbiometryIolRefValuesCollection1() {
+        return etOphinbiometryIolRefValuesCollection1;
+    }
+
+    public void setEtOphinbiometryIolRefValuesCollection1(Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection1) {
+        this.etOphinbiometryIolRefValuesCollection1 = etOphinbiometryIolRefValuesCollection1;
     }
 
     @XmlTransient
@@ -809,6 +805,24 @@ public class User implements Serializable {
     }
 
     @XmlTransient
+    public Collection<OphinbiometryImportedEvents> getOphinbiometryImportedEventsCollection() {
+        return ophinbiometryImportedEventsCollection;
+    }
+
+    public void setOphinbiometryImportedEventsCollection(Collection<OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection) {
+        this.ophinbiometryImportedEventsCollection = ophinbiometryImportedEventsCollection;
+    }
+
+    @XmlTransient
+    public Collection<OphinbiometryImportedEvents> getOphinbiometryImportedEventsCollection1() {
+        return ophinbiometryImportedEventsCollection1;
+    }
+
+    public void setOphinbiometryImportedEventsCollection1(Collection<OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection1) {
+        this.ophinbiometryImportedEventsCollection1 = ophinbiometryImportedEventsCollection1;
+    }
+
+    @XmlTransient
     public Collection<Gp> getGpCollection() {
         return gpCollection;
     }
@@ -824,24 +838,6 @@ public class User implements Serializable {
 
     public void setGpCollection1(Collection<Gp> gpCollection1) {
         this.gpCollection1 = gpCollection1;
-    }
-
-    @XmlTransient
-    public Collection<OphinbiometryMeasurement> getOphinbiometryMeasurementCollection() {
-        return ophinbiometryMeasurementCollection;
-    }
-
-    public void setOphinbiometryMeasurementCollection(Collection<OphinbiometryMeasurement> ophinbiometryMeasurementCollection) {
-        this.ophinbiometryMeasurementCollection = ophinbiometryMeasurementCollection;
-    }
-
-    @XmlTransient
-    public Collection<OphinbiometryMeasurement> getOphinbiometryMeasurementCollection1() {
-        return ophinbiometryMeasurementCollection1;
-    }
-
-    public void setOphinbiometryMeasurementCollection1(Collection<OphinbiometryMeasurement> ophinbiometryMeasurementCollection1) {
-        this.ophinbiometryMeasurementCollection1 = ophinbiometryMeasurementCollection1;
     }
 
     @XmlTransient
@@ -950,24 +946,6 @@ public class User implements Serializable {
 
     public void setOphinbiometryCalculationFormulaCollection1(Collection<OphinbiometryCalculationFormula> ophinbiometryCalculationFormulaCollection1) {
         this.ophinbiometryCalculationFormulaCollection1 = ophinbiometryCalculationFormulaCollection1;
-    }
-
-    @XmlTransient
-    public Collection<OphinbiometryLensPosition> getOphinbiometryLensPositionCollection() {
-        return ophinbiometryLensPositionCollection;
-    }
-
-    public void setOphinbiometryLensPositionCollection(Collection<OphinbiometryLensPosition> ophinbiometryLensPositionCollection) {
-        this.ophinbiometryLensPositionCollection = ophinbiometryLensPositionCollection;
-    }
-
-    @XmlTransient
-    public Collection<OphinbiometryLensPosition> getOphinbiometryLensPositionCollection1() {
-        return ophinbiometryLensPositionCollection1;
-    }
-
-    public void setOphinbiometryLensPositionCollection1(Collection<OphinbiometryLensPosition> ophinbiometryLensPositionCollection1) {
-        this.ophinbiometryLensPositionCollection1 = ophinbiometryLensPositionCollection1;
     }
 
     @XmlTransient

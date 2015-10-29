@@ -19,9 +19,12 @@ public class StudyData {
     private String FormulaName;
     private String LenseName;
     private String InstitutionName;
-    private String StationName;
-    private String StudyID;
+    private String StationName;             // unique station ID
+    private String StudyID;         
     private String StudyInstanceID;
+    private String DeviceManufacturer;
+    private String DeviceModel;             // human readable machine model (eg. IOL Master 700)
+    private String DeviceSoftwareVersion;
     
     public void setStudyDateTime(String SDateTime){
         System.out.println(SDateTime);
@@ -64,6 +67,10 @@ public class StudyData {
         this.InstitutionName = SInstitutionName;
     }
     
+    public String getInstituionName(){
+        return this.InstitutionName;
+    }
+    
     public void setStationName(String SStationName){
         this.StationName = SStationName;
     }
@@ -88,17 +95,44 @@ public class StudyData {
         return this.StudyInstanceID;
     }
     
+    public void setDeviceManufacturer(String SDeviceManufacturer){
+        this.DeviceManufacturer = SDeviceManufacturer;
+    }
+    
+    public String getDeviceManufacturer(){
+        return this.DeviceManufacturer;
+    }
+    
+    public void setDeviceModel(String SDeviceModel){
+        this.DeviceModel = SDeviceModel;
+    }
+    
+    public String getDeviceModel(){
+        return this.DeviceModel;
+    }
+    
+    public void setDeviceSoftwareVersion(String SDeviceSoftwareVersion){
+        this.DeviceSoftwareVersion = SDeviceSoftwareVersion;
+    }
+    
+    public String getDeviceSoftwareVersion(){
+        return this.DeviceSoftwareVersion;
+    }
+        
     public void printStudyData(){
         System.out.println("--== Study data ==--");
         System.out.println("Study date and time: "+this.StudyDateTime.get(Calendar.DAY_OF_MONTH)+"/"+this.StudyDateTime.get(Calendar.MONTH)+"/"+this.StudyDateTime.get(Calendar.YEAR)+" "+this.StudyDateTime.get(Calendar.HOUR_OF_DAY)+":"+this.StudyDateTime.get(Calendar.MINUTE));
-        System.out.println("Study location: "+this.InstitutionName);
-        System.out.println("Study station: "+this.StationName);
         System.out.println("Study physician: "+this.PhysicianName);
         System.out.println("Study surgeon: "+this.SurgeonName);
         System.out.println("Study formula: "+this.FormulaName);
         System.out.println("Study lense: "+this.LenseName);
         System.out.println("Study instance ID: "+this.StudyInstanceID);
         System.out.println("Study ID: "+this.StudyID);
+        System.out.println("Device name: "+this.InstitutionName);
+        System.out.println("Device ID: "+this.StationName);
+        System.out.println("Device Model: "+this.DeviceModel);
+        System.out.println("Device Manufacturer: "+this.DeviceManufacturer);
+        System.out.println("Device Software Version: "+this.DeviceSoftwareVersion);
         System.out.println("");
     }
     

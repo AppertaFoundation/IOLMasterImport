@@ -107,12 +107,7 @@ public class EtOphinbiometryMeasurement implements Serializable {
     @JoinColumn(name = "last_modified_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User lastModifiedUserId;
-    @Column(name = "study_id")
-    private String studyId;
-    @Column(name = "device_id")
-    private String deviceId;
 
-    
     public EtOphinbiometryMeasurement() {
     }
 
@@ -281,22 +276,6 @@ public class EtOphinbiometryMeasurement implements Serializable {
         this.lastModifiedUserId = lastModifiedUserId;
     }
 
-    public String getStudyId(){
-        return studyId;
-    }
-    
-    public void setStudyId(String studyId){
-        this.studyId = studyId;
-    }
-    
-    public String getDeviceId(){
-        return this.deviceId;
-    }
-    
-    public void setDeviceId(String deviceId){
-        this.deviceId = deviceId;
-    }
-    
     @Override
     public int hashCode() {
         int hash = 0;

@@ -60,12 +60,12 @@ public class Eye implements Serializable {
     @Column(name = "last_modified_date")
     @Temporal(TemporalType.DATE)
     private Date lastModifiedDate;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "eyeId")
-    private Collection<EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection;
     @OneToMany(mappedBy = "eyeId")
     private Collection<Episode> episodeCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "eyeId")
     private Collection<EtOphinbiometrySelection> etOphinbiometrySelectionCollection;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "eyeId")
+    private Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "eyeId")
     private Collection<EtOphinbiometryCalculation> etOphinbiometryCalculationCollection;
     @JoinColumn(name = "created_user_id", referencedColumnName = "id")
@@ -132,15 +132,6 @@ public class Eye implements Serializable {
     }
 
     @XmlTransient
-    public Collection<EtOphinbiometryBiometrydat> getEtOphinbiometryBiometrydatCollection() {
-        return etOphinbiometryBiometrydatCollection;
-    }
-
-    public void setEtOphinbiometryBiometrydatCollection(Collection<EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection) {
-        this.etOphinbiometryBiometrydatCollection = etOphinbiometryBiometrydatCollection;
-    }
-
-    @XmlTransient
     public Collection<Episode> getEpisodeCollection() {
         return episodeCollection;
     }
@@ -156,6 +147,15 @@ public class Eye implements Serializable {
 
     public void setEtOphinbiometrySelectionCollection(Collection<EtOphinbiometrySelection> etOphinbiometrySelectionCollection) {
         this.etOphinbiometrySelectionCollection = etOphinbiometrySelectionCollection;
+    }
+
+    @XmlTransient
+    public Collection<EtOphinbiometryIolRefValues> getEtOphinbiometryIolRefValuesCollection() {
+        return etOphinbiometryIolRefValuesCollection;
+    }
+
+    public void setEtOphinbiometryIolRefValuesCollection(Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection) {
+        this.etOphinbiometryIolRefValuesCollection = etOphinbiometryIolRefValuesCollection;
     }
 
     @XmlTransient

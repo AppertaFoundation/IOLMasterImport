@@ -73,9 +73,9 @@ public class Event implements Serializable {
     @Column(name = "delete_pending")
     private boolean deletePending;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "eventId")
-    private Collection<EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "eventId")
     private Collection<EtOphinbiometrySelection> etOphinbiometrySelectionCollection;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "eventId")
+    private Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection;
     @JoinColumn(name = "episode_id", referencedColumnName = "id")
     @ManyToOne
     private Episode episodeId;
@@ -90,6 +90,8 @@ public class Event implements Serializable {
     private User lastModifiedUserId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "eventId")
     private Collection<EtOphinbiometryCalculation> etOphinbiometryCalculationCollection;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "eventId")
+    private Collection<OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "eventId")
     private Collection<EtOphinbiometryMeasurement> etOphinbiometryMeasurementCollection;
 
@@ -174,21 +176,21 @@ public class Event implements Serializable {
     }
 
     @XmlTransient
-    public Collection<EtOphinbiometryBiometrydat> getEtOphinbiometryBiometrydatCollection() {
-        return etOphinbiometryBiometrydatCollection;
-    }
-
-    public void setEtOphinbiometryBiometrydatCollection(Collection<EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection) {
-        this.etOphinbiometryBiometrydatCollection = etOphinbiometryBiometrydatCollection;
-    }
-
-    @XmlTransient
     public Collection<EtOphinbiometrySelection> getEtOphinbiometrySelectionCollection() {
         return etOphinbiometrySelectionCollection;
     }
 
     public void setEtOphinbiometrySelectionCollection(Collection<EtOphinbiometrySelection> etOphinbiometrySelectionCollection) {
         this.etOphinbiometrySelectionCollection = etOphinbiometrySelectionCollection;
+    }
+
+    @XmlTransient
+    public Collection<EtOphinbiometryIolRefValues> getEtOphinbiometryIolRefValuesCollection() {
+        return etOphinbiometryIolRefValuesCollection;
+    }
+
+    public void setEtOphinbiometryIolRefValuesCollection(Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection) {
+        this.etOphinbiometryIolRefValuesCollection = etOphinbiometryIolRefValuesCollection;
     }
 
     public Episode getEpisodeId() {
@@ -230,6 +232,15 @@ public class Event implements Serializable {
 
     public void setEtOphinbiometryCalculationCollection(Collection<EtOphinbiometryCalculation> etOphinbiometryCalculationCollection) {
         this.etOphinbiometryCalculationCollection = etOphinbiometryCalculationCollection;
+    }
+
+    @XmlTransient
+    public Collection<OphinbiometryImportedEvents> getOphinbiometryImportedEventsCollection() {
+        return ophinbiometryImportedEventsCollection;
+    }
+
+    public void setOphinbiometryImportedEventsCollection(Collection<OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection) {
+        this.ophinbiometryImportedEventsCollection = ophinbiometryImportedEventsCollection;
     }
 
     @XmlTransient

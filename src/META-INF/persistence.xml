@@ -35,6 +35,8 @@
     <class>uk.org.openeyes.models.ContactLabel</class>
     <class>uk.org.openeyes.models.Event</class>
     <class>uk.org.openeyes.models.AuditDicomImport</class>
+    <class>uk.org.openeyes.models.OphinbiometryImportedEvents</class>
+    <class>uk.org.openeyes.models.EtOphinbiometryIolRefValues</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3333/openeyes_qa?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.user" value="root"/>

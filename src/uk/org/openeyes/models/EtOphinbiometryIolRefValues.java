@@ -15,6 +15,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -22,7 +23,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.hibernate.annotations.Type;
 
 /**
  *
@@ -33,7 +33,11 @@ import org.hibernate.annotations.Type;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "EtOphinbiometryIolRefValues.findAll", query = "SELECT e FROM EtOphinbiometryIolRefValues e"),
-    @NamedQuery(name = "EtOphinbiometryIolRefValues.findById", query = "SELECT e FROM EtOphinbiometryIolRefValues e WHERE e.id = :id")})
+    @NamedQuery(name = "EtOphinbiometryIolRefValues.findById", query = "SELECT e FROM EtOphinbiometryIolRefValues e WHERE e.id = :id"),
+    @NamedQuery(name = "EtOphinbiometryIolRefValues.findByEmmetropiaLeft", query = "SELECT e FROM EtOphinbiometryIolRefValues e WHERE e.emmetropiaLeft = :emmetropiaLeft"),
+    @NamedQuery(name = "EtOphinbiometryIolRefValues.findByEmmetropiaRight", query = "SELECT e FROM EtOphinbiometryIolRefValues e WHERE e.emmetropiaRight = :emmetropiaRight"),
+    @NamedQuery(name = "EtOphinbiometryIolRefValues.findByLastModifiedDate", query = "SELECT e FROM EtOphinbiometryIolRefValues e WHERE e.lastModifiedDate = :lastModifiedDate"),
+    @NamedQuery(name = "EtOphinbiometryIolRefValues.findByCreatedDate", query = "SELECT e FROM EtOphinbiometryIolRefValues e WHERE e.createdDate = :createdDate")})
 public class EtOphinbiometryIolRefValues implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -41,25 +45,13 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @JoinColumn(name = "event_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
-    private Event eventId;   
-    @JoinColumn(name = "eye_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
-    private Eye eyeId;   
-    @JoinColumn(name = "lens_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
-    private OphinbiometryLenstypeLens lensId;
-    @JoinColumn(name = "formula_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
-    private OphinbiometryCalculationFormula formulaId;
-    @Column(name = "iol_ref_values_left")
-    @Type(type="text")
+    @Lob
+    @Column(name = "iol_ref_values_left", length = 65535, columnDefinition="TEXT")
     private String iolRefValuesLeft;
-    @Column(name = "iol_ref_values_right")
-    @Type(type="text")
+    @Lob
+    @Column(name = "iol_ref_values_right", length = 65535, columnDefinition="TEXT")
     private String iolRefValuesRight;
+    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "emmetropia_left")
     private BigDecimal emmetropiaLeft;
     @Column(name = "emmetropia_right")
@@ -75,6 +67,18 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     @JoinColumn(name = "created_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User createdUserId;
+    @JoinColumn(name = "event_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private Event eventId;
+    @JoinColumn(name = "eye_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private Eye eyeId;
+    @JoinColumn(name = "formula_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private OphinbiometryCalculationFormula formulaId;
+    @JoinColumn(name = "lens_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private OphinbiometryLenstypeLens lensId;
     @JoinColumn(name = "last_modified_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User lastModifiedUserId;
@@ -84,6 +88,12 @@ public class EtOphinbiometryIolRefValues implements Serializable {
 
     public EtOphinbiometryIolRefValues(Integer id) {
         this.id = id;
+    }
+
+    public EtOphinbiometryIolRefValues(Integer id, Date lastModifiedDate, Date createdDate) {
+        this.id = id;
+        this.lastModifiedDate = lastModifiedDate;
+        this.createdDate = createdDate;
     }
 
     public Integer getId() {
@@ -101,7 +111,7 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     public void setIolRefValuesLeft(String iolRefValuesLeft) {
         this.iolRefValuesLeft = iolRefValuesLeft;
     }
-    
+
     public String getIolRefValuesRight() {
         return iolRefValuesRight;
     }
@@ -117,7 +127,7 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     public void setEmmetropiaLeft(BigDecimal emmetropiaLeft) {
         this.emmetropiaLeft = emmetropiaLeft;
     }
-    
+
     public BigDecimal getEmmetropiaRight() {
         return emmetropiaRight;
     }
@@ -165,14 +175,6 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     public void setEyeId(Eye eyeId) {
         this.eyeId = eyeId;
     }
-    
-    public User getLastModifiedUserId() {
-        return lastModifiedUserId;
-    }
-
-    public void setLastModifiedUserId(User lastModifiedUserId) {
-        this.lastModifiedUserId = lastModifiedUserId;
-    }
 
     public OphinbiometryCalculationFormula getFormulaId() {
         return formulaId;
@@ -181,13 +183,21 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     public void setFormulaId(OphinbiometryCalculationFormula formulaId) {
         this.formulaId = formulaId;
     }
-    
+
     public OphinbiometryLenstypeLens getLensId() {
         return lensId;
     }
 
     public void setLensId(OphinbiometryLenstypeLens lensId) {
         this.lensId = lensId;
+    }
+
+    public User getLastModifiedUserId() {
+        return lastModifiedUserId;
+    }
+
+    public void setLastModifiedUserId(User lastModifiedUserId) {
+        this.lastModifiedUserId = lastModifiedUserId;
     }
 
     @Override

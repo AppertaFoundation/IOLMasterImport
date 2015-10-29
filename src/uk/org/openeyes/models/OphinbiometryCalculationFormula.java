@@ -65,6 +65,8 @@ public class OphinbiometryCalculationFormula implements Serializable {
     @Basic(optional = false)
     @Column(name = "deleted")
     private boolean deleted;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "formulaId")
+    private Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "formulaIdLeft")
     private Collection<EtOphinbiometryCalculation> etOphinbiometryCalculationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "formulaIdRight")
@@ -138,6 +140,15 @@ public class OphinbiometryCalculationFormula implements Serializable {
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    @XmlTransient
+    public Collection<EtOphinbiometryIolRefValues> getEtOphinbiometryIolRefValuesCollection() {
+        return etOphinbiometryIolRefValuesCollection;
+    }
+
+    public void setEtOphinbiometryIolRefValuesCollection(Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection) {
+        this.etOphinbiometryIolRefValuesCollection = etOphinbiometryIolRefValuesCollection;
     }
 
     @XmlTransient

@@ -168,6 +168,28 @@ public class OE_IOLMasterImport  {
                         Study.setStationName(VR.SH.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                         //debugMessage("Station name: "+VR.SH.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                     }
+                    
+                    // device manufacturer
+                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000070")){
+                        Study.setDeviceManufacturer(VR.LO.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                        //debugMessage("Device manufacturer: "+VR.LO.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                    }
+                    
+                    // Device model name
+                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00001090")){
+                        Study.setDeviceModel(VR.LO.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                        //debugMessage("Device model name: "+VR.LO.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                    }
+
+                }
+
+                if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000018")){
+                    
+                    // Device software version
+                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00001020")){
+                        Study.setDeviceSoftwareVersion(VR.LO.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                        //debugMessage("Device software version: "+VR.LO.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                    }
                 }
                 
                 // collecting study data
@@ -420,18 +442,11 @@ public class OE_IOLMasterImport  {
             main.Patient.printPatientData();
             main.database.searchPatient(main.Patient.getPatientID(), main.Patient.getPatientGender(), main.Patient.getPatientBirth());
             if(main.database.getSelectedPatient() != null){
-                main.database.selectActiveEpisode();
-                if(main.database.getSelectedEpisode() != null){
-                    // we have a selected episode, we can create an event there
-                    System.out.println("INFO: Creating event with episode");
-                    main.database.createBiometryEvent(main.Study.getStudyDateTime(), main.Study, main.Biometry, true);
-
-                }else{
-                    // we need to create data without episode_id!!!
-                    System.out.println("INFO: Creating event without episode");
-                    main.database.createBiometryEvent(main.Study.getStudyDateTime(), main.Study, main.Biometry, false);
-
-                }
+                main.database.processBiometryEvent(main.Study,  main.Biometry);
+            }else{
+                // search for patient data has been failed - need to print and log!!
+                main.debugMessage("Cannot found patient data, file processing failed!");
+                
             }
             main.Study.printStudyData();
             main.Biometry.printBiometryData();

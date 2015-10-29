@@ -67,7 +67,7 @@ public class Specialty implements Serializable {
     @Column(name = "adjective")
     private String adjective;
     @Basic(optional = false)
-    @Column(name = "abbreviation", columnDefinition="char(7)")
+    @Column(name = "abbreviation", columnDefinition = "char")
     private String abbreviation;
     @Basic(optional = false)
     @Column(name = "created_date")

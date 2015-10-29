@@ -105,6 +105,8 @@ public class Patient implements Serializable {
     @JoinColumn(name = "practice_id", referencedColumnName = "id")
     @ManyToOne
     private Practice practiceId;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "patientId")
+    private Collection<OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection;
 
     public Patient() {
     }
@@ -270,6 +272,15 @@ public class Patient implements Serializable {
 
     public void setPracticeId(Practice practiceId) {
         this.practiceId = practiceId;
+    }
+
+    @XmlTransient
+    public Collection<OphinbiometryImportedEvents> getOphinbiometryImportedEventsCollection() {
+        return ophinbiometryImportedEventsCollection;
+    }
+
+    public void setOphinbiometryImportedEventsCollection(Collection<OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection) {
+        this.ophinbiometryImportedEventsCollection = ophinbiometryImportedEventsCollection;
     }
 
     @Override

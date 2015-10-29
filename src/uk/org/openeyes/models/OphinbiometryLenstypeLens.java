@@ -101,14 +101,14 @@ public class OphinbiometryLenstypeLens implements Serializable {
     private Float a2;
     @Column(name = "active")
     private Boolean active;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lensIdLeft")
-    private Collection<EtOphinbiometrySelection> etOphinbiometrySelectionCollection;
     @JoinColumn(name = "created_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User createdUserId;
     @JoinColumn(name = "last_modified_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User lastModifiedUserId;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lensId")
+    private Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection;
 
     public OphinbiometryLenstypeLens() {
     }
@@ -258,15 +258,6 @@ public class OphinbiometryLenstypeLens implements Serializable {
         this.active = active;
     }
 
-    @XmlTransient
-    public Collection<EtOphinbiometrySelection> getEtOphinbiometrySelectionCollection() {
-        return etOphinbiometrySelectionCollection;
-    }
-
-    public void setEtOphinbiometrySelectionCollection(Collection<EtOphinbiometrySelection> etOphinbiometrySelectionCollection) {
-        this.etOphinbiometrySelectionCollection = etOphinbiometrySelectionCollection;
-    }
-
     public User getCreatedUserId() {
         return createdUserId;
     }
@@ -281,6 +272,15 @@ public class OphinbiometryLenstypeLens implements Serializable {
 
     public void setLastModifiedUserId(User lastModifiedUserId) {
         this.lastModifiedUserId = lastModifiedUserId;
+    }
+
+    @XmlTransient
+    public Collection<EtOphinbiometryIolRefValues> getEtOphinbiometryIolRefValuesCollection() {
+        return etOphinbiometryIolRefValuesCollection;
+    }
+
+    public void setEtOphinbiometryIolRefValuesCollection(Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection) {
+        this.etOphinbiometryIolRefValuesCollection = etOphinbiometryIolRefValuesCollection;
     }
 
     @Override

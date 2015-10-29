@@ -40,6 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "EtOphinbiometrySelection.findByLastModifiedDate", query = "SELECT e FROM EtOphinbiometrySelection e WHERE e.lastModifiedDate = :lastModifiedDate"),
     @NamedQuery(name = "EtOphinbiometrySelection.findByCreatedDate", query = "SELECT e FROM EtOphinbiometrySelection e WHERE e.createdDate = :createdDate"),
     @NamedQuery(name = "EtOphinbiometrySelection.findByDeleted", query = "SELECT e FROM EtOphinbiometrySelection e WHERE e.deleted = :deleted"),
+    @NamedQuery(name = "EtOphinbiometrySelection.findByLensIdLeft", query = "SELECT e FROM EtOphinbiometrySelection e WHERE e.lensIdLeft = :lensIdLeft"),
     @NamedQuery(name = "EtOphinbiometrySelection.findByLensIdRight", query = "SELECT e FROM EtOphinbiometrySelection e WHERE e.lensIdRight = :lensIdRight")})
 public class EtOphinbiometrySelection implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -72,8 +73,12 @@ public class EtOphinbiometrySelection implements Serializable {
     @Basic(optional = false)
     @Column(name = "deleted")
     private boolean deleted;
+    @Basic(optional = false)
+    @Column(name = "lens_id_left")
+    private int lensIdLeft;
+    @Basic(optional = false)
     @Column(name = "lens_id_right")
-    private Integer lensIdRight;
+    private int lensIdRight;
     @JoinColumn(name = "created_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User createdUserId;
@@ -86,9 +91,6 @@ public class EtOphinbiometrySelection implements Serializable {
     @JoinColumn(name = "last_modified_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User lastModifiedUserId;
-    @JoinColumn(name = "lens_id_left", referencedColumnName = "id")
-    @ManyToOne(optional = false)
-    private OphinbiometryLenstypeLens lensIdLeft;
 
     public EtOphinbiometrySelection() {
     }
@@ -97,7 +99,7 @@ public class EtOphinbiometrySelection implements Serializable {
         this.id = id;
     }
 
-    public EtOphinbiometrySelection(Integer id, BigDecimal iolPowerLeft, BigDecimal predictedRefractionLeft, BigDecimal iolPowerRight, BigDecimal predictedRefractionRight, Date lastModifiedDate, Date createdDate, boolean deleted) {
+    public EtOphinbiometrySelection(Integer id, BigDecimal iolPowerLeft, BigDecimal predictedRefractionLeft, BigDecimal iolPowerRight, BigDecimal predictedRefractionRight, Date lastModifiedDate, Date createdDate, boolean deleted, int lensIdLeft, int lensIdRight) {
         this.id = id;
         this.iolPowerLeft = iolPowerLeft;
         this.predictedRefractionLeft = predictedRefractionLeft;
@@ -106,6 +108,8 @@ public class EtOphinbiometrySelection implements Serializable {
         this.lastModifiedDate = lastModifiedDate;
         this.createdDate = createdDate;
         this.deleted = deleted;
+        this.lensIdLeft = lensIdLeft;
+        this.lensIdRight = lensIdRight;
     }
 
     public Integer getId() {
@@ -172,11 +176,19 @@ public class EtOphinbiometrySelection implements Serializable {
         this.deleted = deleted;
     }
 
-    public Integer getLensIdRight() {
+    public int getLensIdLeft() {
+        return lensIdLeft;
+    }
+
+    public void setLensIdLeft(int lensIdLeft) {
+        this.lensIdLeft = lensIdLeft;
+    }
+
+    public int getLensIdRight() {
         return lensIdRight;
     }
 
-    public void setLensIdRight(Integer lensIdRight) {
+    public void setLensIdRight(int lensIdRight) {
         this.lensIdRight = lensIdRight;
     }
 
@@ -210,14 +222,6 @@ public class EtOphinbiometrySelection implements Serializable {
 
     public void setLastModifiedUserId(User lastModifiedUserId) {
         this.lastModifiedUserId = lastModifiedUserId;
-    }
-
-    public OphinbiometryLenstypeLens getLensIdLeft() {
-        return lensIdLeft;
-    }
-
-    public void setLensIdLeft(OphinbiometryLenstypeLens lensIdLeft) {
-        this.lensIdLeft = lensIdLeft;
     }
 
     @Override
