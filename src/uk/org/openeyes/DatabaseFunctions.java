@@ -56,6 +56,7 @@ public class DatabaseFunctions {
     private boolean isNewEvent = true;
     
     private User searchStudyUser(String userName){
+
         Criteria crit = session.createCriteria(User.class);
         Disjunction or = Restrictions.disjunction();
         
@@ -110,7 +111,6 @@ public class DatabaseFunctions {
         }else{
             returnUser = (User) crit.list().get(0);
         }
-        // for now we return static user admin
         return returnUser;
     }
     
@@ -124,7 +124,9 @@ public class DatabaseFunctions {
             if(crit.list().get(0) != null){
                 lensType = (OphinbiometryLenstypeLens) crit.list().get(0);
             }
-        }else{
+        }
+        /*  we don't need this part now, but keep it here if someone ask for it later
+        else{
             //we also try to search for other possibilities
             Criteria crit2 = session.createCriteria(OphinbiometryLenstypeLens.class);
             List<OphinbiometryLenstypeLens> currentLenses = crit2.list();
@@ -137,6 +139,7 @@ public class DatabaseFunctions {
                 }
             }
         }
+        */
         //if nothing found we create a new one
         if(lensType == null){
             lensType = new OphinbiometryLenstypeLens();
@@ -291,7 +294,7 @@ public class DatabaseFunctions {
                 System.out.println("ERROR: More than 1 open episodes found!");
             }else{
                 selectedEpisode = (Episode) episodesList.get(0);
-                System.out.println(selectedEpisode.toString());
+                System.out.println("Selected episode: "+selectedEpisode.toString());
             }
             
             session.close();
@@ -443,14 +446,19 @@ public class DatabaseFunctions {
     // for unit testing it need to be public
     public void setSelectedUser(){
         if(eventStudy != null){
-            this.selectedUser = searchStudyUser(eventStudy.getSurgeonName());
+            String SurgeonName="";
+            if(eventStudy.getSurgeonName() != null){
+                SurgeonName = eventStudy.getSurgeonName();
+            }
+            this.selectedUser = searchStudyUser(SurgeonName);
         }
     }
     
-    private void setMeasurementData(String side, EtOphinbiometryMeasurement basicMeasurementData){
+    private void setMeasurementData(EtOphinbiometryMeasurement basicMeasurementData){
         
-        BiometrySide sideData = eventBiometry.getBiometryValue(side);
-        
+        BiometrySide sideData;
+        Double SNR;
+                
         if(basicMeasurementData.getEventId() == null){
             basicMeasurementData.setEventId(importedBiometryEvent.getEventId());
             basicMeasurementData.setEyeId(new Eye(eventBiometry.getEyeId()));
@@ -460,22 +468,21 @@ public class DatabaseFunctions {
             basicMeasurementData.setLastModifiedUserId(selectedUser);
         }
         
-        if(side.equals("L")){
-            basicMeasurementData.setK1Left(BigDecimal.valueOf(sideData.getK1()));
-            basicMeasurementData.setK2Left(BigDecimal.valueOf(sideData.getK2()));
-            basicMeasurementData.setAxisK1Left(BigDecimal.valueOf(sideData.getAxisK1()));
-            basicMeasurementData.setAxialLengthLeft(BigDecimal.valueOf(sideData.getAL()));
-            Double SNR = (Double) sideData.getSNR();
-            basicMeasurementData.setSnrLeft(SNR.intValue());
-        }else if(side.equals("R")){
-            basicMeasurementData.setK1Right(BigDecimal.valueOf(sideData.getK1()));
-            basicMeasurementData.setK2Right(BigDecimal.valueOf(sideData.getK2()));
-            basicMeasurementData.setAxisK1Right(BigDecimal.valueOf(sideData.getAxisK1()));
-            basicMeasurementData.setAxialLengthRight(BigDecimal.valueOf(sideData.getAL()));
-            Double SNR = (Double) sideData.getSNR();
-            basicMeasurementData.setSnrRight(SNR.intValue());
-        }
+        sideData = eventBiometry.getBiometryValue("L");
+        basicMeasurementData.setK1Left(BigDecimal.valueOf(sideData.getK1()));
+        basicMeasurementData.setK2Left(BigDecimal.valueOf(sideData.getK2()));
+        basicMeasurementData.setAxisK1Left(BigDecimal.valueOf(sideData.getAxisK1()));
+        basicMeasurementData.setAxialLengthLeft(BigDecimal.valueOf(sideData.getAL()));
+        SNR = (Double) sideData.getSNR();
+        basicMeasurementData.setSnrLeft(SNR.intValue());
         
+        sideData = eventBiometry.getBiometryValue("R");
+        basicMeasurementData.setK1Right(BigDecimal.valueOf(sideData.getK1()));
+        basicMeasurementData.setK2Right(BigDecimal.valueOf(sideData.getK2()));
+        basicMeasurementData.setAxisK1Right(BigDecimal.valueOf(sideData.getAxisK1()));
+        basicMeasurementData.setAxialLengthRight(BigDecimal.valueOf(sideData.getAL()));
+        SNR = (Double) sideData.getSNR();
+        basicMeasurementData.setSnrRight(SNR.intValue());        
     }
     
     private void createSelectionData(){
@@ -510,18 +517,37 @@ public class DatabaseFunctions {
 
     }
     
-    private void saveIolRefValues(String side){
+    private void saveIolRefValues(){
         // 3. save lens and formula specific data
-        ArrayList<BiometryMeasurementData> storedBiometryMeasurementData = eventBiometry.getBiometryValue(side).getMeasurements();
+        ArrayList<BiometryMeasurementData> storedBiometryMeasurementDataLeft = eventBiometry.getBiometryValue("L").getMeasurements();
+        ArrayList<BiometryMeasurementData> storedBiometryMeasurementDataRight = eventBiometry.getBiometryValue("R").getMeasurements();
 
+        Integer ArrayListSize;
+        String ReferenceSide;
+        
+        if(storedBiometryMeasurementDataLeft.size() > storedBiometryMeasurementDataRight.size()){
+            ArrayListSize = storedBiometryMeasurementDataLeft.size();
+            ReferenceSide = "L";
+        }else{
+            ArrayListSize = storedBiometryMeasurementDataRight.size();
+            ReferenceSide = "R";
+        }
+        
         OphinbiometryLenstypeLens lensType = null;
         OphinbiometryCalculationFormula formulaType = null;
 
-        for(Integer i = 0; i < storedBiometryMeasurementData.size(); i++){
+        for(Integer i = 0; i < ArrayListSize; i++){
             // TODO: we need to handle multi formula - multi formula here!!!
             // there are some files where the lenses stored as FORMULA IOLType, but in that case the A constant is displayed as A0, A1, A2 and pACD const
             // formulas used in this cases: HofferQ, Haigis L
-            BiometryMeasurementData rowData = storedBiometryMeasurementData.get(i);
+            // head data should be the same for both sides
+            BiometryMeasurementData rowData;
+            if(ReferenceSide.equals("L")){
+                rowData = storedBiometryMeasurementDataLeft.get(i);
+            }else{
+                rowData = storedBiometryMeasurementDataRight.get(i);
+            }
+            
             if(rowData.getLenseName() != null && !rowData.getLenseName().equals("")){
                 System.out.println("Multi lense - single formula format...");
                 lensType = searchForLensData(rowData.getLenseName(), rowData.getAConst());
@@ -530,9 +556,7 @@ public class DatabaseFunctions {
             }else if(rowData.getFormulaName() != null && !rowData.getFormulaName().equals("")){
                 System.out.println("Multi formula - singe lense format...");
                 formulaType = searchForFormulaData(rowData.getFormulaName());
-                //System.out.println(formulaType);
                 // TODO: need to handle A const here for single lense format!!!
-                //lensType = searchForLensData(IOLStudy.getLenseName(), Double.parseDouble(IOLStudy.getLenseName().substring(4, 10)), session);
                 lensType = searchForLensData(eventStudy.getLenseName(), 0.0);
             }
             
@@ -545,13 +569,22 @@ public class DatabaseFunctions {
             iolRefValues.setEyeId(new Eye(eventBiometry.getEyeId()));
             iolRefValues.setFormulaId(formulaType);
             iolRefValues.setLensId(lensType);
-            if(side.equals("L")){
+            if(ReferenceSide.equals("L")){
                 iolRefValues.setIolRefValuesLeft(rowData.getIOLREFJSON());
                 iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(rowData.getEmmetropia()));
-            }else if(side.equals("R")){
+                if(storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()){
+                    iolRefValues.setIolRefValuesRight(storedBiometryMeasurementDataRight.get(i).getIOLREFJSON());
+                    iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(storedBiometryMeasurementDataRight.get(i).getEmmetropia()));
+                }
+            }else{
                 iolRefValues.setIolRefValuesRight(rowData.getIOLREFJSON());
                 iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(rowData.getEmmetropia()));
+                if(storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()){
+                    iolRefValues.setIolRefValuesLeft(storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON());
+                    iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(storedBiometryMeasurementDataLeft.get(i).getEmmetropia()));
+                }
             }
+            
             session.save(iolRefValues);
             formulaType = null;
             lensType = null;
@@ -565,9 +598,12 @@ public class DatabaseFunctions {
         this.setTransaction();
         
         this.setEventStudy(IOLStudy);
+        System.out.println("Study data set successfully");
         this.setEventBiometry(IOLBiometry);
+        System.out.println("Biometry data set successfully");
         
         this.setSelectedUser();
+        System.out.println("User selected successfully");
 
         this.selectActiveEpisode();
         
@@ -579,8 +615,7 @@ public class DatabaseFunctions {
         if(isNewEvent){
             EtOphinbiometryMeasurement newBasicMeasurementData = new EtOphinbiometryMeasurement();
         
-            setMeasurementData("L", newBasicMeasurementData);
-            setMeasurementData("R", newBasicMeasurementData);
+            setMeasurementData(newBasicMeasurementData);
         
             session.save(newBasicMeasurementData);
             
@@ -590,8 +625,7 @@ public class DatabaseFunctions {
             
         }
         
-        this.saveIolRefValues("L");
-        this.saveIolRefValues("R");
+        this.saveIolRefValues();
         
         transaction.commit();
         // while we are testing it is better to rollback
