@@ -7,15 +7,14 @@ import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import uk.org.openeyes.models.Event;
 import uk.org.openeyes.models.Eye;
-import uk.org.openeyes.models.OphinbiometryLenstypeLens;
 import uk.org.openeyes.models.User;
 
-@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-09-10T11:27:52")
+@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-10-30T15:34:55")
 @StaticMetamodel(EtOphinbiometrySelection.class)
 public class EtOphinbiometrySelection_ { 
 
     public static volatile SingularAttribute<EtOphinbiometrySelection, BigDecimal> iolPowerRight;
-    public static volatile SingularAttribute<EtOphinbiometrySelection, OphinbiometryLenstypeLens> lensIdLeft;
+    public static volatile SingularAttribute<EtOphinbiometrySelection, Integer> lensIdLeft;
     public static volatile SingularAttribute<EtOphinbiometrySelection, Event> eventId;
     public static volatile SingularAttribute<EtOphinbiometrySelection, User> createdUserId;
     public static volatile SingularAttribute<EtOphinbiometrySelection, BigDecimal> predictedRefractionLeft;

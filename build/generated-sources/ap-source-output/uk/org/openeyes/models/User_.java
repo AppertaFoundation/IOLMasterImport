@@ -11,8 +11,8 @@ import uk.org.openeyes.models.Disorder;
 import uk.org.openeyes.models.DoctorGrade;
 import uk.org.openeyes.models.Episode;
 import uk.org.openeyes.models.EpisodeStatus;
-import uk.org.openeyes.models.EtOphinbiometryBiometrydat;
 import uk.org.openeyes.models.EtOphinbiometryCalculation;
+import uk.org.openeyes.models.EtOphinbiometryIolRefValues;
 import uk.org.openeyes.models.EtOphinbiometryMeasurement;
 import uk.org.openeyes.models.EtOphinbiometrySelection;
 import uk.org.openeyes.models.EthnicGroup;
@@ -24,9 +24,8 @@ import uk.org.openeyes.models.Gp;
 import uk.org.openeyes.models.ImportSource;
 import uk.org.openeyes.models.Institution;
 import uk.org.openeyes.models.OphinbiometryCalculationFormula;
-import uk.org.openeyes.models.OphinbiometryLensPosition;
+import uk.org.openeyes.models.OphinbiometryImportedEvents;
 import uk.org.openeyes.models.OphinbiometryLenstypeLens;
-import uk.org.openeyes.models.OphinbiometryMeasurement;
 import uk.org.openeyes.models.Patient;
 import uk.org.openeyes.models.Practice;
 import uk.org.openeyes.models.Service;
@@ -37,7 +36,7 @@ import uk.org.openeyes.models.SpecialtyType;
 import uk.org.openeyes.models.Subspecialty;
 import uk.org.openeyes.models.User;
 
-@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-09-10T11:27:52")
+@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-10-30T15:34:55")
 @StaticMetamodel(User.class)
 public class User_ { 
 
@@ -62,9 +61,9 @@ public class User_ {
     public static volatile CollectionAttribute<User, EtOphinbiometryMeasurement> etOphinbiometryMeasurementCollection1;
     public static volatile CollectionAttribute<User, Event> eventCollection;
     public static volatile CollectionAttribute<User, OphinbiometryCalculationFormula> ophinbiometryCalculationFormulaCollection;
-    public static volatile CollectionAttribute<User, OphinbiometryMeasurement> ophinbiometryMeasurementCollection;
     public static volatile SingularAttribute<User, Contact> contactId;
     public static volatile CollectionAttribute<User, EthnicGroup> ethnicGroupCollection1;
+    public static volatile CollectionAttribute<User, EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection1;
     public static volatile CollectionAttribute<User, User> userCollection1;
     public static volatile SingularAttribute<User, Boolean> active;
     public static volatile CollectionAttribute<User, ServiceSubspecialtyAssignment> serviceSubspecialtyAssignmentCollection;
@@ -82,8 +81,6 @@ public class User_ {
     public static volatile SingularAttribute<User, String> lastName;
     public static volatile SingularAttribute<User, String> role;
     public static volatile SingularAttribute<User, String> code;
-    public static volatile CollectionAttribute<User, OphinbiometryLensPosition> ophinbiometryLensPositionCollection1;
-    public static volatile CollectionAttribute<User, EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection;
     public static volatile CollectionAttribute<User, Episode> episodeCollection1;
     public static volatile CollectionAttribute<User, Eye> eyeCollection;
     public static volatile CollectionAttribute<User, EtOphinbiometryMeasurement> etOphinbiometryMeasurementCollection;
@@ -95,10 +92,9 @@ public class User_ {
     public static volatile CollectionAttribute<User, Practice> practiceCollection1;
     public static volatile SingularAttribute<User, String> registrationCode;
     public static volatile CollectionAttribute<User, Subspecialty> subspecialtyCollection;
+    public static volatile CollectionAttribute<User, EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection;
     public static volatile CollectionAttribute<User, Contact> contactCollection1;
-    public static volatile CollectionAttribute<User, EtOphinbiometryBiometrydat> etOphinbiometryBiometrydatCollection1;
     public static volatile CollectionAttribute<User, EtOphinbiometryCalculation> etOphinbiometryCalculationCollection;
-    public static volatile CollectionAttribute<User, OphinbiometryLensPosition> ophinbiometryLensPositionCollection;
     public static volatile SingularAttribute<User, String> email;
     public static volatile SingularAttribute<User, String> salt;
     public static volatile CollectionAttribute<User, Firm> firmCollection;
@@ -116,10 +112,11 @@ public class User_ {
     public static volatile CollectionAttribute<User, Institution> institutionCollection;
     public static volatile CollectionAttribute<User, EventType> eventTypeCollection;
     public static volatile CollectionAttribute<User, ImportSource> importSourceCollection1;
-    public static volatile CollectionAttribute<User, OphinbiometryMeasurement> ophinbiometryMeasurementCollection1;
+    public static volatile CollectionAttribute<User, OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection;
     public static volatile SingularAttribute<User, Date> createdDate;
     public static volatile CollectionAttribute<User, Patient> patientCollection1;
     public static volatile CollectionAttribute<User, Gp> gpCollection1;
+    public static volatile CollectionAttribute<User, OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection1;
     public static volatile SingularAttribute<User, Boolean> isDoctor;
     public static volatile SingularAttribute<User, Boolean> isSurgeon;
     public static volatile SingularAttribute<User, DoctorGrade> doctorGradeId;

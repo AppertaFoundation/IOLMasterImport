@@ -9,7 +9,7 @@ import uk.org.openeyes.models.ServiceSubspecialtyAssignment;
 import uk.org.openeyes.models.Specialty;
 import uk.org.openeyes.models.User;
 
-@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-09-10T11:27:52")
+@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-10-30T15:34:55")
 @StaticMetamodel(Subspecialty.class)
 public class Subspecialty_ { 
 

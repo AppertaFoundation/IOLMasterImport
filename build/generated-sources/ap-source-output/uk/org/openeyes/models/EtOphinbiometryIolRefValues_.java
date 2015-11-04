@@ -11,15 +11,15 @@ import uk.org.openeyes.models.OphinbiometryCalculationFormula;
 import uk.org.openeyes.models.OphinbiometryLenstypeLens;
 import uk.org.openeyes.models.User;
 
-@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-09-10T11:27:52")
+@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-10-30T15:34:55")
 @StaticMetamodel(EtOphinbiometryIolRefValues.class)
 public class EtOphinbiometryIolRefValues_ { 
 
     public static volatile SingularAttribute<EtOphinbiometryIolRefValues, Event> eventId;
     public static volatile SingularAttribute<EtOphinbiometryIolRefValues, User> createdUserId;
     public static volatile SingularAttribute<EtOphinbiometryIolRefValues, Date> lastModifiedDate;
-    public static volatile SingularAttribute<EtOphinbiometryIolRefValues, Eye> eyeId;
     public static volatile SingularAttribute<EtOphinbiometryIolRefValues, BigDecimal> emmetropiaRight;
+    public static volatile SingularAttribute<EtOphinbiometryIolRefValues, Eye> eyeId;
     public static volatile SingularAttribute<EtOphinbiometryIolRefValues, String> iolRefValuesLeft;
     public static volatile SingularAttribute<EtOphinbiometryIolRefValues, OphinbiometryCalculationFormula> formulaId;
     public static volatile SingularAttribute<EtOphinbiometryIolRefValues, BigDecimal> emmetropiaLeft;

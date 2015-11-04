@@ -9,7 +9,7 @@ import uk.org.openeyes.models.Event;
 import uk.org.openeyes.models.Eye;
 import uk.org.openeyes.models.User;
 
-@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-09-10T11:27:52")
+@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-10-30T15:34:55")
 @StaticMetamodel(EtOphinbiometryMeasurement.class)
 public class EtOphinbiometryMeasurement_ { 
 
@@ -20,7 +20,6 @@ public class EtOphinbiometryMeasurement_ {
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, BigDecimal> axisK1Right;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, BigDecimal> axialLengthLeft;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, Eye> eyeId;
-    public static volatile SingularAttribute<EtOphinbiometryMeasurement, String> deviceId;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, BigDecimal> axisK1Left;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, Integer> snrLeft;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, Date> createdDate;
@@ -30,7 +29,6 @@ public class EtOphinbiometryMeasurement_ {
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, BigDecimal> k2Left;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, BigDecimal> axialLengthRight;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, User> lastModifiedUserId;
-    public static volatile SingularAttribute<EtOphinbiometryMeasurement, String> studyId;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, Integer> id;
     public static volatile SingularAttribute<EtOphinbiometryMeasurement, BigDecimal> k1Right;
 

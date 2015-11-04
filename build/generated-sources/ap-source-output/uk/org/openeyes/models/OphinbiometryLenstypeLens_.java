@@ -6,10 +6,10 @@ import javax.annotation.Generated;
 import javax.persistence.metamodel.CollectionAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
-import uk.org.openeyes.models.EtOphinbiometrySelection;
+import uk.org.openeyes.models.EtOphinbiometryIolRefValues;
 import uk.org.openeyes.models.User;
 
-@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-09-10T11:27:52")
+@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-10-30T15:34:55")
 @StaticMetamodel(OphinbiometryLenstypeLens.class)
 public class OphinbiometryLenstypeLens_ { 
 
@@ -20,7 +20,6 @@ public class OphinbiometryLenstypeLens_ {
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, Integer> displayOrder;
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, String> description;
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, Boolean> active;
-    public static volatile CollectionAttribute<OphinbiometryLenstypeLens, EtOphinbiometrySelection> etOphinbiometrySelectionCollection;
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, BigDecimal> acon;
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, Float> a0;
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, Float> a1;
@@ -32,5 +31,6 @@ public class OphinbiometryLenstypeLens_ {
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, String> name;
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, User> lastModifiedUserId;
     public static volatile SingularAttribute<OphinbiometryLenstypeLens, Integer> id;
+    public static volatile CollectionAttribute<OphinbiometryLenstypeLens, EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection;
 
 }

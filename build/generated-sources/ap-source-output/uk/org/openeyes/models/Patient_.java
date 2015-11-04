@@ -9,10 +9,11 @@ import uk.org.openeyes.models.Contact;
 import uk.org.openeyes.models.Episode;
 import uk.org.openeyes.models.EthnicGroup;
 import uk.org.openeyes.models.Gp;
+import uk.org.openeyes.models.OphinbiometryImportedEvents;
 import uk.org.openeyes.models.Practice;
 import uk.org.openeyes.models.User;
 
-@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-09-10T11:27:52")
+@Generated(value="EclipseLink-2.5.2.v20140319-rNA", date="2015-10-30T15:34:55")
 @StaticMetamodel(Patient.class)
 public class Patient_ { 
 
@@ -26,6 +27,7 @@ public class Patient_ {
     public static volatile SingularAttribute<Patient, Practice> practiceId;
     public static volatile SingularAttribute<Patient, String> nhsNum;
     public static volatile SingularAttribute<Patient, Date> noRisksDate;
+    public static volatile CollectionAttribute<Patient, OphinbiometryImportedEvents> ophinbiometryImportedEventsCollection;
     public static volatile SingularAttribute<Patient, String> hosNum;
     public static volatile SingularAttribute<Patient, Date> createdDate;
     public static volatile SingularAttribute<Patient, Date> noFamilyHistoryDate;
