@@ -45,17 +45,17 @@ import uk.org.openeyes.models.User;
  */
 public class DatabaseFunctions {
     private SessionFactory sessionFactory;
-    private Patient selectedPatient;
-    private Episode selectedEpisode;
-    private Session session;
-    private Transaction transaction;
-    private User selectedUser;
-    private StudyData eventStudy;
-    private BiometryData eventBiometry;
-    private OphinbiometryImportedEvents importedBiometryEvent;
-    private boolean isNewEvent = true;
+    protected Patient selectedPatient;
+    protected Episode selectedEpisode;
+    protected Session session;
+    protected Transaction transaction;
+    protected User selectedUser;
+    protected StudyData eventStudy;
+    protected BiometryData eventBiometry;
+    protected OphinbiometryImportedEvents importedBiometryEvent;
+    protected boolean isNewEvent = true;
     
-    private User searchStudyUser(String userName){
+    protected User searchStudyUser(String userName){
 
         Criteria crit = session.createCriteria(User.class);
         Disjunction or = Restrictions.disjunction();
@@ -114,90 +114,6 @@ public class DatabaseFunctions {
         return returnUser;
     }
     
-    private OphinbiometryLenstypeLens searchForLensData(String lensName, Double aConst){
-        OphinbiometryLenstypeLens lensType = null;
-        Criteria crit = session.createCriteria(OphinbiometryLenstypeLens.class);
-        
-        //we search for the full name first
-        crit.add(Restrictions.eq("name",lensName));
-        if(!crit.list().isEmpty()){
-            if(crit.list().get(0) != null){
-                lensType = (OphinbiometryLenstypeLens) crit.list().get(0);
-            }
-        }
-        /*  we don't need this part now, but keep it here if someone ask for it later
-        else{
-            //we also try to search for other possibilities
-            Criteria crit2 = session.createCriteria(OphinbiometryLenstypeLens.class);
-            List<OphinbiometryLenstypeLens> currentLenses = crit2.list();
-            for( OphinbiometryLenstypeLens lensData : currentLenses){
-                for (int i = 0; i <= (lensName.length() - lensData.getName().length()); i++) {
-                    if (lensName.regionMatches(i, lensData.getName(), 0, lensData.getName().length())) {
-                        lensType = lensData;
-                        break;
-                    }
-                }
-            }
-        }
-        */
-        //if nothing found we create a new one
-        if(lensType == null){
-            lensType = new OphinbiometryLenstypeLens();
-            lensType.setName(lensName);
-            // TODO: we should extract A constant value for single lense format somehow!!!!
-            lensType.setAcon(BigDecimal.valueOf(aConst));
-            // TODO: we may need to add user name here!!
-            User selectedUser = searchStudyUser("");
-            lensType.setCreatedUserId(selectedUser);
-            lensType.setLastModifiedUserId(selectedUser);
-            lensType.setCreatedDate(new Date());
-            lensType.setLastModifiedDate(new Date());
-            lensType.setDescription("Created by IOL Master input!!! "+lensName);
-            lensType.setDisplayOrder(0);
-            lensType.setDeleted(false);
-            lensType.setComments("Imported values, please check! Remove this comment when confirmed!");
-            lensType.setPositionId(0);
-            session.save(lensType);
-        }
-        return lensType;
-    }
-    
-    private OphinbiometryCalculationFormula searchForFormulaData(String formulaName){
-        OphinbiometryCalculationFormula formulaType = null;
-        Criteria crit = session.createCriteria(OphinbiometryCalculationFormula.class);
-        
-        //we search for the full name first
-        crit.add(Restrictions.eq("name",formulaName));
-        if(!crit.list().isEmpty()){
-            if(crit.list().get(0) != null){
-                formulaType = (OphinbiometryCalculationFormula) crit.list().get(0);
-            }
-        }else{
-            Criteria crit2 = session.createCriteria(OphinbiometryCalculationFormula.class);
-            crit2.add(Restrictions.eq("name", formulaName.replace("®", "")));
-            if(!crit2.list().isEmpty()){
-                if(crit2.list().get(0) != null){
-                    formulaType = (OphinbiometryCalculationFormula) crit2.list().get(0);
-                }
-            }
-        }
-        if(formulaType == null){
-            // if formula not exists we create it
-            formulaType = new OphinbiometryCalculationFormula();
-            formulaType.setName(formulaName);
-            // TODO: add proper user name here!!!
-            User selectedUser = searchStudyUser("");
-            formulaType.setCreatedUserId(selectedUser);
-            formulaType.setLastModifiedUserId(selectedUser);
-            formulaType.setCreatedDate(new Date());
-            formulaType.setLastModifiedDate(new Date());
-            formulaType.setDisplayOrder(0);
-            formulaType.setDeleted(false);
-            session.save(formulaType);
-        }
-
-        return formulaType;
-    }
     
     public void initSessionFactory(String configFile){
         // A SessionFactory is set up once for an application!
@@ -324,7 +240,7 @@ public class DatabaseFunctions {
         return formattedStudyDate;
     }
     
-    private Event createNewEvent(){
+    protected Event createNewEvent(){
         Event newBiometryEvent = new Event();
         
         System.out.println("Starting event...");
@@ -358,51 +274,6 @@ public class DatabaseFunctions {
         return newBiometryEvent;
     }
     
-    /**
-     * 
-     *
-     * @return OphinbiometryImportedEvents
-     **/
-    private OphinbiometryImportedEvents processImportedEvent(){
-        
-        OphinbiometryImportedEvents importedEvent;
-                
-        Criteria currentEvent = session.createCriteria(OphinbiometryImportedEvents.class);
-        
-        currentEvent.add(Restrictions.eq("studyId", eventStudy.getStudyInstanceID()));
-
-        // if an event already exists we pick up that 
-        if(!currentEvent.list().isEmpty()){
-            importedEvent = (OphinbiometryImportedEvents) currentEvent.list().get(0);
-            //importedEvent = new OphinbiometryImportedEvents(currentData.getEventId().getId());
-            isNewEvent = false;
-        }
-        // or else we should create a new event
-        else{
-            Event newEvent = createNewEvent();
-            importedEvent = new OphinbiometryImportedEvents();
-            importedEvent.setDeviceName(eventStudy.getInstituionName());
-            importedEvent.setDeviceId(eventStudy.getStationName());
-            importedEvent.setDeviceManufacturer(eventStudy.getDeviceManufacturer());
-            importedEvent.setDeviceModel(eventStudy.getDeviceModel());
-            importedEvent.setDeviceSoftwareVersion(eventStudy.getDeviceSoftwareVersion());
-            importedEvent.setStudyId(eventStudy.getStudyInstanceID());
-            importedEvent.setPatientId(getSelectedPatient());
-            importedEvent.setEventId(newEvent);
-            importedEvent.setCreatedDate(new Date());
-            importedEvent.setLastModifiedDate(new Date());
-            importedEvent.setCreatedUserId(selectedUser);
-            importedEvent.setLastModifiedUserId(selectedUser);
-            
-            boolean isLinked = false;
-            if(getSelectedEpisode() != null){
-                isLinked = true;
-            }
-            importedEvent.setIsLinked(isLinked);
-            session.save(importedEvent);
-        }
-        return importedEvent;
-    }
 
     // for unit testing it need to be public
     public void setSession(){
@@ -454,184 +325,6 @@ public class DatabaseFunctions {
         }
     }
     
-    private void setMeasurementData(EtOphinbiometryMeasurement basicMeasurementData){
-        
-        BiometrySide sideData;
-        Double SNR;
-                
-        if(basicMeasurementData.getEventId() == null){
-            basicMeasurementData.setEventId(importedBiometryEvent.getEventId());
-            basicMeasurementData.setEyeId(new Eye(eventBiometry.getEyeId()));
-            basicMeasurementData.setCreatedDate(new Date());
-            basicMeasurementData.setCreatedUserId(selectedUser);
-            basicMeasurementData.setLastModifiedDate(new Date());
-            basicMeasurementData.setLastModifiedUserId(selectedUser);
-        }
-        
-        sideData = eventBiometry.getBiometryValue("L");
-        basicMeasurementData.setK1Left(BigDecimal.valueOf(sideData.getK1()));
-        basicMeasurementData.setK2Left(BigDecimal.valueOf(sideData.getK2()));
-        basicMeasurementData.setAxisK1Left(BigDecimal.valueOf(sideData.getAxisK1()));
-        basicMeasurementData.setAxialLengthLeft(BigDecimal.valueOf(sideData.getAL()));
-        SNR = (Double) sideData.getSNR();
-        basicMeasurementData.setSnrLeft(SNR.intValue());
-        
-        sideData = eventBiometry.getBiometryValue("R");
-        basicMeasurementData.setK1Right(BigDecimal.valueOf(sideData.getK1()));
-        basicMeasurementData.setK2Right(BigDecimal.valueOf(sideData.getK2()));
-        basicMeasurementData.setAxisK1Right(BigDecimal.valueOf(sideData.getAxisK1()));
-        basicMeasurementData.setAxialLengthRight(BigDecimal.valueOf(sideData.getAL()));
-        SNR = (Double) sideData.getSNR();
-        basicMeasurementData.setSnrRight(SNR.intValue());        
-    }
-    
-    private void createSelectionData(){
-        // we save 0 values here because Biometry event require those values to display the element
-        EtOphinbiometrySelection newBasicSelectionData = new EtOphinbiometrySelection();
-        newBasicSelectionData.setCreatedDate(new Date());
-        newBasicSelectionData.setLastModifiedDate(new Date());
-        newBasicSelectionData.setCreatedUserId(selectedUser);
-        newBasicSelectionData.setLastModifiedUserId(selectedUser);
-        newBasicSelectionData.setEventId(importedBiometryEvent.getEventId());
-        newBasicSelectionData.setEyeId(new Eye(eventBiometry.getEyeId()));
-        newBasicSelectionData.setIolPowerLeft(BigDecimal.ZERO);
-        newBasicSelectionData.setIolPowerRight(BigDecimal.ZERO);
-        newBasicSelectionData.setPredictedRefractionLeft(BigDecimal.ZERO);
-        newBasicSelectionData.setPredictedRefractionRight(BigDecimal.ZERO);
-        session.save(newBasicSelectionData);
-    }
-    
-    private void createCalculationData(){
-        EtOphinbiometryCalculation newBasicCalculationData = new EtOphinbiometryCalculation();
-        newBasicCalculationData.setCreatedDate(new Date());
-        newBasicCalculationData.setLastModifiedDate(new Date());
-        newBasicCalculationData.setCreatedUserId(selectedUser);
-        newBasicCalculationData.setLastModifiedUserId(selectedUser);
-        newBasicCalculationData.setEventId(importedBiometryEvent.getEventId());
-        newBasicCalculationData.setEyeId(new Eye(eventBiometry.getEyeId()));
-        newBasicCalculationData.setFormulaIdLeft(new OphinbiometryCalculationFormula(1));
-        newBasicCalculationData.setFormulaIdRight(new OphinbiometryCalculationFormula(1));
-        newBasicCalculationData.setTargetRefractionLeft(BigDecimal.ZERO);
-        newBasicCalculationData.setTargetRefractionRight(BigDecimal.ZERO);
-        session.save(newBasicCalculationData);
-
-    }
-    
-    private void saveIolRefValues(){
-        // 3. save lens and formula specific data
-        ArrayList<BiometryMeasurementData> storedBiometryMeasurementDataLeft = eventBiometry.getBiometryValue("L").getMeasurements();
-        ArrayList<BiometryMeasurementData> storedBiometryMeasurementDataRight = eventBiometry.getBiometryValue("R").getMeasurements();
-
-        Integer ArrayListSize;
-        String ReferenceSide;
-        
-        if(storedBiometryMeasurementDataLeft.size() > storedBiometryMeasurementDataRight.size()){
-            ArrayListSize = storedBiometryMeasurementDataLeft.size();
-            ReferenceSide = "L";
-        }else{
-            ArrayListSize = storedBiometryMeasurementDataRight.size();
-            ReferenceSide = "R";
-        }
-        
-        OphinbiometryLenstypeLens lensType = null;
-        OphinbiometryCalculationFormula formulaType = null;
-
-        for(Integer i = 0; i < ArrayListSize; i++){
-            // TODO: we need to handle multi formula - multi formula here!!!
-            // there are some files where the lenses stored as FORMULA IOLType, but in that case the A constant is displayed as A0, A1, A2 and pACD const
-            // formulas used in this cases: HofferQ, Haigis L
-            // head data should be the same for both sides
-            BiometryMeasurementData rowData;
-            if(ReferenceSide.equals("L")){
-                rowData = storedBiometryMeasurementDataLeft.get(i);
-            }else{
-                rowData = storedBiometryMeasurementDataRight.get(i);
-            }
-            
-            if(rowData.getLenseName() != null && !rowData.getLenseName().equals("")){
-                System.out.println("Multi lense - single formula format...");
-                lensType = searchForLensData(rowData.getLenseName(), rowData.getAConst());
-                //System.out.println(lensType);
-                formulaType = searchForFormulaData(eventStudy.getFormulaName());
-            }else if(rowData.getFormulaName() != null && !rowData.getFormulaName().equals("")){
-                System.out.println("Multi formula - singe lense format...");
-                formulaType = searchForFormulaData(rowData.getFormulaName());
-                // TODO: need to handle A const here for single lense format!!!
-                lensType = searchForLensData(eventStudy.getLenseName(), 0.0);
-            }
-            
-            EtOphinbiometryIolRefValues iolRefValues = new EtOphinbiometryIolRefValues();
-            iolRefValues.setCreatedUserId(selectedUser);
-            iolRefValues.setLastModifiedUserId(selectedUser);
-            iolRefValues.setCreatedDate(new Date());
-            iolRefValues.setLastModifiedDate(new Date());
-            iolRefValues.setEventId(importedBiometryEvent.getEventId());
-            iolRefValues.setEyeId(new Eye(eventBiometry.getEyeId()));
-            iolRefValues.setFormulaId(formulaType);
-            iolRefValues.setLensId(lensType);
-            if(ReferenceSide.equals("L")){
-                iolRefValues.setIolRefValuesLeft(rowData.getIOLREFJSON());
-                iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(rowData.getEmmetropia()));
-                if(storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()){
-                    iolRefValues.setIolRefValuesRight(storedBiometryMeasurementDataRight.get(i).getIOLREFJSON());
-                    iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(storedBiometryMeasurementDataRight.get(i).getEmmetropia()));
-                }
-            }else{
-                iolRefValues.setIolRefValuesRight(rowData.getIOLREFJSON());
-                iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(rowData.getEmmetropia()));
-                if(storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()){
-                    iolRefValues.setIolRefValuesLeft(storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON());
-                    iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(storedBiometryMeasurementDataLeft.get(i).getEmmetropia()));
-                }
-            }
-            
-            session.save(iolRefValues);
-            formulaType = null;
-            lensType = null;
-
-        }
-
-    }
-    
-    public void processBiometryEvent(StudyData IOLStudy, BiometryData IOLBiometry){
-        this.setSession();
-        this.setTransaction();
-        
-        this.setEventStudy(IOLStudy);
-        System.out.println("Study data set successfully");
-        this.setEventBiometry(IOLBiometry);
-        System.out.println("Biometry data set successfully");
-        
-        this.setSelectedUser();
-        System.out.println("User selected successfully");
-
-        this.selectActiveEpisode();
-        
-        // Event ID will be: importedBiometryEvent.getEventId
-        importedBiometryEvent = processImportedEvent();
-
-        // we want to save measurement field only if the event is new, for existing events we need to merge the
-        // iol_ref_values table only
-        if(isNewEvent){
-            EtOphinbiometryMeasurement newBasicMeasurementData = new EtOphinbiometryMeasurement();
-        
-            setMeasurementData(newBasicMeasurementData);
-        
-            session.save(newBasicMeasurementData);
-            
-            // we save selection and calculation data as empty
-            this.createSelectionData();
-            this.createCalculationData();
-            
-        }
-        
-        this.saveIolRefValues();
-        
-        transaction.commit();
-        // while we are testing it is better to rollback
-        //transaction.rollback();
-        session.close();
-    }
     
    
     public void logAuditData(){
@@ -639,4 +332,5 @@ public class DatabaseFunctions {
         Transaction transaction = session.beginTransaction();
         
     }
+
 }
