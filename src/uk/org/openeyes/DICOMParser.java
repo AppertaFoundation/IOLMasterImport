@@ -96,7 +96,7 @@ public class DICOMParser {
                 readSequence(inputAttrs.getSequence(tag), TagUtils.toHexString(TagUtils.elementNumber(tag)));
             }
             if( !inputAttrs.getValue(tag).toString().equals("")){
-                debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
+                //debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
                 // collecting patient data
                 //debugMessage("--== Patient data ==--");
                 if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000010")){
@@ -208,17 +208,17 @@ public class DICOMParser {
                         if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*08")){
                             CurrentSide = VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString();
                             this.LenseCount = -1;
-                            debugMessage("We are in seqence: "+sequenceTag.toString());
+                            //debugMessage("We are in seqence: "+sequenceTag.toString());
                             // we need to do this, because in the measurement sequence the IOL side is the last element!!!
                             if( sequenceTag.matches("(?i).*01")){
                                 Biometry.setSideData(CurrentSide);
                             }
-                            debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, null).toString());
+                            //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, null).toString());
                         }
                         
                         // IOL type (can be LENSES or FORMULA !!!!)
                         if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*04")){
-                            debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
+                            //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
                             IOLType = VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString();
                             // capitalize the string because we will use it as a function name later!!!
                             IOLType = IOLType.charAt(0)+IOLType.substring(1).toLowerCase();
@@ -305,7 +305,7 @@ public class DICOMParser {
                             // Name of lenses
                             if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*06")){
                                 if(this.LenseCount > -1){
-                                    debugMessage(VR.LO.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
+                                    //debugMessage(VR.LO.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
                                     Biometry.setBiometryValueNum(IOLType+"Name", "U", VR.LO.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString() , this.LenseCount);
                                 }
                             }
@@ -313,7 +313,7 @@ public class DICOMParser {
                             // A constant
                             if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*07")){
                                 if(this.LenseCount > -1){
-                                    debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                                    //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                                     Biometry.setBiometryValueNum("LenseAConst", "U", String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)), this.LenseCount);
                                 }
                             } 
@@ -357,7 +357,7 @@ public class DICOMParser {
         Iterator<Attributes> sequenceIterator;
         sequenceIterator = inputSeq.iterator();
     
-        debugMessage("SQ Tag: "+sequenceTag);
+        //debugMessage("SQ Tag: "+sequenceTag);
         if( sequenceTag.matches("(?i).*05")){
             this.LenseCount++;
             this.Biometry.setBiometryValue("Lenses", "U", "N/A");

@@ -6,11 +6,9 @@
 package uk.org.openeyes;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -26,16 +24,9 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
 import uk.org.openeyes.models.Episode;
-import uk.org.openeyes.models.EtOphinbiometryCalculation;
-import uk.org.openeyes.models.EtOphinbiometryIolRefValues;
-import uk.org.openeyes.models.EtOphinbiometryMeasurement;
-import uk.org.openeyes.models.EtOphinbiometrySelection;
 import uk.org.openeyes.models.Event;
 import uk.org.openeyes.models.EventType;
-import uk.org.openeyes.models.Eye;
-import uk.org.openeyes.models.OphinbiometryCalculationFormula;
 import uk.org.openeyes.models.OphinbiometryImportedEvents;
-import uk.org.openeyes.models.OphinbiometryLenstypeLens;
 import uk.org.openeyes.models.Patient;
 import uk.org.openeyes.models.User;
 
@@ -118,6 +109,9 @@ public class DatabaseFunctions {
     public void initSessionFactory(String configFile){
         // A SessionFactory is set up once for an application!
         // if no config specified we should use the default one
+        
+        // TODO: need to check for /etc/openeyes/db.conf here!!
+        
         String defaultConfig = "resources/hibernate.cfg.xml";
         File inputFile = null;
         final StandardServiceRegistry registry;
