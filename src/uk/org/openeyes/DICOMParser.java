@@ -7,6 +7,7 @@ package uk.org.openeyes;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Iterator;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
@@ -35,6 +36,8 @@ public class DICOMParser {
     private DatabaseFunctions database = new DatabaseFunctions();
     
     private SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
+    
+    private DICOMLogger logger;
  
     public DICOMParser(boolean debugState){
         this.debug = debugState;
@@ -62,11 +65,15 @@ public class DICOMParser {
     
     private void debugMessage(String message){
         if(this.debug){
+            logger.addToRawOutput(message);
             System.out.println(message);
         }
     }
        
     public void parseDicomFile(String inputFile, DICOMLogger SystemLogger) throws IOException {
+        
+        this.logger = SystemLogger;
+        
         Attributes attrs = new Attributes(false, 64);
         
         DicomInputStream dis = new DicomInputStream(new File(inputFile));        
@@ -92,13 +99,12 @@ public class DICOMParser {
         
         for( int tag : dcmTags){
             if(inputAttrs.getVR(tag).toString().equals("SQ")){
-                //debugMessage("Reading sequence "+tag);
+                debugMessage("Reading sequence "+tag);
                 readSequence(inputAttrs.getSequence(tag), TagUtils.toHexString(TagUtils.elementNumber(tag)));
             }
             if( !inputAttrs.getValue(tag).toString().equals("")){
-                //debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
+                debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
                 // collecting patient data
-                //debugMessage("--== Patient data ==--");
                 if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000010")){
                     // patient name
                     if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000010")){
@@ -238,13 +244,21 @@ public class DICOMParser {
                         // formula name (top)
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09")){
                             Study.setFormulaName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            //debugMessage("Physician's name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                            debugMessage("<------------- Formula name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
+
+                        // Haigis-L is a special formula 
+                        // TODO: need to check!!!
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09") && sequenceTag.matches("(?i).*37")){
+                            Study.setLenseName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                            debugMessage("<------------- Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                        }
+
                         
                         // lense name (top)
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0A")){
                             Study.setLenseName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            //debugMessage("Physician's name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                            debugMessage("<------------ Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*43")){
@@ -372,29 +386,32 @@ public class DICOMParser {
        
     }
     
-    public boolean processParsedData(String configFile, DICOMLogger SystemLogger){
+    public boolean processParsedData(String configFile) throws ParseException{
         // first we try to connect to the database
         // if this connection fails we suggest to check the hibernate.conf.xml file
+        
         
         database.initSessionFactory(configFile);
         debugMessage("Connection status: "+database.checkConnection());
         
         database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+        BiometryFunctions BiometryProcessor = new BiometryFunctions(logger);
         if(database.getSelectedPatient() != null){
-            BiometryFunctions BiometryProcessor = new BiometryFunctions();
             BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
         }else{
             // search for patient data has been failed - need to print and log!!
             debugMessage("Cannot found patient data, file processing failed!");
+            logger.getLogger().setComment("Cannot found patient data!");
+            logger.getLogger().setStatus("failed");
             // Logger need here!!
             System.exit(3);        
             return false;
         }
 
         if(debug){
-            Patient.printPatientData();
-            Study.printStudyData();
-            Biometry.printBiometryData();
+            debugMessage(Patient.printPatientData());
+            debugMessage(Study.printStudyData());
+            debugMessage(Biometry.printBiometryData());
             database.closeSessionFactory();
         }
         

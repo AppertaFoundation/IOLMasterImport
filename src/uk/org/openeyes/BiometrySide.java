@@ -5,6 +5,7 @@
  */
 package uk.org.openeyes;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 
@@ -17,7 +18,7 @@ public class BiometrySide {
     private double K2;
     private double AxisK1;
     private double AL;      // axial length
-    private double SNR;
+    private BigDecimal SNR;
     private ArrayList<BiometryMeasurementData> Measurements = new ArrayList<>();
 
     public void setK1(String BK1){
@@ -55,10 +56,10 @@ public class BiometrySide {
     }
     
     public void setSNR(String BSNR){
-        this.SNR = Double.parseDouble(BSNR);
+        this.SNR = BigDecimal.valueOf(Double.parseDouble(BSNR));
     }
     
-    public double getSNR(){
+    public BigDecimal getSNR(){
         return this.SNR;
     }
     
@@ -112,16 +113,18 @@ public class BiometrySide {
         }
     }
     
-    public void printBiometrySide(){
-       System.out.println("K1: "+this.K1);
-       System.out.println("K2: "+this.K2);
-       System.out.println("Axis K1: "+this.AxisK1);
-       System.out.println("Axial length: "+this.AL);
-       System.out.println("SNR: "+this.SNR);
-       System.out.println("");
+    public String printBiometrySide(){
+       String output;
+       output = "K1: "+this.K1+"\n";
+       output += "K2: "+this.K2+"\n";
+       output += "Axis K1: "+this.AxisK1+"\n";
+       output += "Axial length: "+this.AL+"\n";
+       output += "SNR: "+this.SNR+"\n";
+       output += "\n";
        for(BiometryMeasurementData LensData: Measurements){
-           LensData.printLenses();
+           output += LensData.printLenses();
        }
        //System.out.println("Predicted refraction: "+this.PredictedREF);
+       return output;
     }
 }

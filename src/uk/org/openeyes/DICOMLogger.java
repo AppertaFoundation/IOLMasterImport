@@ -6,7 +6,7 @@
 package uk.org.openeyes;
 
 import org.hibernate.Session;
-import uk.org.openeyes.models.AuditDicomImport;
+import uk.org.openeyes.models.DicomImportLog;
 
 /**
  *
@@ -14,19 +14,29 @@ import uk.org.openeyes.models.AuditDicomImport;
  */
 public class DICOMLogger {
     
-    private AuditDicomImport logger;
+    private DicomImportLog logger;
+    private String rawOutput = "";
     
-    public void  DICOMLogger(){
-        this.logger= new AuditDicomImport();
+    public DICOMLogger(){
+        this.logger= new DicomImportLog();
     }
     
-    public AuditDicomImport getLogger(){
+    public DicomImportLog getLogger(){
         return this.logger;
     }
     
     public boolean saveLogEntry(Session currentSession){
+        this.saveRawOutput();
         currentSession.save(this.logger);
         return true;
+    }
+    
+    public void addToRawOutput(String logMessage){
+        this.rawOutput += logMessage+"\n";
+    }
+    
+    public void saveRawOutput(){
+        this.logger.setRawImporterOutput(rawOutput);
     }
     
 }

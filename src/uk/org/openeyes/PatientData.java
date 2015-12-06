@@ -55,14 +55,16 @@ public class PatientData {
         return PatientBirth;
     }
     
-    public void printPatientData(){
-        System.out.println("--== Patient data ==--");
-        System.out.println("Patient's name: "+this.PatientName);
-        System.out.println("Patient's hospital number: "+this.PatientID);
-        System.out.println("Patient's gender: "+this.PatientGender);
-        System.out.println("Patient's birth date: "+this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+this.PatientBirth.get(Calendar.MONTH)+"/"+this.PatientBirth.get(Calendar.YEAR));
-        System.out.println("Comments: "+this.PatientComments);
-        System.out.println("");
+    public String printPatientData(){
+        String output;
+        output = "--== Patient data ==--\n";
+        output += "Patient's name: "+this.PatientName+"\n";
+        output += "Patient's hospital number: "+this.PatientID+"\n";
+        output += "Patient's gender: "+this.PatientGender+"\n";
+        output += "Patient's birth date: "+this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+this.PatientBirth.get(Calendar.MONTH)+"/"+this.PatientBirth.get(Calendar.YEAR)+"\n";
+        output += "Comments: "+this.PatientComments+"\n";
+        output += "\n";
+        return output;
     }
     
 }

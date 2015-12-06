@@ -91,10 +91,16 @@ public class EtOphinbiometryMeasurement implements Serializable {
     private BigDecimal axialLengthRight;
     @Basic(optional = false)
     @Column(name = "snr_left")
-    private int snrLeft;
+    private BigDecimal snrLeft;
     @Basic(optional = false)
     @Column(name = "snr_right")
-    private int snrRight;
+    private BigDecimal snrRight;
+    @Basic(optional = false)
+    @Column(name = "snr_min_left")
+    private BigDecimal snrMinLeft;
+    @Basic(optional = false)
+    @Column(name = "snr_min_right")
+    private BigDecimal snrMinRight;
     @JoinColumn(name = "created_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User createdUserId;
@@ -115,7 +121,7 @@ public class EtOphinbiometryMeasurement implements Serializable {
         this.id = id;
     }
 
-    public EtOphinbiometryMeasurement(Integer id, Date lastModifiedDate, Date createdDate, boolean deleted, BigDecimal k1Left, BigDecimal k1Right, BigDecimal k2Left, BigDecimal k2Right, BigDecimal axisK1Left, BigDecimal axisK1Right, BigDecimal axialLengthLeft, BigDecimal axialLengthRight, int snrLeft, int snrRight) {
+    public EtOphinbiometryMeasurement(Integer id, Date lastModifiedDate, Date createdDate, boolean deleted, BigDecimal k1Left, BigDecimal k1Right, BigDecimal k2Left, BigDecimal k2Right, BigDecimal axisK1Left, BigDecimal axisK1Right, BigDecimal axialLengthLeft, BigDecimal axialLengthRight, BigDecimal snrLeft, BigDecimal snrRight, BigDecimal snrMinLeft, BigDecimal snrMinRight) {
         this.id = id;
         this.lastModifiedDate = lastModifiedDate;
         this.createdDate = createdDate;
@@ -130,6 +136,9 @@ public class EtOphinbiometryMeasurement implements Serializable {
         this.axialLengthRight = axialLengthRight;
         this.snrLeft = snrLeft;
         this.snrRight = snrRight;
+        this.snrMinLeft = snrMinLeft;
+        this.snrMinRight = snrMinRight;
+        
     }
 
     public Integer getId() {
@@ -228,22 +237,38 @@ public class EtOphinbiometryMeasurement implements Serializable {
         this.axialLengthRight = axialLengthRight;
     }
 
-    public int getSnrLeft() {
+    public BigDecimal getSnrLeft() {
         return snrLeft;
     }
 
-    public void setSnrLeft(int snrLeft) {
+    public void setSnrLeft(BigDecimal snrLeft) {
         this.snrLeft = snrLeft;
     }
 
-    public int getSnrRight() {
+    public BigDecimal getSnrRight() {
         return snrRight;
     }
 
-    public void setSnrRight(int snrRight) {
+    public void setSnrRight(BigDecimal snrRight) {
         this.snrRight = snrRight;
     }
 
+    public BigDecimal getSnrMinLeft() {
+        return snrMinLeft;
+    }
+
+    public void setSnrMinLeft(BigDecimal snrMinLeft) {
+        this.snrMinLeft = snrMinLeft;
+    }
+
+    public BigDecimal getSnrMinRight() {
+        return snrMinRight;
+    }
+
+    public void setSnrMinRight(BigDecimal snrMinRight) {
+        this.snrMinRight = snrMinRight;
+    }
+    
     public User getCreatedUserId() {
         return createdUserId;
     }

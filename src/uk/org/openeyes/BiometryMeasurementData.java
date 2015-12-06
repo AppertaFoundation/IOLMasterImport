@@ -86,16 +86,18 @@ public class BiometryMeasurementData {
         return exportJSON.toJSONString();
     }
     
-    public void printLenses(){
-        System.out.println("Lenses name: "+this.LenseName);
-        System.out.println("Formula name: "+this.FormulaName);
-        System.out.println("A constant: "+this.AConst);
-        System.out.println("Emmetropia: "+this.Emmetropia);
+    public String printLenses(){
+        String output;
+        output = "Lenses name: "+this.LenseName+"\n";
+        output += "Formula name: "+this.FormulaName+"\n";
+        output += "A constant: "+this.AConst+"\n";
+        output += "Emmetropia: "+this.Emmetropia+"\n";
         int n = 0;
         for (Double iolValue : this.IOL) {
-            System.out.println(n+". REF "+this.REF.get(n) + " - IOL "+n+": "+iolValue);
+            output += n+". REF "+this.REF.get(n) + " - IOL "+n+": "+iolValue+"\n";
             n++;
 	}
+        return output;
     }
     
 }

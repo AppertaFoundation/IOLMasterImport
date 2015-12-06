@@ -112,11 +112,13 @@ public class BiometryData {
         }
     }
     
-    public void printBiometryData(){
-        System.out.println("--== Biometry data ==--");
-        System.out.println("-- Left side: ");
-        Left.printBiometrySide();
-        System.out.println("-- Right side: ");
-        Right.printBiometrySide();
+    public String printBiometryData(){
+        String output;
+        output = "--== Biometry data ==--\n";
+        output += "-- Left side: \n";
+        output += Left.printBiometrySide();
+        output += "-- Right side: \n";
+        output += Right.printBiometrySide();
+        return output;
     }
 }

@@ -187,6 +187,9 @@ public class DatabaseFunctions {
     }
     
     public void selectActiveEpisode(){
+        selectedEpisode = null;
+        /*
+        // New requirement: always follow the manual linking process, so this part has been removed
         if(this.selectedPatient != null){
             Session session = sessionFactory.openSession();
             Criteria episodeCrit = session.createCriteria(Episode.class);
@@ -212,6 +215,7 @@ public class DatabaseFunctions {
         if(selectedEpisode == null){
             System.out.println("ERROR: No unique open episode found, will create data without episode!");
         }
+        */
     }
     
     public Episode getSelectedEpisode(){

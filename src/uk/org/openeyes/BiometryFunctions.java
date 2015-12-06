@@ -6,6 +6,9 @@
 package uk.org.openeyes;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import org.hibernate.Criteria;
@@ -27,6 +30,12 @@ import uk.org.openeyes.models.User;
  */
 public class BiometryFunctions {
 
+    private DICOMLogger dicomLogger;
+    
+    public BiometryFunctions(DICOMLogger SystemLogger){
+        this.dicomLogger = SystemLogger;
+    }
+    
     /**
      *
      * @param lensName the value of lensName
@@ -43,6 +52,7 @@ public class BiometryFunctions {
             }
         }
         if (lensType == null) {
+            
             lensType = new OphinbiometryLenstypeLens();
             lensType.setName(lensName);
             lensType.setAcon(BigDecimal.valueOf(aConst));
@@ -98,6 +108,16 @@ public class BiometryFunctions {
         return formulaType;
     }
 
+    private BiometrySide setEmptySideData(){
+        BiometrySide sideData = new BiometrySide();
+        sideData.setK1("0");
+        sideData.setK2("0");
+        sideData.setAxisK1("0");
+        sideData.setAL("0"); 
+        sideData.setSNR("0");       
+        return  sideData;
+    }
+    
     /**
      *
      * @param basicMeasurementData the value of basicMeasurementData
@@ -105,7 +125,8 @@ public class BiometryFunctions {
      */
     private void setMeasurementData(EtOphinbiometryMeasurement basicMeasurementData, DatabaseFunctions databaseFunctions) {
         BiometrySide sideData;
-        Double SNR;
+        BigDecimal SNR = BigDecimal.ZERO;
+        
         if (basicMeasurementData.getEventId() == null) {
             basicMeasurementData.setEventId(databaseFunctions.importedBiometryEvent.getEventId());
             basicMeasurementData.setEyeId(new Eye(databaseFunctions.eventBiometry.getEyeId()));
@@ -115,19 +136,34 @@ public class BiometryFunctions {
             basicMeasurementData.setLastModifiedUserId(databaseFunctions.selectedUser);
         }
         sideData = databaseFunctions.eventBiometry.getBiometryValue("L");
+        if(sideData == null){
+            sideData = setEmptySideData();
+        }
         basicMeasurementData.setK1Left(BigDecimal.valueOf(sideData.getK1()));
         basicMeasurementData.setK2Left(BigDecimal.valueOf(sideData.getK2()));
         basicMeasurementData.setAxisK1Left(BigDecimal.valueOf(sideData.getAxisK1()));
         basicMeasurementData.setAxialLengthLeft(BigDecimal.valueOf(sideData.getAL()));
-        SNR = (Double) sideData.getSNR();
-        basicMeasurementData.setSnrLeft(SNR.intValue());
+        SNR = sideData.getSNR();
+        if(SNR == null){
+            SNR = BigDecimal.ZERO;
+        }
+        basicMeasurementData.setSnrLeft(SNR);
+        basicMeasurementData.setSnrMinLeft(BigDecimal.ZERO);
+        
         sideData = databaseFunctions.eventBiometry.getBiometryValue("R");
+        if(sideData == null){
+            sideData = setEmptySideData();
+        }
         basicMeasurementData.setK1Right(BigDecimal.valueOf(sideData.getK1()));
         basicMeasurementData.setK2Right(BigDecimal.valueOf(sideData.getK2()));
         basicMeasurementData.setAxisK1Right(BigDecimal.valueOf(sideData.getAxisK1()));
         basicMeasurementData.setAxialLengthRight(BigDecimal.valueOf(sideData.getAL()));
-        SNR = (Double) sideData.getSNR();
-        basicMeasurementData.setSnrRight(SNR.intValue());
+        SNR = sideData.getSNR();
+        if(SNR == null){
+            SNR = BigDecimal.ZERO;
+        }
+        basicMeasurementData.setSnrRight(SNR);
+        basicMeasurementData.setSnrMinRight(BigDecimal.ZERO);
     }
 
     /**
@@ -238,15 +274,19 @@ public class BiometryFunctions {
      * @param IOLBiometry the value of IOLBiometry
      * @param databaseFunctions the value of databaseFunctions
      */
-    public void processBiometryEvent(StudyData IOLStudy, BiometryData IOLBiometry, DatabaseFunctions databaseFunctions) {
+    public void processBiometryEvent(StudyData IOLStudy, BiometryData IOLBiometry, DatabaseFunctions databaseFunctions) throws ParseException {
         databaseFunctions.setSession();
         databaseFunctions.setTransaction();
         databaseFunctions.setEventStudy(IOLStudy);
-        System.out.println("Study data set successfully");
+        System.out.println("Study data has been set successfully");
+        dicomLogger.addToRawOutput("Study data has been set successfully");
         databaseFunctions.setEventBiometry(IOLBiometry);
         System.out.println("Biometry data set successfully");
+        dicomLogger.addToRawOutput("Biometry data has been set successfully");
         databaseFunctions.setSelectedUser();
         System.out.println("User selected successfully");
+        dicomLogger.addToRawOutput("User data has been set successfully");
+
         databaseFunctions.selectActiveEpisode();
         databaseFunctions.importedBiometryEvent = processImportedEvent(databaseFunctions);
         if (databaseFunctions.isNewEvent) {
@@ -257,6 +297,21 @@ public class BiometryFunctions {
             this.createCalculationData(databaseFunctions);
         }
         this.saveIolRefValues(databaseFunctions);
+        
+        // we save the log entry for the import
+        dicomLogger.getLogger().setStudyInstanceId(databaseFunctions.eventStudy.getStudyInstanceID());
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        dicomLogger.getLogger().setStudyDatetime(df.parse(databaseFunctions.getStudyYMD(databaseFunctions.eventStudy.getStudyDateTime())));
+        dicomLogger.getLogger().setStudyLocation(databaseFunctions.eventStudy.getInstituionName());
+        dicomLogger.getLogger().setStationId(databaseFunctions.eventStudy.getStationName());
+        dicomLogger.getLogger().setMachineManufacturer(databaseFunctions.eventStudy.getDeviceManufacturer());
+        dicomLogger.getLogger().setMachineModel(databaseFunctions.eventStudy.getDeviceModel());
+        dicomLogger.getLogger().setMachineSoftwareVersion(databaseFunctions.eventStudy.getDeviceSoftwareVersion());
+        dicomLogger.getLogger().setReportType("biometry");
+        dicomLogger.getLogger().setPatientNumber(databaseFunctions.selectedPatient.getHosNum());
+        dicomLogger.getLogger().setImportDatetime(new Date());
+        dicomLogger.getLogger().setImportType("F");
+        dicomLogger.saveLogEntry(databaseFunctions.session);
         databaseFunctions.transaction.commit();
         databaseFunctions.session.close();
     }
