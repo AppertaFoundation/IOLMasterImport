@@ -26,6 +26,7 @@
     <!-- Names the annotated entity class -->
     <mapping class="uk.org.openeyes.models.Contact"/>
     <mapping class="uk.org.openeyes.models.ContactLabel"/>
+    <mapping class="uk.org.openeyes.models.DicomFiles"/>
     <mapping class="uk.org.openeyes.models.DicomImportLog"/>
     <mapping class="uk.org.openeyes.models.Disorder"/>
     <mapping class="uk.org.openeyes.models.DoctorGrade"/>

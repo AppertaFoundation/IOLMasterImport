@@ -49,8 +49,8 @@ public class DicomFiles implements Serializable {
     @Basic(optional = false)
     @Column(name = "filename")
     private String filename;
-    @Column(name = "filesize")
-    private Integer filesize;
+    @Column(name = "filesize", columnDefinition = "int")
+    private Long filesize;
     @Basic(optional = false)
     @Column(name = "filedate")
     @Temporal(TemporalType.TIMESTAMP)
@@ -96,11 +96,11 @@ public class DicomFiles implements Serializable {
         this.filename = filename;
     }
 
-    public Integer getFilesize() {
+    public Long getFilesize() {
         return filesize;
     }
 
-    public void setFilesize(Integer filesize) {
+    public void setFilesize(Long filesize) {
         this.filesize = filesize;
     }
 

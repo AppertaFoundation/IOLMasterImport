@@ -70,7 +70,7 @@ public class OE_IOLMasterImport  {
                 debug = true;
             }
             
-            DICOMParser DicomParser = new DICOMParser(debug);
+            DICOMParser DicomParser = new DICOMParser(debug, configFile, SystemLogger);
             
             if(inputFile.equals("")){
                 inputFile = "test/data/input_test.dcm";    // original IOLMaster file with multi lense
@@ -79,9 +79,9 @@ public class OE_IOLMasterImport  {
                 //String fname = "test/data/vfa_test.dcm";      // visual fields dicom file
             }
 
-            SystemLogger.getLogger().setFileName(inputFile);
-            DicomParser.parseDicomFile(inputFile, SystemLogger);
-            DicomParser.processParsedData(configFile);
+            SystemLogger.getLogger().setDicomFileId(DicomParser.searchDicomFile(inputFile));
+            DicomParser.parseDicomFile(inputFile);
+            DicomParser.processParsedData();
             
         } catch (Exception ex) {
             System.err.println("Error: " + ex.getMessage());

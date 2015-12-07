@@ -13,7 +13,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -43,9 +45,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "DicomImportLog.findByPatientNumber", query = "SELECT d FROM DicomImportLog d WHERE d.patientNumber = :patientNumber"),
     @NamedQuery(name = "DicomImportLog.findByStatus", query = "SELECT d FROM DicomImportLog d WHERE d.status = :status"),
     @NamedQuery(name = "DicomImportLog.findByComment", query = "SELECT d FROM DicomImportLog d WHERE d.comment = :comment"),
-    @NamedQuery(name = "DicomImportLog.findByImportType", query = "SELECT d FROM DicomImportLog d WHERE d.importType = :importType"),
-    @NamedQuery(name = "DicomImportLog.findByFileName", query = "SELECT d FROM DicomImportLog d WHERE d.fileName = :fileName"),
-    @NamedQuery(name = "DicomImportLog.findByFilePath", query = "SELECT d FROM DicomImportLog d WHERE d.filePath = :filePath")})
+    @NamedQuery(name = "DicomImportLog.findByImportType", query = "SELECT d FROM DicomImportLog d WHERE d.importType = :importType")})
 public class DicomImportLog implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -81,10 +81,9 @@ public class DicomImportLog implements Serializable {
     private String comment;
     @Column(name = "import_type")
     private String importType;
-    @Column(name = "file_name")
-    private String fileName;
-    @Column(name = "file_path")
-    private String filePath;
+    @JoinColumn(name = "dicom_file_id", referencedColumnName = "id")
+    @ManyToOne
+    private DicomFiles dicomFileId;
     @Column(name = "raw_importer_output", columnDefinition = "TEXT")
     private String rawImporterOutput;
 
@@ -207,20 +206,12 @@ public class DicomImportLog implements Serializable {
         this.importType = importType;
     }
 
-    public String getFileName() {
-        return fileName;
+    public DicomFiles getDicomFileIame() {
+        return dicomFileId;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setDicomFileId(DicomFiles dicomFileId) {
+        this.dicomFileId = dicomFileId;
     }
 
     public String getRawImporterOutput() {

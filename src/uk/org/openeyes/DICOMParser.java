@@ -7,7 +7,10 @@ package uk.org.openeyes;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
@@ -15,6 +18,9 @@ import org.dcm4che3.data.SpecificCharacterSet;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.util.TagUtils;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
+import uk.org.openeyes.models.DicomFiles;
 
 /**
  *
@@ -39,8 +45,12 @@ public class DICOMParser {
     
     private DICOMLogger logger;
  
-    public DICOMParser(boolean debugState){
+    public DICOMParser(boolean debugState, String configFile, DICOMLogger SystemLogger){
+        this.logger = SystemLogger;
         this.debug = debugState;
+                
+        database.initSessionFactory(configFile);
+        debugMessage("Connection status: "+database.checkConnection());
     }
     
     public StudyData getStudyData(){
@@ -69,10 +79,38 @@ public class DICOMParser {
             System.out.println(message);
         }
     }
-       
-    public void parseDicomFile(String inputFile, DICOMLogger SystemLogger) throws IOException {
+    
+    
+    public DicomFiles searchDicomFile(String inputFile){
+        File file = new File(inputFile);
+        if(database.session == null){
+            database.setSession();
+            database.setTransaction();
+        }
+        Criteria crit = database.session.createCriteria(DicomFiles.class);
+        crit.add(Restrictions.eq("filename", inputFile));
+        crit.add(Restrictions.eq("filesize", file.length()));
+        crit.add(Restrictions.eq("filedate", new Date(file.lastModified())));
         
-        this.logger = SystemLogger;
+        if(! crit.list().isEmpty()){
+            DicomFiles selectedFile = (DicomFiles) crit.list().get(0);
+            database.session.close();
+            return selectedFile;
+        }else{
+            DicomFiles newFile = new DicomFiles();
+            newFile.setFilename(inputFile);
+            newFile.setFilesize(file.length());
+            newFile.setEntryDateTime(new Date());
+            newFile.setProcessorId("JAVA_OE_IOLMaster");
+            newFile.setFiledate(new Date(file.lastModified()));
+            database.session.save(newFile);
+            database.session.close();
+            return newFile;
+        }
+        
+    }
+       
+    public void parseDicomFile(String inputFile) throws IOException {
         
         Attributes attrs = new Attributes(false, 64);
         
@@ -386,13 +424,9 @@ public class DICOMParser {
        
     }
     
-    public boolean processParsedData(String configFile) throws ParseException{
+    public boolean processParsedData() throws ParseException{
         // first we try to connect to the database
         // if this connection fails we suggest to check the hibernate.conf.xml file
-        
-        
-        database.initSessionFactory(configFile);
-        debugMessage("Connection status: "+database.checkConnection());
         
         database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
         BiometryFunctions BiometryProcessor = new BiometryFunctions(logger);
