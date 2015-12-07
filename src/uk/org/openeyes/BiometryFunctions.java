@@ -275,8 +275,7 @@ public class BiometryFunctions {
      * @param databaseFunctions the value of databaseFunctions
      */
     public void processBiometryEvent(StudyData IOLStudy, BiometryData IOLBiometry, DatabaseFunctions databaseFunctions) throws ParseException {
-        databaseFunctions.setSession();
-        databaseFunctions.setTransaction();
+
         databaseFunctions.setEventStudy(IOLStudy);
         System.out.println("Study data has been set successfully");
         dicomLogger.addToRawOutput("Study data has been set successfully");
@@ -311,9 +310,7 @@ public class BiometryFunctions {
         dicomLogger.getLogger().setPatientNumber(databaseFunctions.selectedPatient.getHosNum());
         dicomLogger.getLogger().setImportDatetime(new Date());
         dicomLogger.getLogger().setImportType("F");
-        dicomLogger.saveLogEntry(databaseFunctions.session);
-        databaseFunctions.transaction.commit();
-        databaseFunctions.session.close();
+
     }
 
     /**

@@ -427,7 +427,8 @@ public class DICOMParser {
     public boolean processParsedData() throws ParseException{
         // first we try to connect to the database
         // if this connection fails we suggest to check the hibernate.conf.xml file
-        
+        database.setSession();
+        database.setTransaction();
         database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
         BiometryFunctions BiometryProcessor = new BiometryFunctions(logger);
         if(database.getSelectedPatient() != null){
@@ -446,8 +447,12 @@ public class DICOMParser {
             debugMessage(Patient.printPatientData());
             debugMessage(Study.printStudyData());
             debugMessage(Biometry.printBiometryData());
-            database.closeSessionFactory();
         }
+        
+        logger.getLogger().setStatus("success");
+        logger.saveLogEntry(database.session);
+        database.transaction.commit();
+        database.session.close();
         
         database.closeSessionFactory();
         return true;
