@@ -230,11 +230,13 @@ public class BiometryFunctions {
                 rowData = storedBiometryMeasurementDataRight.get(i);
             }
             if (rowData.getLenseName() != null && !rowData.getLenseName().equals("")) {
-                System.out.println("Multi lense - single formula format...");
+                //System.out.println("Multi lense - single formula format...");
+                dicomLogger.addToRawOutput("Multi lense - single formula format...");
                 lensType = searchForLensData(rowData.getLenseName(), rowData.getAConst(), databaseFunctions);
                 formulaType = searchForFormulaData(databaseFunctions.eventStudy.getFormulaName(), databaseFunctions);
             } else if (rowData.getFormulaName() != null && !rowData.getFormulaName().equals("")) {
-                System.out.println("Multi formula - singe lense format...");
+                //System.out.println("Multi formula - singe lense format...");
+                dicomLogger.addToRawOutput("Multi formula - singe lense format...");
                 formulaType = searchForFormulaData(rowData.getFormulaName(), databaseFunctions);
                 lensType = searchForLensData(databaseFunctions.eventStudy.getLenseName(), 0.0, databaseFunctions);
             }
@@ -277,13 +279,13 @@ public class BiometryFunctions {
     public void processBiometryEvent(StudyData IOLStudy, BiometryData IOLBiometry, DatabaseFunctions databaseFunctions) throws ParseException {
 
         databaseFunctions.setEventStudy(IOLStudy);
-        System.out.println("Study data has been set successfully");
+        //System.out.println("Study data has been set successfully");
         dicomLogger.addToRawOutput("Study data has been set successfully");
         databaseFunctions.setEventBiometry(IOLBiometry);
-        System.out.println("Biometry data set successfully");
+        //System.out.println("Biometry data set successfully");
         dicomLogger.addToRawOutput("Biometry data has been set successfully");
         databaseFunctions.setSelectedUser();
-        System.out.println("User selected successfully");
+        //System.out.println("User selected successfully");
         dicomLogger.addToRawOutput("User data has been set successfully");
 
         databaseFunctions.selectActiveEpisode();

@@ -12,6 +12,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.SpecificCharacterSet;
@@ -49,8 +51,12 @@ public class DICOMParser {
         this.logger = SystemLogger;
         this.debug = debugState;
                 
-        database.initSessionFactory(configFile);
+        database.initSessionFactory(configFile, SystemLogger);
         debugMessage("Connection status: "+database.checkConnection());
+    }
+    
+    public DatabaseFunctions getDatabase(){
+        return this.database;
     }
     
     public StudyData getStudyData(){
@@ -76,17 +82,13 @@ public class DICOMParser {
     private void debugMessage(String message){
         if(this.debug){
             logger.addToRawOutput(message);
-            System.out.println(message);
+            //System.out.println(message);
         }
     }
     
     
     public DicomFiles searchDicomFile(String inputFile){
         File file = new File(inputFile);
-        if(database.session == null){
-            database.setSession();
-            database.setTransaction();
-        }
         Criteria crit = database.session.createCriteria(DicomFiles.class);
         crit.add(Restrictions.eq("filename", inputFile));
         crit.add(Restrictions.eq("filesize", file.length()));
@@ -94,7 +96,6 @@ public class DICOMParser {
         
         if(! crit.list().isEmpty()){
             DicomFiles selectedFile = (DicomFiles) crit.list().get(0);
-            database.session.close();
             return selectedFile;
         }else{
             DicomFiles newFile = new DicomFiles();
@@ -104,20 +105,29 @@ public class DICOMParser {
             newFile.setProcessorId("JAVA_OE_IOLMaster");
             newFile.setFiledate(new Date(file.lastModified()));
             database.session.save(newFile);
-            database.session.close();
             return newFile;
         }
         
     }
        
-    public void parseDicomFile(String inputFile) throws IOException {
+    public void parseDicomFile(String inputFile)  {
         
         Attributes attrs = new Attributes(false, 64);
         
-        DicomInputStream dis = new DicomInputStream(new File(inputFile));        
+        DicomInputStream dis = null;        
+        try {
+            dis = new DicomInputStream(new File(inputFile));
+        } catch (IOException ex) {
+            logger.systemExitWithLog(2, "Failed to open DICOM file, not a valid file or file not exists!", database);
+            //System.exit(2);
+        }
         
         dis.setDicomInputHandler(dis);
-        attrs = dis.readDataset(-1, -1);
+        try {
+            attrs = dis.readDataset(-1, -1);
+        } catch (IOException ex) {
+            logger.systemExitWithLog(3, "Failed to read DICOM file, not a valid file or file not exists!", database);
+        }
         
         readAttributes(attrs, "");
     }
@@ -427,19 +437,13 @@ public class DICOMParser {
     public boolean processParsedData() throws ParseException{
         // first we try to connect to the database
         // if this connection fails we suggest to check the hibernate.conf.xml file
-        database.setSession();
-        database.setTransaction();
         database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
         BiometryFunctions BiometryProcessor = new BiometryFunctions(logger);
         if(database.getSelectedPatient() != null){
             BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
         }else{
             // search for patient data has been failed - need to print and log!!
-            debugMessage("Cannot found patient data, file processing failed!");
-            logger.getLogger().setComment("Cannot found patient data!");
-            logger.getLogger().setStatus("failed");
-            // Logger need here!!
-            System.exit(3);        
+            logger.systemExitWithLog(4, "Cannot find patient data, file processing failed!", database);
             return false;
         }
 

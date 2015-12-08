@@ -15,12 +15,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.Criteria;
+import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.context.internal.ManagedSessionContext;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
 import uk.org.openeyes.models.Episode;
@@ -45,6 +47,7 @@ public class DatabaseFunctions {
     protected BiometryData eventBiometry;
     protected OphinbiometryImportedEvents importedBiometryEvent;
     protected boolean isNewEvent = true;
+    protected DICOMLogger dicomLogger;
     
     protected User searchStudyUser(String userName){
 
@@ -106,11 +109,15 @@ public class DatabaseFunctions {
     }
     
     
-    public void initSessionFactory(String configFile){
+    public void initSessionFactory(String configFile, DICOMLogger SystemLogger){
         // A SessionFactory is set up once for an application!
         // if no config specified we should use the default one
         
         // TODO: need to check for /etc/openeyes/db.conf here!!
+        
+        if(this.dicomLogger == null){
+            this.dicomLogger = SystemLogger;
+        }
         
         String defaultConfig = "resources/hibernate.cfg.xml";
         File inputFile = null;
@@ -132,20 +139,25 @@ public class DatabaseFunctions {
         
         try {
             sessionFactory = new MetadataSources( registry ).buildMetadata().buildSessionFactory();
+            setSession();
+            setTransaction();
         }
         catch (Exception e) {
             // The registry would be destroyed by the SessionFactory, but we had trouble building the SessionFactory
             // so destroy it manually.
-            System.out.println("Failed to connect to the database, please check your hibernate configuration file!");
+            //System.out.println("Failed to connect to the database, please check your hibernate configuration file!");
+            dicomLogger.addToRawOutput("Failed to connect to the database, please check your hibernate configuration file!");
             
             // TODO: need to add debug config here!
             e.printStackTrace();
             StandardServiceRegistryBuilder.destroy( registry );
+            dicomLogger.systemExitWithLog(5, "Failed to connect to the database, please check your hibernate configuration file!", this);
+            //System.exit(5);
         }
     }
     
     public boolean checkConnection(){
-        Session session = sessionFactory.openSession();
+        //Session session = sessionFactory.openSession();
         return session.isConnected();
     }
     
@@ -172,16 +184,19 @@ public class DatabaseFunctions {
         
         if(patientList.isEmpty()){
             // TODO: How to handle this case??
-            System.out.println("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            //System.out.println("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            dicomLogger.addToRawOutput("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
         }else if(patientList.size() > 1){
             // TODO: How to handle this case??
-            System.out.println("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            //System.out.println("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            dicomLogger.addToRawOutput("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
         }else{
             // TODO: is everything OK?
             selectedPatient = (Patient) patientList.get(0);
         }
         if(selectedPatient != null){
-            System.out.println("Selected patient: "+selectedPatient);
+            //System.out.println("Selected patient: "+selectedPatient);
+            dicomLogger.addToRawOutput("Selected patient: "+selectedPatient);
         }
         session.close();
     }
@@ -202,18 +217,22 @@ public class DatabaseFunctions {
             List episodesList = episodeCrit.list();
 
             if(episodesList.isEmpty()){
-                System.out.println("ERROR: No open episodes found!");
+                //System.out.println("ERROR: No open episodes found!");
+                dicomLogger.addToRawOutput("ERROR: No open episodes found!");
             }else if(episodesList.size() != 1){
-                System.out.println("ERROR: More than 1 open episodes found!");
+                //System.out.println("ERROR: More than 1 open episodes found!");
+                dicomLogger.addToRawOutput("ERROR: More than 1 open episodes found!");
             }else{
                 selectedEpisode = (Episode) episodesList.get(0);
-                System.out.println("Selected episode: "+selectedEpisode.toString());
+                //System.out.println("Selected episode: "+selectedEpisode.toString());
+                dicomLogger.addToRawOutput("Selected episode: "+selectedEpisode.toString());
             }
             
             session.close();
         }
         if(selectedEpisode == null){
-            System.out.println("ERROR: No unique open episode found, will create data without episode!");
+            //System.out.println("ERROR: No unique open episode found, will create data without episode!");
+            dicomLogger.addToRawOutput("ERROR: No unique open episode found, will create data without episode!");
         }
         */
     }
@@ -241,7 +260,8 @@ public class DatabaseFunctions {
     protected Event createNewEvent(){
         Event newBiometryEvent = new Event();
         
-        System.out.println("Starting event...");
+        //System.out.println("Starting event...");
+        dicomLogger.addToRawOutput("Starting event...");
         if(this.selectedEpisode != null){
             newBiometryEvent.setEpisodeId(selectedEpisode);
         }else{
@@ -267,7 +287,8 @@ public class DatabaseFunctions {
         // let's save it!
         // 1. create new event
         session.save(newBiometryEvent);
-        System.out.println("Event saved...");
+        //System.out.println("Event saved...");
+        dicomLogger.addToRawOutput("Event saved...");
         
         return newBiometryEvent;
     }
@@ -275,22 +296,27 @@ public class DatabaseFunctions {
 
     // for unit testing it need to be public
     public void setSession(){
-        this.session = sessionFactory.openSession();
+        if(this.session == null || !(this.session.isConnected()) ){
+            this.session = sessionFactory.openSession();
+            session.setFlushMode(FlushMode.MANUAL);
+            ManagedSessionContext.bind(session);
+        }
     }
     
-    private Session getSession(){
+    public Session getSession(){
+        setSession();
         return this.session;
     }
     
     // for unit testing it need to be public
     public void setTransaction(){
-        if(session == null){
-            this.setSession();
-        }
-        this.transaction = session.beginTransaction();
+        //if(this.session == null){
+        //    this.setSession();
+        // }
+        this.transaction = this.session.beginTransaction();
     }
     
-    private Transaction getTransaction(){
+    public Transaction getTransaction(){
         return this.transaction;
     }
     
@@ -323,12 +349,4 @@ public class DatabaseFunctions {
         }
     }
     
-    
-   
-    public void logAuditData(){
-        Session session = sessionFactory.openSession();
-        Transaction transaction = session.beginTransaction();
-        
-    }
-
 }

@@ -33,10 +33,22 @@ public class DICOMLogger {
     
     public void addToRawOutput(String logMessage){
         this.rawOutput += logMessage+"\n";
+        System.out.println(logMessage);
     }
     
     public void saveRawOutput(){
         this.logger.setRawImporterOutput(rawOutput);
+    }
+    
+    public void systemExitWithLog(Integer code, String Message, DatabaseFunctions database){
+        this.logger.setComment(Message);
+        this.logger.setStatus("failed");
+        addToRawOutput(Message);
+        saveLogEntry(database.getSession());
+        database.getTransaction().commit();
+        database.getSession().close();
+        database.closeSessionFactory();
+        System.exit(code);
     }
     
 }

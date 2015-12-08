@@ -89,7 +89,11 @@ public class OE_IOLMasterImport  {
                 ex.printStackTrace();
             }
             
-            System.exit(2);
+            SystemLogger.getLogger().setStatus("failed");
+            SystemLogger.addToRawOutput("ERROR: unable to parse command line arguments");
+
+            // exit code 1: unable to parse command line arguments
+            System.exit(1);
         }
     }
 
