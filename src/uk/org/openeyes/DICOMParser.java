@@ -147,11 +147,11 @@ public class DICOMParser {
         
         for( int tag : dcmTags){
             if(inputAttrs.getVR(tag).toString().equals("SQ")){
-                debugMessage("Reading sequence "+tag);
+                //debugMessage("Reading sequence "+tag);
                 readSequence(inputAttrs.getSequence(tag), TagUtils.toHexString(TagUtils.elementNumber(tag)));
             }
             if( !inputAttrs.getValue(tag).toString().equals("")){
-                debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
+                //debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
                 // collecting patient data
                 if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000010")){
                     // patient name
@@ -292,21 +292,21 @@ public class DICOMParser {
                         // formula name (top)
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09")){
                             Study.setFormulaName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            debugMessage("<------------- Formula name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                            //debugMessage("<------------- Formula name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
 
                         // Haigis-L is a special formula 
                         // TODO: need to check!!!
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09") && sequenceTag.matches("(?i).*37")){
                             Study.setLenseName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            debugMessage("<------------- Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                            //debugMessage("<------------- Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
 
                         
                         // lense name (top)
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0A")){
                             Study.setLenseName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            debugMessage("<------------ Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
+                            //debugMessage("<------------ Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*43")){

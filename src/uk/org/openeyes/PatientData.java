@@ -61,7 +61,13 @@ public class PatientData {
         output += "Patient's name: "+this.PatientName+"\n";
         output += "Patient's hospital number: "+this.PatientID+"\n";
         output += "Patient's gender: "+this.PatientGender+"\n";
-        output += "Patient's birth date: "+this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+this.PatientBirth.get(Calendar.MONTH)+"/"+this.PatientBirth.get(Calendar.YEAR)+"\n";
+        int dateMonth;
+        if(this.PatientBirth.get(Calendar.MONTH) == 0){
+            dateMonth = 12;
+        }else{
+            dateMonth = this.PatientBirth.get(Calendar.MONTH);
+        }
+        output += "Patient's birth date: "+this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+dateMonth+"/"+this.PatientBirth.get(Calendar.YEAR)+"\n";
         output += "Comments: "+this.PatientComments+"\n";
         output += "\n";
         return output;
