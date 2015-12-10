@@ -184,22 +184,25 @@ public class DatabaseFunctions {
             crit.add(Restrictions.eq("gender", Character.toString(gender)));
         }
         int dateMonth;
+        int dateYear;
         if(birthDate.get(Calendar.MONTH) == 0){
             dateMonth = 12;
+            dateYear = birthDate.get(Calendar.YEAR)-1;
         }else{
             dateMonth = birthDate.get(Calendar.MONTH);
+            dateYear = birthDate.get(Calendar.YEAR);
         }
-        crit.add(Restrictions.sqlRestriction("dob = '"+birthDate.get(Calendar.YEAR)+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+"'"));
+        crit.add(Restrictions.sqlRestriction("dob = '"+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+"'"));
         List patientList = crit.list();
         
         if(patientList.isEmpty()){
             // TODO: How to handle this case??
             //System.out.println("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
-            dicomLogger.addToRawOutput("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            dicomLogger.addToRawOutput("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
         }else if(patientList.size() > 1){
             // TODO: How to handle this case??
             //System.out.println("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
-            dicomLogger.addToRawOutput("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            dicomLogger.addToRawOutput("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
         }else{
             // TODO: is everything OK?
             selectedPatient = (Patient) patientList.get(0);
