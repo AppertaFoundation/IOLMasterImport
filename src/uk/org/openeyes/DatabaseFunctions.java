@@ -116,9 +116,9 @@ public class DatabaseFunctions {
         try {
             Wini ini = new Wini(new File(iniFile));
             Configuration configuration = new Configuration();
-            configuration.setProperty("hibernate.connection.url", "jdbc:mysql://"+ini.get("","host")+":"+ini.get("","port")+"/"+ini.get("","dbname"));
-            configuration.setProperty("hibernate.connection.username", ""+ini.get("","username"));
-            configuration.setProperty("hibernate.connection.password", ""+ini.get("","password"));
+            configuration.setProperty("hibernate.connection.url", "jdbc:mysql://"+ini.get("?","host")+":"+ini.get("?","port")+"/"+ini.get("?","dbname"));
+            configuration.setProperty("hibernate.connection.username", ""+ini.get("?","username"));
+            configuration.setProperty("hibernate.connection.password", ""+ini.get("?","password"));
             configuration.setProperty("dialect", "org.hibernate.dialect.MySQLDialect");
             configuration.addAnnotatedClass (uk.org.openeyes.models.Contact.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.ContactLabel.class);
@@ -156,7 +156,7 @@ public class DatabaseFunctions {
             configuration.addAnnotatedClass (uk.org.openeyes.models.User.class);
             
 
-            if(ini.get("", "devmode", int.class) == 1){
+            if(ini.get("?", "devmode", int.class) == 1){
                 configuration.setProperty("show_sql", "true");
                 configuration.setProperty("hbm2ddl.auto", "validate");
             }
