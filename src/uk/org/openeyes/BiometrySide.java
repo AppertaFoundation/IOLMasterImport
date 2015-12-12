@@ -27,7 +27,7 @@ public class BiometrySide {
     private double AL;      // axial length
     private double ACD = 0;
     private BigDecimal SNR;
-    private BigDecimal SNRMin;
+    private BigDecimal SNRMin = BigDecimal.ZERO;
     private ArrayList<BiometryMeasurementData> Measurements = new ArrayList<>();
 
     public void setK1(String BK1){
