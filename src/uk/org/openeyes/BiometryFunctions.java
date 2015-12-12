@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import uk.org.openeyes.models.DicomEyeStatus;
 import uk.org.openeyes.models.EtOphinbiometryCalculation;
 import uk.org.openeyes.models.EtOphinbiometryIolRefValues;
 import uk.org.openeyes.models.EtOphinbiometryMeasurement;
@@ -148,7 +149,16 @@ public class BiometryFunctions {
             SNR = BigDecimal.ZERO;
         }
         basicMeasurementData.setSnrLeft(SNR);
-        basicMeasurementData.setSnrMinLeft(BigDecimal.ZERO);
+        basicMeasurementData.setSnrMinLeft(sideData.getSNRMin());
+        basicMeasurementData.setK2AxisLeft(BigDecimal.valueOf(sideData.getAxisK2()));
+        basicMeasurementData.setDeltaKLeft(BigDecimal.valueOf(sideData.getDeltaK()));
+        basicMeasurementData.setDeltaKAxisLeft(BigDecimal.valueOf(sideData.getDeltaKAxis()));
+        basicMeasurementData.setAcdLeft(BigDecimal.valueOf(sideData.getACD()));
+        basicMeasurementData.setRefractionSphereLeft(BigDecimal.valueOf(sideData.getRefractionSphere()));
+        basicMeasurementData.setRefractionDeltaLeft(BigDecimal.valueOf(sideData.getRefractionDelta()));
+        basicMeasurementData.setRefractionAxisLeft(BigDecimal.valueOf(sideData.getRefractionAxis()));
+        DicomEyeStatus eyeStatusLeft = new DicomEyeStatus(sideData.getEyeStatus());
+        basicMeasurementData.setEyeStatusLeft(eyeStatusLeft);
         
         sideData = databaseFunctions.eventBiometry.getBiometryValue("R");
         if(sideData == null){
@@ -163,7 +173,16 @@ public class BiometryFunctions {
             SNR = BigDecimal.ZERO;
         }
         basicMeasurementData.setSnrRight(SNR);
-        basicMeasurementData.setSnrMinRight(BigDecimal.ZERO);
+        basicMeasurementData.setSnrMinRight(sideData.getSNRMin());
+        basicMeasurementData.setK2AxisRight(BigDecimal.valueOf(sideData.getAxisK2()));
+        basicMeasurementData.setDeltaKRight(BigDecimal.valueOf(sideData.getDeltaK()));
+        basicMeasurementData.setDeltaKAxisRight(BigDecimal.valueOf(sideData.getDeltaKAxis()));
+        basicMeasurementData.setAcdRight(BigDecimal.valueOf(sideData.getACD()));
+        basicMeasurementData.setRefractionSphereRight(BigDecimal.valueOf(sideData.getRefractionSphere()));
+        basicMeasurementData.setRefractionDeltaRight(BigDecimal.valueOf(sideData.getRefractionDelta()));
+        basicMeasurementData.setRefractionAxisRight(BigDecimal.valueOf(sideData.getRefractionAxis()));
+        DicomEyeStatus eyeStatusRight = new DicomEyeStatus(sideData.getEyeStatus());
+        basicMeasurementData.setEyeStatusRight(eyeStatusRight);
     }
 
     /**
@@ -201,6 +220,7 @@ public class BiometryFunctions {
         newBasicCalculationData.setFormulaIdRight(new OphinbiometryCalculationFormula(1));
         newBasicCalculationData.setTargetRefractionLeft(BigDecimal.ZERO);
         newBasicCalculationData.setTargetRefractionRight(BigDecimal.ZERO);
+        newBasicCalculationData.setComments(databaseFunctions.eventStudy.getComments() );
         databaseFunctions.session.save(newBasicCalculationData);
     }
 

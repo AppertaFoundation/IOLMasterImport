@@ -25,6 +25,7 @@ public class StudyData {
     private String DeviceManufacturer;
     private String DeviceModel;             // human readable machine model (eg. IOL Master 700)
     private String DeviceSoftwareVersion;
+    private String Comments;
     
     public void setStudyDateTime(String SDateTime){
         //System.out.println(SDateTime);
@@ -118,6 +119,15 @@ public class StudyData {
     public String getDeviceSoftwareVersion(){
         return this.DeviceSoftwareVersion;
     }
+   
+    public void setComments(String PComments){
+        this.Comments = PComments;
+    }
+    
+    public String getComments(){
+        return this.Comments;
+    }
+
         
     public String printStudyData(){
         String output;
@@ -134,6 +144,7 @@ public class StudyData {
         output += "Device Model: "+this.DeviceModel+"\n";
         output += "Device Manufacturer: "+this.DeviceManufacturer+"\n";
         output += "Device Software Version: "+this.DeviceSoftwareVersion+"\n";
+        output += "Comments (Remark): "+this.Comments+"\n";
         output += "\n";
         return output;
     }

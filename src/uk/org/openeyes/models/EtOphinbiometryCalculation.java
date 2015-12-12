@@ -39,6 +39,8 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "EtOphinbiometryCalculation.findByCreatedDate", query = "SELECT e FROM EtOphinbiometryCalculation e WHERE e.createdDate = :createdDate"),
     @NamedQuery(name = "EtOphinbiometryCalculation.findByDeleted", query = "SELECT e FROM EtOphinbiometryCalculation e WHERE e.deleted = :deleted")})
 public class EtOphinbiometryCalculation implements Serializable {
+    @Column(name = "comments")
+    private String comments;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -217,6 +219,14 @@ public class EtOphinbiometryCalculation implements Serializable {
     @Override
     public String toString() {
         return "uk.org.openeyes.models.EtOphinbiometryCalculation[ id=" + id + " ]";
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
     
 }

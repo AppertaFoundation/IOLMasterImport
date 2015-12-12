@@ -151,7 +151,7 @@ public class DICOMParser {
                 readSequence(inputAttrs.getSequence(tag), TagUtils.toHexString(TagUtils.elementNumber(tag)));
             }
             if( !inputAttrs.getValue(tag).toString().equals("")){
-                //debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
+                debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
                 // collecting patient data
                 if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000010")){
                     // patient name
@@ -176,7 +176,7 @@ public class DICOMParser {
                     }
                     // patient comments
                     if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00004000")){
-                        Patient.setPatientComments(VR.LT.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                        Study.setComments(VR.LT.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                         //debugMessage("Comments: "+VR.LT.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                     }
 
@@ -295,6 +295,7 @@ public class DICOMParser {
                             //debugMessage("<------------- Formula name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
 
+                     
                         // Haigis-L is a special formula 
                         // TODO: need to check!!!
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09") && sequenceTag.matches("(?i).*37")){
@@ -308,6 +309,31 @@ public class DICOMParser {
                             Study.setLenseName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                             //debugMessage("<------------ Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
+
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*25")){
+                           //debugMessage(VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString()+"<----- Status");
+                           Biometry.setBiometryValue("EyeStatus", CurrentSide, VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                        }
+
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*40")){
+                           debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                           Biometry.setBiometryValue("RefractionSphere", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        }
+                        
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*41")){
+                           debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                           Biometry.setBiometryValue("RefractionDelta", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        }
+                        
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*42")){
+                            debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                           Biometry.setBiometryValue("RefractionAxis", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        }
+                        
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4F")){
+                            debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                            Biometry.setBiometryValue("DeltaK", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        }
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*43")){
                            Biometry.setBiometryValue("AL", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
@@ -317,6 +343,10 @@ public class DICOMParser {
                            Biometry.setBiometryValue("SNR", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
 
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0C") && sequenceTag.matches("(?i).*31")){
+                            Biometry.setBiometryValue("SNRMin", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+
+                        }
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4A")){
                            //debugMessage(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0));
                            Biometry.setBiometryValue("K1", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
@@ -328,15 +358,25 @@ public class DICOMParser {
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4B")){
                            Biometry.setBiometryValue("AxisK1", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                           Biometry.setBiometryValue("DeltaKAxis", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
+                        
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4E")){
+                           Biometry.setBiometryValue("AxisK2", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        }
+                        
                         
                         
                         if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*04")
                                 ||TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*5D")){
                             //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, SpecificCharacterSet.DEFAULT).toString());
                         }
-                        
 
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*26") && sequenceTag.matches("(?i).*02")){
+                           debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+"<---- ACD / sequence: ---->"+sequenceTag.toString());
+                           Biometry.setBiometryValue("ACD", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        }
+                        
                         // we are inside the measurement sequence
                         if( sequenceTag.matches("(?i).*05")){
                             // IOL Power 
@@ -437,21 +477,24 @@ public class DICOMParser {
     public boolean processParsedData() throws ParseException{
         // first we try to connect to the database
         // if this connection fails we suggest to check the hibernate.conf.xml file
+        if(debug){
+            debugMessage(Patient.printPatientData());
+            debugMessage(Study.printStudyData());
+            debugMessage(Biometry.printBiometryData());
+        }
+        
         database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
         BiometryFunctions BiometryProcessor = new BiometryFunctions(logger);
         if(database.getSelectedPatient() != null){
             BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
         }else{
             // search for patient data has been failed - need to print and log!!
-            logger.systemExitWithLog(4, "Cannot find patient data, file processing failed!", database);
+            logger.getLogger().setPatientNumber(Patient.getPatientID());
+            logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
             return false;
         }
 
-        if(debug){
-            debugMessage(Patient.printPatientData());
-            debugMessage(Study.printStudyData());
-            debugMessage(Biometry.printBiometryData());
-        }
+
         
         logger.getLogger().setStatus("success");
         logger.saveLogEntry(database.session);

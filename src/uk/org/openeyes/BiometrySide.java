@@ -17,8 +17,17 @@ public class BiometrySide {
     private double K1;
     private double K2;
     private double AxisK1;
+    private double AxisK2;
+    private double DeltaK;
+    private double DeltaKAxis;
+    private double RefractionSphere = 0;
+    private double RefractionDelta = 0;
+    private double RefractionAxis = 0;
+    private Integer EyeStatus = -1;
     private double AL;      // axial length
+    private double ACD = 0;
     private BigDecimal SNR;
+    private BigDecimal SNRMin;
     private ArrayList<BiometryMeasurementData> Measurements = new ArrayList<>();
 
     public void setK1(String BK1){
@@ -47,12 +56,94 @@ public class BiometrySide {
         return this.AxisK1;
     }
     
+    public void setAxisK2(String BAxisK2){
+        this.AxisK2 = Double.parseDouble(BAxisK2);
+    }
+    
+    public double getAxisK2(){
+        return this.AxisK2;
+    }
+    
+    public void setDeltaK(String DeltaK){
+        this.DeltaK = Double.parseDouble(DeltaK);
+    }
+    
+    public double getDeltaK(){
+        return this.DeltaK;
+    }
+    
+    public void setDeltaKAxis(String DeltaKAxis){
+        this.DeltaKAxis = Double.parseDouble(DeltaKAxis);
+    }
+    
+    public double getDeltaKAxis(){
+        return this.DeltaKAxis;
+    }
+
+    public void setRefractionSphere(String RefractionSphere){
+        if(this.RefractionSphere == 0){
+            this.RefractionSphere = Double.parseDouble(RefractionSphere);
+        }
+    }
+    
+    public double getRefractionSphere(){
+        return this.RefractionSphere;
+    }
+    
+    public void setRefractionDelta(String RefractionDelta){
+        if(this.RefractionDelta == 0){
+            this.RefractionDelta = Double.parseDouble(RefractionDelta);
+        }
+    }
+    
+    public double getRefractionDelta(){
+        return this.RefractionDelta;
+    }
+
+    public void setRefractionAxis(String RefractionAxis){
+        if(this.RefractionAxis == 0){
+            this.RefractionAxis = Double.parseDouble(RefractionAxis);
+        }
+    }
+    
+    public double getRefractionAxis(){
+        return this.RefractionAxis;
+    }    
+
+    public void setEyeStatus(String EyeStatus){
+        this.EyeStatus = Integer.parseInt(EyeStatus);
+    }
+    
+    public Integer getEyeStatus(){
+        return this.EyeStatus;
+    }
+
+    public void setACD(String BACD){
+        if(this.ACD == 0){
+            this.ACD = Double.parseDouble(BACD);
+        }
+    }
+    
+    public double getACD(){
+        return this.ACD;
+    }
+    
     public void setAL(String BAL){
         this.AL = Double.parseDouble(BAL);
     }
     
     public double getAL(){
         return this.AL;
+    }
+
+    public void setSNRMin(String BSNRMin){
+        if(this.SNRMin == null || this.SNRMin.equals(BigDecimal.ZERO) || BigDecimal.valueOf(Double.parseDouble(BSNRMin)).compareTo(this.SNRMin) == -1 ){
+            this.SNRMin = BigDecimal.valueOf(Double.parseDouble(BSNRMin));
+        }
+    }
+    
+    public BigDecimal getSNRMin(){
+        return this.SNRMin;
     }
     
     public void setSNR(String BSNR){
@@ -118,8 +209,17 @@ public class BiometrySide {
        output = "K1: "+this.K1+"\n";
        output += "K2: "+this.K2+"\n";
        output += "Axis K1: "+this.AxisK1+"\n";
+       output += "Axis K2: "+this.AxisK2+"\n";
+       output += "Delta K: "+this.DeltaK+"\n";
+       output += "Delta K Axis: "+this.DeltaKAxis+"\n";
+       output += "Refraction sphere: "+this.RefractionSphere+"\n";
+       output += "Refraction delta: "+this.RefractionDelta+"\n";
+       output += "Refraction axis: "+this.RefractionAxis+"\n";
+       output += "Eye status: "+this.EyeStatus+"\n";
+       output += "ACD: "+this.ACD+"\n";
        output += "Axial length: "+this.AL+"\n";
        output += "SNR: "+this.SNR+"\n";
+       output += "SNR Min: "+this.SNRMin+"\n";
        output += "\n";
        for(BiometryMeasurementData LensData: Measurements){
            output += LensData.printLenses();

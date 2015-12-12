@@ -47,6 +47,54 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "EtOphinbiometryMeasurement.findBySnrLeft", query = "SELECT e FROM EtOphinbiometryMeasurement e WHERE e.snrLeft = :snrLeft"),
     @NamedQuery(name = "EtOphinbiometryMeasurement.findBySnrRight", query = "SELECT e FROM EtOphinbiometryMeasurement e WHERE e.snrRight = :snrRight")})
 public class EtOphinbiometryMeasurement implements Serializable {
+    @Basic(optional = false)
+    @Column(name = "k2_axis_left")
+    private BigDecimal k2AxisLeft;
+    @Basic(optional = false)
+    @Column(name = "k2_axis_right")
+    private BigDecimal k2AxisRight;
+    @Basic(optional = false)
+    @Column(name = "delta_k_left")
+    private BigDecimal deltaKLeft;
+    @Basic(optional = false)
+    @Column(name = "delta_k_right")
+    private BigDecimal deltaKRight;
+    @Basic(optional = false)
+    @Column(name = "delta_k_axis_left")
+    private BigDecimal deltaKAxisLeft;
+    @Basic(optional = false)
+    @Column(name = "delta_k_axis_right")
+    private BigDecimal deltaKAxisRight;
+    @Basic(optional = false)
+    @Column(name = "acd_left")
+    private BigDecimal acdLeft;
+    @Basic(optional = false)
+    @Column(name = "acd_right")
+    private BigDecimal acdRight;
+    @Basic(optional = false)
+    @Column(name = "refraction_sphere_left")
+    private BigDecimal refractionSphereLeft;
+    @Basic(optional = false)
+    @Column(name = "refraction_sphere_right")
+    private BigDecimal refractionSphereRight;
+    @Basic(optional = false)
+    @Column(name = "refraction_delta_left")
+    private BigDecimal refractionDeltaLeft;
+    @Basic(optional = false)
+    @Column(name = "refraction_delta_right")
+    private BigDecimal refractionDeltaRight;
+    @Basic(optional = false)
+    @Column(name = "refraction_axis_left")
+    private BigDecimal refractionAxisLeft;
+    @Basic(optional = false)
+    @Column(name = "refraction_axis_right")
+    private BigDecimal refractionAxisRight;
+    @JoinColumn(name = "eye_status_right", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private DicomEyeStatus eyeStatusRight;
+    @JoinColumn(name = "eye_status_left", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private DicomEyeStatus eyeStatusLeft;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -324,6 +372,134 @@ public class EtOphinbiometryMeasurement implements Serializable {
     @Override
     public String toString() {
         return "uk.org.openeyes.models.EtOphinbiometryMeasurement[ id=" + id + " ]";
+    }
+
+    public BigDecimal getK2AxisLeft() {
+        return k2AxisLeft;
+    }
+
+    public void setK2AxisLeft(BigDecimal k2AxisLeft) {
+        this.k2AxisLeft = k2AxisLeft;
+    }
+
+    public BigDecimal getK2AxisRight() {
+        return k2AxisRight;
+    }
+
+    public void setK2AxisRight(BigDecimal k2AxisRight) {
+        this.k2AxisRight = k2AxisRight;
+    }
+
+    public BigDecimal getDeltaKLeft() {
+        return deltaKLeft;
+    }
+
+    public void setDeltaKLeft(BigDecimal deltaKLeft) {
+        this.deltaKLeft = deltaKLeft;
+    }
+
+    public BigDecimal getDeltaKRight() {
+        return deltaKRight;
+    }
+
+    public void setDeltaKRight(BigDecimal deltaKRight) {
+        this.deltaKRight = deltaKRight;
+    }
+
+    public BigDecimal getDeltaKAxisLeft() {
+        return deltaKAxisLeft;
+    }
+
+    public void setDeltaKAxisLeft(BigDecimal deltaKAxisLeft) {
+        this.deltaKAxisLeft = deltaKAxisLeft;
+    }
+
+    public BigDecimal getDeltaKAxisRight() {
+        return deltaKAxisRight;
+    }
+
+    public void setDeltaKAxisRight(BigDecimal deltaKAxisRight) {
+        this.deltaKAxisRight = deltaKAxisRight;
+    }
+
+    public BigDecimal getAcdLeft() {
+        return acdLeft;
+    }
+
+    public void setAcdLeft(BigDecimal acdLeft) {
+        this.acdLeft = acdLeft;
+    }
+
+    public BigDecimal getAcdRight() {
+        return acdRight;
+    }
+
+    public void setAcdRight(BigDecimal acdRight) {
+        this.acdRight = acdRight;
+    }
+
+    public BigDecimal getRefractionSphereLeft() {
+        return refractionSphereLeft;
+    }
+
+    public void setRefractionSphereLeft(BigDecimal refractionSphereLeft) {
+        this.refractionSphereLeft = refractionSphereLeft;
+    }
+
+    public BigDecimal getRefractionSphereRight() {
+        return refractionSphereRight;
+    }
+
+    public void setRefractionSphereRight(BigDecimal refractionSphereRight) {
+        this.refractionSphereRight = refractionSphereRight;
+    }
+
+    public BigDecimal getRefractionDeltaLeft() {
+        return refractionDeltaLeft;
+    }
+
+    public void setRefractionDeltaLeft(BigDecimal refractionDeltaLeft) {
+        this.refractionDeltaLeft = refractionDeltaLeft;
+    }
+
+    public BigDecimal getRefractionDeltaRight() {
+        return refractionDeltaRight;
+    }
+
+    public void setRefractionDeltaRight(BigDecimal refractionDeltaRight) {
+        this.refractionDeltaRight = refractionDeltaRight;
+    }
+
+    public BigDecimal getRefractionAxisLeft() {
+        return refractionAxisLeft;
+    }
+
+    public void setRefractionAxisLeft(BigDecimal refractionAxisLeft) {
+        this.refractionAxisLeft = refractionAxisLeft;
+    }
+
+    public BigDecimal getRefractionAxisRight() {
+        return refractionAxisRight;
+    }
+
+    public void setRefractionAxisRight(BigDecimal refractionAxisRight) {
+        this.refractionAxisRight = refractionAxisRight;
+    }
+
+    public DicomEyeStatus getEyeStatusRight() {
+        return eyeStatusRight;
+    }
+
+    public void setEyeStatusRight(DicomEyeStatus eyeStatusRight) {
+        this.eyeStatusRight = eyeStatusRight;
+    }
+
+    public DicomEyeStatus getEyeStatusLeft() {
+        return eyeStatusLeft;
+    }
+
+    public void setEyeStatusLeft(DicomEyeStatus eyeStatusLeft) {
+        this.eyeStatusLeft = eyeStatusLeft;
     }
     
 }
