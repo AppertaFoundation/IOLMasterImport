@@ -6,12 +6,14 @@
 package uk.org.openeyes;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.Criteria;
@@ -22,9 +24,11 @@ import org.hibernate.Transaction;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.context.internal.ManagedSessionContext;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
+import org.ini4j.Wini;
 import uk.org.openeyes.models.Episode;
 import uk.org.openeyes.models.Event;
 import uk.org.openeyes.models.EventType;
@@ -108,6 +112,61 @@ public class DatabaseFunctions {
         return returnUser;
     }
     
+    private Configuration configureHibernate(String iniFile){
+        try {
+            Wini ini = new Wini(new File(iniFile));
+            Configuration configuration = new Configuration();
+            configuration.setProperty("hibernate.connection.url", "jdbc:mysql://"+ini.get("","host")+":"+ini.get("","port")+"/"+ini.get("","dbname"));
+            configuration.setProperty("hibernate.connection.username", ""+ini.get("","username"));
+            configuration.setProperty("hibernate.connection.password", ""+ini.get("","password"));
+            configuration.setProperty("dialect", "org.hibernate.dialect.MySQLDialect");
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Contact.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.ContactLabel.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.DicomEyeStatus.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.DicomFiles.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.DicomImportLog.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Disorder.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.DoctorGrade.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Episode.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EpisodeStatus.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EthnicGroup.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EtOphinbiometryCalculation.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EtOphinbiometryMeasurement.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EtOphinbiometrySelection.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EtOphinbiometryIolRefValues.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryImportedEvents.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryCalculationFormula.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryLenstypeLens.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Event.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EventGroup.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EventType.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Eye.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Firm.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Gp.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.ImportSource.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Institution.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Patient.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Practice.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Service.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.ServiceSubspecialtyAssignment.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Site.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Specialty.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.SpecialtyType.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Subspecialty.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.User.class);
+            
+
+            if(ini.get("", "devmode", int.class) == 1){
+                configuration.setProperty("show_sql", "true");
+                configuration.setProperty("hbm2ddl.auto", "validate");
+            }
+            return configuration;
+        } catch (IOException ex) {
+            Logger.getLogger(DatabaseFunctions.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+        
+    }
     
     public void initSessionFactory(String configFile, DICOMLogger SystemLogger){
         // A SessionFactory is set up once for an application!
@@ -119,40 +178,48 @@ public class DatabaseFunctions {
             this.dicomLogger = SystemLogger;
         }
         
-        String defaultConfig = "resources/hibernate.cfg.xml";
-        File inputFile = null;
-        final StandardServiceRegistry registry;
-                
-        if( ! configFile.equals("")){
-           inputFile = new File(configFile);
-        }
-        
-        if( inputFile != null){
-            registry = new StandardServiceRegistryBuilder()
-                        .configure(inputFile) // configures settings from hibernate.cfg.xml
-                        .build();
+        if(configFile.matches("(?i).*hibernate.cfg.xml") || configFile.equals("")){
+            String defaultConfig = "resources/hibernate.cfg.xml";
+            File inputFile = null;
+            final StandardServiceRegistry registry;
+
+            if( ! configFile.equals("")){
+               inputFile = new File(configFile);
+            }
+
+            if( inputFile != null){
+                registry = new StandardServiceRegistryBuilder()
+                            .configure(inputFile) // configures settings from hibernate.cfg.xml
+                            .build();
+            }else{
+                registry = new StandardServiceRegistryBuilder()
+                            .configure(defaultConfig) // configures settings from hibernate.cfg.xml
+                            .build();
+            }
+
+            try {
+                sessionFactory = new MetadataSources( registry ).buildMetadata().buildSessionFactory();
+                setSession();
+                setTransaction();
+            }
+            catch (Exception e) {
+                // The registry would be destroyed by the SessionFactory, but we had trouble building the SessionFactory
+                // so destroy it manually.
+                //System.out.println("Failed to connect to the database, please check your hibernate configuration file!");
+                dicomLogger.addToRawOutput("Failed to connect to the database, please check your hibernate configuration file!");
+
+                // TODO: need to add debug config here!
+                e.printStackTrace();
+                StandardServiceRegistryBuilder.destroy( registry );
+                dicomLogger.systemExitWithLog(5, "Failed to connect to the database, please check your hibernate configuration file!", this);
+                //System.exit(5);
+            }
         }else{
-            registry = new StandardServiceRegistryBuilder()
-                        .configure(defaultConfig) // configures settings from hibernate.cfg.xml
-                        .build();
-        }
-        
-        try {
-            sessionFactory = new MetadataSources( registry ).buildMetadata().buildSessionFactory();
+            // try to open /etc/ database config
+            
+            sessionFactory = configureHibernate(configFile).buildSessionFactory();
             setSession();
             setTransaction();
-        }
-        catch (Exception e) {
-            // The registry would be destroyed by the SessionFactory, but we had trouble building the SessionFactory
-            // so destroy it manually.
-            //System.out.println("Failed to connect to the database, please check your hibernate configuration file!");
-            dicomLogger.addToRawOutput("Failed to connect to the database, please check your hibernate configuration file!");
-            
-            // TODO: need to add debug config here!
-            e.printStackTrace();
-            StandardServiceRegistryBuilder.destroy( registry );
-            dicomLogger.systemExitWithLog(5, "Failed to connect to the database, please check your hibernate configuration file!", this);
-            //System.exit(5);
         }
     }
     
