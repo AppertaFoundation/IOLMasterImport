@@ -120,6 +120,10 @@ public class DatabaseFunctions {
             configuration.setProperty("hibernate.connection.username", ""+ini.get("?","username"));
             configuration.setProperty("hibernate.connection.password", ""+ini.get("?","password"));
             configuration.setProperty("dialect", "org.hibernate.dialect.MySQLDialect");
+            if(ini.get("?", "devmode", int.class) == 1){
+                configuration.setProperty("show_sql", "true");
+                configuration.setProperty("hbm2ddl.auto", "validate");
+            }
             configuration.addAnnotatedClass (uk.org.openeyes.models.Contact.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.ContactLabel.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.DicomEyeStatus.class);
@@ -155,11 +159,6 @@ public class DatabaseFunctions {
             configuration.addAnnotatedClass (uk.org.openeyes.models.Subspecialty.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.User.class);
             
-
-            if(ini.get("?", "devmode", int.class) == 1){
-                configuration.setProperty("show_sql", "true");
-                configuration.setProperty("hbm2ddl.auto", "validate");
-            }
             return configuration;
         } catch (IOException ex) {
             Logger.getLogger(DatabaseFunctions.class.getName()).log(Level.SEVERE, null, ex);

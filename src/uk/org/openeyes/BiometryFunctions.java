@@ -249,7 +249,13 @@ public class BiometryFunctions {
             } else {
                 rowData = storedBiometryMeasurementDataRight.get(i);
             }
-            if (rowData.getLenseName() != null && !rowData.getLenseName().equals("")) {
+            // Haigis-L is a special format!
+            // TODO: what is the A constant and emmetropia value here??
+            if(databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L")){
+                dicomLogger.addToRawOutput("Haigis-L - Multi lense - single formula format...");
+                lensType = searchForLensData(rowData.getFormulaName(), rowData.getAConst(), databaseFunctions);
+                formulaType = searchForFormulaData(databaseFunctions.eventStudy.getFormulaName(), databaseFunctions);
+            }else if (rowData.getLenseName() != null && !rowData.getLenseName().equals("")) {
                 //System.out.println("Multi lense - single formula format...");
                 dicomLogger.addToRawOutput("Multi lense - single formula format...");
                 lensType = searchForLensData(rowData.getLenseName(), rowData.getAConst(), databaseFunctions);

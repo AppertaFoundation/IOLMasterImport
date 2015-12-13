@@ -151,7 +151,7 @@ public class DICOMParser {
                 readSequence(inputAttrs.getSequence(tag), TagUtils.toHexString(TagUtils.elementNumber(tag)));
             }
             if( !inputAttrs.getValue(tag).toString().equals("")){
-                debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
+                //debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
                 // collecting patient data
                 if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000010")){
                     // patient name
@@ -294,16 +294,7 @@ public class DICOMParser {
                             Study.setFormulaName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                             //debugMessage("<------------- Formula name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
-
-                     
-                        // Haigis-L is a special formula 
-                        // TODO: need to check!!!
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09") && sequenceTag.matches("(?i).*37")){
-                            Study.setLenseName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            //debugMessage("<------------- Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                        }
-
-                        
+                      
                         // lense name (top)
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0A")){
                             Study.setLenseName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
@@ -316,22 +307,22 @@ public class DICOMParser {
                         }
 
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*40")){
-                           debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                           //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                            Biometry.setBiometryValue("RefractionSphere", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*41")){
-                           debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                           //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                            Biometry.setBiometryValue("RefractionDelta", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*42")){
-                            debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                            //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                            Biometry.setBiometryValue("RefractionAxis", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4F")){
-                            debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                            //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                             Biometry.setBiometryValue("DeltaK", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
                         
@@ -373,7 +364,7 @@ public class DICOMParser {
                         }
 
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*26") && sequenceTag.matches("(?i).*02")){
-                           debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+"<---- ACD / sequence: ---->"+sequenceTag.toString());
+                           //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+"<---- ACD / sequence: ---->"+sequenceTag.toString());
                            Biometry.setBiometryValue("ACD", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
                         
@@ -405,6 +396,7 @@ public class DICOMParser {
                         if( sequenceTag.matches("(?i).*03")){
                             // TODO: get a proper solution for sides here!!!
                             // Name of lenses
+
                             if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*06")){
                                 if(this.LenseCount > -1){
                                     //debugMessage(VR.LO.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
