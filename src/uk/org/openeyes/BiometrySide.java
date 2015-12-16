@@ -119,9 +119,9 @@ public class BiometrySide {
     }
 
     public void setACD(String BACD){
-        if(this.ACD == 0){
+        //if(this.ACD == 0){
             this.ACD = Double.parseDouble(BACD);
-        }
+        //}
     }
     
     public double getACD(){
@@ -204,22 +204,22 @@ public class BiometrySide {
         }
     }
     
-    public String printBiometrySide(){
+    public String printBiometrySide(String sideName){
        String output;
-       output = "K1: "+this.K1+"\n";
-       output += "K2: "+this.K2+"\n";
-       output += "Axis K1: "+this.AxisK1+"\n";
-       output += "Axis K2: "+this.AxisK2+"\n";
-       output += "Delta K: "+this.DeltaK+"\n";
-       output += "Delta K Axis: "+this.DeltaKAxis+"\n";
-       output += "Refraction sphere: "+this.RefractionSphere+"\n";
-       output += "Refraction delta: "+this.RefractionDelta+"\n";
-       output += "Refraction axis: "+this.RefractionAxis+"\n";
-       output += "Eye status: "+this.EyeStatus+"\n";
-       output += "ACD: "+this.ACD+"\n";
-       output += "Axial length: "+this.AL+"\n";
-       output += "SNR: "+this.SNR+"\n";
-       output += "SNR Min: "+this.SNRMin+"\n";
+       output = sideName+" K1: "+this.K1+"\n";
+       output += sideName+" K2: "+this.K2+"\n";
+       output += sideName+" Axis K1: "+this.AxisK1+"\n";
+       output += sideName+" Axis K2: "+this.AxisK2+"\n";
+       output += sideName+" Delta K: "+this.DeltaK+"\n";
+       output += sideName+" Delta K Axis: "+this.DeltaKAxis+"\n";
+       output += sideName+" Refraction sphere: "+this.RefractionSphere+"\n";
+       output += sideName+" Refraction delta: "+this.RefractionDelta+"\n";
+       output += sideName+" Refraction axis: "+this.RefractionAxis+"\n";
+       output += sideName+" Eye status: "+this.EyeStatus+"\n";
+       output += sideName+" ACD: "+this.ACD+"\n";
+       output += sideName+" Axial length: "+this.AL+"\n";
+       output += sideName+" SNR: "+this.SNR+"\n";
+       output += sideName+" SNR Min: "+this.SNRMin+"\n";
        output += "\n";
        for(BiometryMeasurementData LensData: Measurements){
            output += LensData.printLenses();

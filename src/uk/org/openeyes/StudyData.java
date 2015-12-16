@@ -26,6 +26,7 @@ public class StudyData {
     private String DeviceModel;             // human readable machine model (eg. IOL Master 700)
     private String DeviceSoftwareVersion;
     private String Comments;
+    private Double ContentTime;
     
     public void setStudyDateTime(String SDateTime){
         //System.out.println(SDateTime);
@@ -49,7 +50,11 @@ public class StudyData {
     }
 
     public void setFormulaName(String SFormulaName){
-        this.FormulaName = SFormulaName;
+        
+        // in some files there are not only one formula stored!!!
+        if(this.FormulaName == null){
+            this.FormulaName = SFormulaName;
+        }
     }
     
     public String getFormulaName(){
@@ -127,12 +132,21 @@ public class StudyData {
     public String getComments(){
         return this.Comments;
     }
+    
+    public void setContentTime(String PContentTime){
+        this.ContentTime = Double.parseDouble(PContentTime);
+    }
+    
+    public Double getContentTime(){
+        return this.ContentTime;
+    }
 
         
     public String printStudyData(){
         String output;
         output = "--== Study data ==--\n";
         output += "Study date and time: "+this.StudyDateTime.get(Calendar.DAY_OF_MONTH)+"/"+this.StudyDateTime.get(Calendar.MONTH)+"/"+this.StudyDateTime.get(Calendar.YEAR)+" "+this.StudyDateTime.get(Calendar.HOUR_OF_DAY)+":"+this.StudyDateTime.get(Calendar.MINUTE)+"\n";
+        output += "Study content time: "+this.ContentTime+"\n";
         output += "Study physician: "+this.PhysicianName+"\n";
         output += "Study surgeon: "+this.SurgeonName+"\n";
         output += "Study formula: "+this.FormulaName+"\n";

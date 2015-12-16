@@ -367,7 +367,7 @@ public class DatabaseFunctions {
         // 1. create new event
         session.save(newBiometryEvent);
         //System.out.println("Event saved...");
-        dicomLogger.addToRawOutput("Event saved...");
+        dicomLogger.addToRawOutput("Event saved... Event id: "+newBiometryEvent.getId());
         
         return newBiometryEvent;
     }

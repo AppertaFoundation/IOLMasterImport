@@ -40,6 +40,8 @@ public class DICOMParser {
     
     private String CurrentSide = "R";
     private String LastSide = "";
+    private String ACD = "";
+    private String EyeStatus = "";
     
     private DatabaseFunctions database = new DatabaseFunctions();
     
@@ -137,7 +139,7 @@ public class DICOMParser {
         String StudyDate="";
         String StudyTime="";
         String IOLType = "";
-                
+                        
         dcmTags = inputAttrs.tags();
         
         // TODO: need to create an XML structure for this data extraction to make it more general!!!
@@ -201,6 +203,10 @@ public class DICOMParser {
                         if(!StudyDate.equals("") && !StudyTime.equals("")){
                             Study.setStudyDateTime(StudyDate + StudyTime);
                         }
+                    }
+                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000033")){
+                        //debugMessage("<--------- Study content time: "+VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                        Study.setContentTime(VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                     }
 
                     // physician's name
@@ -266,6 +272,13 @@ public class DICOMParser {
                             // we need to do this, because in the measurement sequence the IOL side is the last element!!!
                             if( sequenceTag.matches("(?i).*01")){
                                 Biometry.setSideData(CurrentSide);
+                                //debugMessage("ACD: "+ACD+" Side: "+CurrentSide);
+                                if(!ACD.equals("")){
+                                    Biometry.setBiometryValue("ACD", CurrentSide, ACD);
+                                }
+                                if(!EyeStatus.equals("")){
+                                    Biometry.setBiometryValue("EyeStatus", CurrentSide, EyeStatus);
+                                }
                             }
                             //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, null).toString());
                         }
@@ -276,7 +289,7 @@ public class DICOMParser {
                             IOLType = VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString();
                             // capitalize the string because we will use it as a function name later!!!
                             IOLType = IOLType.charAt(0)+IOLType.substring(1).toLowerCase();
-                           //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, null));
+                            //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, null).toString());
                         }
                         
                         if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*06")){
@@ -290,8 +303,9 @@ public class DICOMParser {
                         }
                         
                         // formula name (top)
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09")){
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09") && sequenceTag.matches("(?i).*36")){
                             Study.setFormulaName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                            //debugMessage("Sequence: "+sequenceTag.toString());                                   
                             //debugMessage("<------------- Formula name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
                         }
                       
@@ -302,8 +316,9 @@ public class DICOMParser {
                         }
 
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*25")){
-                           //debugMessage(VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString()+"<----- Status");
-                           Biometry.setBiometryValue("EyeStatus", CurrentSide, VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                            //debugMessage(VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString()+"<----- Status / Sequence: ----->"+sequenceTag.toString());
+                            EyeStatus = VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString();
+                            //Biometry.setBiometryValue("EyeStatus", CurrentSide, VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                         }
 
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*40")){
@@ -364,8 +379,10 @@ public class DICOMParser {
                         }
 
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*26") && sequenceTag.matches("(?i).*02")){
-                           //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+"<---- ACD / sequence: ---->"+sequenceTag.toString());
-                           Biometry.setBiometryValue("ACD", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                           // the sequence *02 is inside a *01 sequence, and the IOL_laterity is stored at the end of the sequence, so we need to store this value, and handle it we we leave the *01 sequence
+                            //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+"<---- ACD / sequence: ---->"+sequenceTag.toString()+" Current side: "+CurrentSide);
+                            ACD = String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0));
+                            //Biometry.setBiometryValue("ACD", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
                         
                         // we are inside the measurement sequence

@@ -116,9 +116,9 @@ public class BiometryData {
         String output;
         output = "--== Biometry data ==--\n";
         output += "-- Left side: \n";
-        output += Left.printBiometrySide();
+        output += Left.printBiometrySide("Left");
         output += "-- Right side: \n";
-        output += Right.printBiometrySide();
+        output += Right.printBiometrySide("Right");
         return output;
     }
 }

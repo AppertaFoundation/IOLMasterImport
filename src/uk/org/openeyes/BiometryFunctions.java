@@ -252,17 +252,15 @@ public class BiometryFunctions {
             // Haigis-L is a special format!
             // TODO: what is the A constant and emmetropia value here??
             if(databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L")){
-                dicomLogger.addToRawOutput("Haigis-L - Multi lense - single formula format...");
+                dicomLogger.addToRawOutput("Haigis-L - Multi lens - single formula format...");
                 lensType = searchForLensData(rowData.getFormulaName(), rowData.getAConst(), databaseFunctions);
                 formulaType = searchForFormulaData(databaseFunctions.eventStudy.getFormulaName(), databaseFunctions);
             }else if (rowData.getLenseName() != null && !rowData.getLenseName().equals("")) {
-                //System.out.println("Multi lense - single formula format...");
-                dicomLogger.addToRawOutput("Multi lense - single formula format...");
+                dicomLogger.addToRawOutput("Multi lens - single formula format...");
                 lensType = searchForLensData(rowData.getLenseName(), rowData.getAConst(), databaseFunctions);
                 formulaType = searchForFormulaData(databaseFunctions.eventStudy.getFormulaName(), databaseFunctions);
             } else if (rowData.getFormulaName() != null && !rowData.getFormulaName().equals("")) {
-                //System.out.println("Multi formula - singe lense format...");
-                dicomLogger.addToRawOutput("Multi formula - singe lense format...");
+                dicomLogger.addToRawOutput("Multi formula - singe lens format...");
                 formulaType = searchForFormulaData(rowData.getFormulaName(), databaseFunctions);
                 lensType = searchForLensData(databaseFunctions.eventStudy.getLenseName(), 0.0, databaseFunctions);
             }
@@ -347,13 +345,23 @@ public class BiometryFunctions {
      * @return OphinbiometryImportedEvents
      */
     private OphinbiometryImportedEvents processImportedEvent(DatabaseFunctions databaseFunctions) {
-        OphinbiometryImportedEvents importedEvent;
+        OphinbiometryImportedEvents importedEvent = null;
         Criteria currentEvent = databaseFunctions.session.createCriteria(OphinbiometryImportedEvents.class);
         currentEvent.add(Restrictions.eq("studyId", databaseFunctions.eventStudy.getStudyInstanceID()));
+        
+        // we should check if event is deleted, and we should create a new one if yes
+        
+        currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+databaseFunctions.eventStudy.getStudyInstanceID()+"')"));        
         if (!currentEvent.list().isEmpty()) {
             importedEvent = (OphinbiometryImportedEvents) currentEvent.list().get(0);
-            databaseFunctions.isNewEvent = false;
-        } else {
+            if(importedEvent.getEventId().getDeleted() == 0){
+                databaseFunctions.isNewEvent = false;    
+            }else{
+                databaseFunctions.isNewEvent = true;
+            }
+        } 
+
+        if(databaseFunctions.isNewEvent){
             Event newEvent = databaseFunctions.createNewEvent();
             importedEvent = new OphinbiometryImportedEvents();
             importedEvent.setDeviceName(databaseFunctions.eventStudy.getInstituionName());
