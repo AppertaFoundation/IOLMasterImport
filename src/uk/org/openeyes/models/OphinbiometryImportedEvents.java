@@ -6,6 +6,7 @@
 package uk.org.openeyes.models;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -62,6 +63,13 @@ public class OphinbiometryImportedEvents implements Serializable {
     private String deviceSoftwareVersion;
     @Column(name = "is_linked")
     private Boolean isLinked;
+    @Column(name = "is_merged")
+    private Boolean isMerged;
+    @Column(name = "content_datetime")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date contentDateTime;
+    @Column(name = "surgeon_name")
+    private String surgeonName;
     @Basic(optional = false)
     @Column(name = "last_modified_date")
     @Temporal(TemporalType.TIMESTAMP)
@@ -160,6 +168,30 @@ public class OphinbiometryImportedEvents implements Serializable {
         this.isLinked = isLinked;
     }
 
+    public Boolean getIsMerged() {
+        return isMerged;
+    }
+
+    public void setIsMerged(Boolean isMerged) {
+        this.isMerged = isMerged;
+    }
+    
+    public Date getContentDateTime() {
+        return contentDateTime;
+    }
+
+    public void setContentDateTime(Date contentDateTime) {
+        this.contentDateTime = contentDateTime;
+    }
+    
+    public String getSurgeonName() {
+        return surgeonName;
+    }
+
+    public void setSurgeonName(String surgeonName) {
+        this.surgeonName = surgeonName;
+    }
+    
     public Date getLastModifiedDate() {
         return lastModifiedDate;
     }

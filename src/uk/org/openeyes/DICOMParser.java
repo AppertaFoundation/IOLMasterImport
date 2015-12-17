@@ -204,9 +204,15 @@ public class DICOMParser {
                             Study.setStudyDateTime(StudyDate + StudyTime);
                         }
                     }
+
                     if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000033")){
                         //debugMessage("<--------- Study content time: "+VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                         Study.setContentTime(VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                    }
+                    
+                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000023")){
+                        //debugMessage("<--------- Study content time: "+VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
+                        Study.setContentDate(VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                     }
 
                     // physician's name

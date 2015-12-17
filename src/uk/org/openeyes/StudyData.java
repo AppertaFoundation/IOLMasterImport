@@ -5,6 +5,7 @@
  */
 package uk.org.openeyes;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -26,7 +27,8 @@ public class StudyData {
     private String DeviceModel;             // human readable machine model (eg. IOL Master 700)
     private String DeviceSoftwareVersion;
     private String Comments;
-    private Double ContentTime;
+    private String ContentTime;
+    private String ContentDate;
     
     public void setStudyDateTime(String SDateTime){
         //System.out.println(SDateTime);
@@ -134,11 +136,18 @@ public class StudyData {
     }
     
     public void setContentTime(String PContentTime){
-        this.ContentTime = Double.parseDouble(PContentTime);
+        this.ContentTime = PContentTime;
     }
     
-    public Double getContentTime(){
-        return this.ContentTime;
+    
+    public void setContentDate(String PContentDate){
+        this.ContentDate = PContentDate;
+    }
+    
+    public Calendar getContentDateTime(){
+        GregorianCalendar contentDateTime = new GregorianCalendar();
+        contentDateTime.set(Integer.parseInt(this.ContentDate.substring(0,4)), Integer.parseInt(this.ContentDate.substring(4,6)), Integer.parseInt(this.ContentDate.substring(6,8)), Integer.parseInt(this.ContentTime.substring(0,2)), Integer.parseInt(this.ContentTime.substring(2,4)), Integer.parseInt(this.ContentTime.substring(4,6)));
+        return contentDateTime;
     }
 
         
