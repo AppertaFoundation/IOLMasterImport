@@ -249,6 +249,7 @@ public class BiometryFunctions {
             } else {
                 rowData = storedBiometryMeasurementDataRight.get(i);
             }
+            
             // Haigis-L is a special format!
             // TODO: what is the A constant and emmetropia value here??
             if(databaseFunctions.eventStudy.getFormulaName() != null && databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L")){

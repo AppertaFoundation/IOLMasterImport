@@ -309,7 +309,7 @@ public class DICOMParser {
                         }
                         
                         // formula name (top)
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09") && sequenceTag.matches("(?i).*36")){
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09") && (sequenceTag.matches("(?i).*36") || sequenceTag.matches("(?i).*37"))){
                             Study.setFormulaName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
                             //debugMessage("Sequence: "+sequenceTag.toString());                                   
                             //debugMessage("<------------- Formula name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));

@@ -242,7 +242,9 @@ public class DatabaseFunctions {
         Criteria crit = session.createCriteria(Patient.class);
         
         // add leading 0s to the hosNum string
-        hosNum = ("0000000" + hosNum).substring(hosNum.length());
+        if(hosNum.length() < 7){
+            hosNum = ("0000000" + hosNum).substring(hosNum.length());
+        }
         
         crit.add(Restrictions.eq("hosNum",hosNum));
         // we should search for M or F only
