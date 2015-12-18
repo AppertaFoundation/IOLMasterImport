@@ -252,8 +252,8 @@ public class BiometryFunctions {
             
             // Haigis-L is a special format!
             // TODO: what is the A constant and emmetropia value here??
-            if(databaseFunctions.eventStudy.getFormulaName() != null && databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L")){
-                dicomLogger.addToRawOutput("Haigis-L - Multi lens - single formula format...");
+            if(databaseFunctions.eventStudy.getFormulaName() != null && (databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L") || databaseFunctions.eventStudy.getFormulaName().contains("HofferQ"))){
+                dicomLogger.addToRawOutput(databaseFunctions.eventStudy.getFormulaName()+" - Multi lens - single formula format...");
                 lensType = searchForLensData(rowData.getFormulaName(), rowData.getAConst(), databaseFunctions);
                 formulaType = searchForFormulaData(databaseFunctions.eventStudy.getFormulaName(), databaseFunctions);
             }else if (rowData.getLenseName() != null && !rowData.getLenseName().equals("")) {
