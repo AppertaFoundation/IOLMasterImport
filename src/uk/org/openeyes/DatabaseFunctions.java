@@ -49,7 +49,7 @@ public class DatabaseFunctions {
     protected User selectedUser;
     protected StudyData eventStudy;
     protected BiometryData eventBiometry;
-    protected OphinbiometryImportedEvents importedBiometryEvent;
+    public OphinbiometryImportedEvents importedBiometryEvent;
     protected boolean isNewEvent = true;
     protected DICOMLogger dicomLogger;
     
@@ -327,6 +327,7 @@ public class DatabaseFunctions {
     * 
     **/
     public String getStudyYMD(Calendar studyDate) {
+        
         String formattedStudyDate = String.format("%04d-%02d-%02d %02d:%02d:%02d",
                 studyDate.get(Calendar.YEAR),
                 studyDate.get(Calendar.MONTH),
@@ -336,6 +337,11 @@ public class DatabaseFunctions {
                 studyDate.get(Calendar.SECOND)
         );
         return formattedStudyDate;
+    }
+    
+    public String getSQLFormattedDate(Date inputDate){
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        return df.format(inputDate);
     }
     
     protected Event createNewEvent(){

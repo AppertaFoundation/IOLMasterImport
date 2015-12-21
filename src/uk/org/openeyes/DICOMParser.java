@@ -513,6 +513,7 @@ public class DICOMParser {
         
         logger.getLogger().setStatus("success");
         logger.saveLogEntry(database.session);
+        database.session.flush();
         database.transaction.commit();
         database.session.close();
         

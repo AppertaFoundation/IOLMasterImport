@@ -45,6 +45,7 @@ public class DICOMLogger {
         this.logger.setStatus("failed");
         addToRawOutput(Message);
         saveLogEntry(database.getSession());
+        database.getSession().flush();
         database.getTransaction().commit();
         database.getSession().close();
         database.closeSessionFactory();

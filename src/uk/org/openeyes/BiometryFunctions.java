@@ -10,7 +10,11 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import uk.org.openeyes.models.DicomEyeStatus;
@@ -252,7 +256,7 @@ public class BiometryFunctions {
             
             // Haigis-L is a special format!
             // TODO: what is the A constant and emmetropia value here??
-            if(databaseFunctions.eventStudy.getFormulaName() != null && (databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L") || databaseFunctions.eventStudy.getFormulaName().contains("HofferQ"))){
+            if(databaseFunctions.eventStudy.getFormulaName() != null && (databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L") || (databaseFunctions.eventStudy.getFormulaName().contains("HofferQ") && rowData.getFormulaName() != null))){
                 dicomLogger.addToRawOutput(databaseFunctions.eventStudy.getFormulaName()+" - Multi lens - single formula format...");
                 lensType = searchForLensData(rowData.getFormulaName(), rowData.getAConst(), databaseFunctions);
                 formulaType = searchForFormulaData(databaseFunctions.eventStudy.getFormulaName(), databaseFunctions);
@@ -295,6 +299,15 @@ public class BiometryFunctions {
         }
     }
 
+    private EtOphinbiometryMeasurement getMeasurementId(DatabaseFunctions databaseFunctions){
+        Criteria crit = databaseFunctions.getSession().createCriteria(EtOphinbiometryMeasurement.class);
+        //Event currentEvent = (Event) databaseFunctions.importedBiometryEvent.getEventId();
+        //System.out.println(databaseFunctions.importedBiometryEvent.getEventId().getId()+"<+++++++++++++++++++++++--------");
+        crit.add(Restrictions.eq("eventId", databaseFunctions.importedBiometryEvent.getEventId()));
+        EtOphinbiometryMeasurement currentMeasurement = (EtOphinbiometryMeasurement) crit.list().get(0);        
+        return currentMeasurement;
+    }
+    
     /**
      *
      * @param IOLStudy the value of IOLStudy
@@ -315,13 +328,20 @@ public class BiometryFunctions {
 
         databaseFunctions.selectActiveEpisode();
         databaseFunctions.importedBiometryEvent = processImportedEvent(databaseFunctions);
+        EtOphinbiometryMeasurement basicMeasurementData;
         if (databaseFunctions.isNewEvent) {
-            EtOphinbiometryMeasurement newBasicMeasurementData = new EtOphinbiometryMeasurement();
-            setMeasurementData(newBasicMeasurementData, databaseFunctions);
-            databaseFunctions.session.save(newBasicMeasurementData);
+            basicMeasurementData = new EtOphinbiometryMeasurement();
             this.createSelectionData(databaseFunctions);
             this.createCalculationData(databaseFunctions);
+        }else{
+            basicMeasurementData = getMeasurementId(databaseFunctions);
         }
+
+        setMeasurementData(basicMeasurementData, databaseFunctions);
+        //databaseFunctions.session.merge(basicMeasurementData);
+        databaseFunctions.session.saveOrUpdate(basicMeasurementData);
+        
+        
         this.saveIolRefValues(databaseFunctions);
         
         // we save the log entry for the import
@@ -340,6 +360,7 @@ public class BiometryFunctions {
 
     }
 
+    
     /**
      *
      *
@@ -347,16 +368,37 @@ public class BiometryFunctions {
      */
     private OphinbiometryImportedEvents processImportedEvent(DatabaseFunctions databaseFunctions) {
         OphinbiometryImportedEvents importedEvent = null;
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
         Criteria currentEvent = databaseFunctions.session.createCriteria(OphinbiometryImportedEvents.class);
         currentEvent.add(Restrictions.eq("studyId", databaseFunctions.eventStudy.getStudyInstanceID()));
         
         // we should check if event is deleted, and we should create a new one if yes
-        
         currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+databaseFunctions.eventStudy.getStudyInstanceID()+"')"));        
         if (!currentEvent.list().isEmpty()) {
             importedEvent = (OphinbiometryImportedEvents) currentEvent.list().get(0);
             if(importedEvent.getEventId().getDeleted() == 0){
-                databaseFunctions.isNewEvent = false;    
+                databaseFunctions.isNewEvent = false;
+                // we decide if the imported file content time is newer then the stored content date
+                if(importedEvent.getContentDateTime() != null){
+                    Calendar lastContentDateTime = new GregorianCalendar();
+                    Calendar studyContentDateTime = new GregorianCalendar();
+                    
+                    try {
+                        lastContentDateTime.setTime(df.parse(databaseFunctions.getSQLFormattedDate(importedEvent.getContentDateTime())));
+                        studyContentDateTime.setTime(df.parse(databaseFunctions.getSQLFormattedDate(databaseFunctions.eventStudy.getContentDateTime().getTime())));
+                    } catch (ParseException ex) {
+                        Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                    if(studyContentDateTime.after(lastContentDateTime)){
+                        try {
+                            importedEvent.setContentDateTime(df.parse(databaseFunctions.getSQLFormattedDate(databaseFunctions.eventStudy.getContentDateTime().getTime())));
+                        }catch (ParseException ex) {
+                            ex.printStackTrace();
+                        }
+                        importedEvent.setIsMerged(true);
+                    }
+                }
             }else{
                 databaseFunctions.isNewEvent = true;
             }
@@ -373,7 +415,12 @@ public class BiometryFunctions {
             importedEvent.setStudyId(databaseFunctions.eventStudy.getStudyInstanceID());
             importedEvent.setPatientId(databaseFunctions.getSelectedPatient());
             importedEvent.setSurgeonName(databaseFunctions.eventStudy.getSurgeonName());
-            //importedEvent.setContentDateTime(databaseFunctions.eventStudy.getContentTime());
+            try {
+                importedEvent.setContentDateTime(df.parse(databaseFunctions.getSQLFormattedDate(databaseFunctions.eventStudy.getContentDateTime().getTime())));
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+            
             importedEvent.setEventId(newEvent);
             importedEvent.setCreatedDate(new Date());
             importedEvent.setLastModifiedDate(new Date());
@@ -385,8 +432,8 @@ public class BiometryFunctions {
             }
             importedEvent.setIsLinked(isLinked);
             importedEvent.setIsMerged(false);
-            databaseFunctions.session.save(importedEvent);
         }
+        databaseFunctions.session.saveOrUpdate(importedEvent);
         return importedEvent;
     }
     

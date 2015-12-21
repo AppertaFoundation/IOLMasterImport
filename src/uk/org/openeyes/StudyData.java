@@ -146,7 +146,7 @@ public class StudyData {
     
     public Calendar getContentDateTime(){
         GregorianCalendar contentDateTime = new GregorianCalendar();
-        contentDateTime.set(Integer.parseInt(this.ContentDate.substring(0,4)), Integer.parseInt(this.ContentDate.substring(4,6)), Integer.parseInt(this.ContentDate.substring(6,8)), Integer.parseInt(this.ContentTime.substring(0,2)), Integer.parseInt(this.ContentTime.substring(2,4)), Integer.parseInt(this.ContentTime.substring(4,6)));
+        contentDateTime.set(Integer.parseInt(this.ContentDate.substring(0,4)), Integer.parseInt(this.ContentDate.substring(4,6))-1, Integer.parseInt(this.ContentDate.substring(6,8)), Integer.parseInt(this.ContentTime.substring(0,2)), Integer.parseInt(this.ContentTime.substring(2,4)), Integer.parseInt(this.ContentTime.substring(4,6)));
         return contentDateTime;
     }
 

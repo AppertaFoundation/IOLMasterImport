@@ -34,7 +34,7 @@ public class DicomEyeStatus implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "SIGNED INT(10)")
     private Integer id;
     @Column(name = "name")
     private String name;
