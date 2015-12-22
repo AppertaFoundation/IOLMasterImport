@@ -404,7 +404,7 @@ public class DICOMParser {
                         
                         // ACD values modified
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*48")){
-                           debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString()+" ------------------------"+CurrentSide+"--------------- Seq: "+sequenceTag);
+                           //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString()+" ------------------------"+CurrentSide+"--------------- Seq: "+sequenceTag);
                            Biometry.setBiometryValue("isACDModified", CurrentSide, VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
                         }
                         
