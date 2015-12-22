@@ -161,6 +161,14 @@ public class EtOphinbiometryMeasurement implements Serializable {
     @JoinColumn(name = "last_modified_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User lastModifiedUserId;
+    @Column(name = "al_modified_left")
+    private Boolean alModifiedLeft;
+    @Column(name = "al_modified_right")
+    private Boolean alModifiedRight;
+    @Column(name = "k_modified_left")
+    private Boolean kModifiedLeft;
+    @Column(name = "k_modified_right")
+    private Boolean kModifiedRight;
 
     public EtOphinbiometryMeasurement() {
     }
@@ -502,4 +510,36 @@ public class EtOphinbiometryMeasurement implements Serializable {
         this.eyeStatusLeft = eyeStatusLeft;
     }
     
+    public void setAlModifiedLeft(boolean isALModified){
+        this.alModifiedLeft = isALModified;
+    }
+    
+    public boolean getAlModifiedLeft(){
+        return this.alModifiedLeft;
+    }
+
+    public void setAlModifiedRight(boolean isALModified){
+        this.alModifiedRight = isALModified;
+    }
+    
+    public boolean getAlModifiedRight(){
+        return this.alModifiedRight;
+    }
+    
+    public void setKModifiedLeft(boolean isKModified){
+        this.kModifiedLeft = isKModified;
+    }
+    
+    public boolean getKModifiedLeft(){
+        return this.kModifiedLeft;
+    }
+
+    public void setKModifiedRight(boolean isKModified){
+        this.kModifiedRight = isKModified;
+    }
+    
+    public boolean getKModifiedRight(){
+        return this.kModifiedRight;
+    }
+
 }

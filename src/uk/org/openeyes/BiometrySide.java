@@ -26,8 +26,12 @@ public class BiometrySide {
     private Integer EyeStatus = -1;
     private double AL;      // axial length
     private double ACD = 0;
+    private double TargetRef = 0;
     private BigDecimal SNR;
     private BigDecimal SNRMin = BigDecimal.ZERO;
+    private boolean isALModified = false;
+    private boolean isKModified = false;
+    private boolean isACDModified = false;
     private ArrayList<BiometryMeasurementData> Measurements = new ArrayList<>();
 
     public void setK1(String BK1){
@@ -70,6 +74,14 @@ public class BiometrySide {
     
     public double getDeltaK(){
         return this.DeltaK;
+    }
+    
+    public void setTargetRef(String TargetRef){
+        this.TargetRef = Double.parseDouble(TargetRef);
+    }
+    
+    public double getTargetRef(){
+        return this.TargetRef;
     }
     
     public void setDeltaKAxis(String DeltaKAxis){
@@ -194,6 +206,40 @@ public class BiometrySide {
         this.Measurements = LMeasurements;
     }
     
+    public void setisALModified(String isALModified){
+        // this value is stored in the DICOM file as string 'YES'
+        if(isALModified.equals("YES")){
+            this.isALModified = true;
+        }
+    }
+    
+    public boolean getisALModified(){
+        return this.isALModified;
+    }
+
+    public void setisKModified(String isKModified){
+        // this value is stored in the DICOM file as string 'YES'
+        if(isKModified.equals("YES")){
+            this.isKModified = true;
+        }
+    }
+    
+    public boolean getisKModified(){
+        return this.isKModified;
+    }
+    
+    public void setisACDModified(String isACDModified){
+        // this value is stored in the DICOM file as string 'YES'
+        if(isACDModified.equals("YES")){
+            this.isACDModified = true;
+        }
+    }
+    
+    public boolean getisACDModified(){
+        return this.isACDModified;
+    }
+    
+    
     // check if this side have any particular data
     // if all values are in default than we return false
     public boolean isSideHaveData(){
@@ -212,6 +258,7 @@ public class BiometrySide {
        output += sideName+" Axis K2: "+this.AxisK2+"\n";
        output += sideName+" Delta K: "+this.DeltaK+"\n";
        output += sideName+" Delta K Axis: "+this.DeltaKAxis+"\n";
+       output += sideName+" Target refraction: "+this.TargetRef+"\n";
        output += sideName+" Refraction sphere: "+this.RefractionSphere+"\n";
        output += sideName+" Refraction delta: "+this.RefractionDelta+"\n";
        output += sideName+" Refraction axis: "+this.RefractionAxis+"\n";
@@ -220,6 +267,9 @@ public class BiometrySide {
        output += sideName+" Axial length: "+this.AL+"\n";
        output += sideName+" SNR: "+this.SNR+"\n";
        output += sideName+" SNR Min: "+this.SNRMin+"\n";
+       output += sideName+" AL modified: "+this.isALModified+"\n";
+       output += sideName+" K modified: "+this.isKModified+"\n";
+       output += sideName+" ACD modified: "+this.isACDModified+"\n";
        output += "\n";
        for(BiometryMeasurementData LensData: Measurements){
            output += LensData.printLenses();

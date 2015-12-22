@@ -140,6 +140,8 @@ public class BiometryFunctions {
             basicMeasurementData.setLastModifiedDate(new Date());
             basicMeasurementData.setLastModifiedUserId(databaseFunctions.selectedUser);
         }
+        
+        // saving left side
         sideData = databaseFunctions.eventBiometry.getBiometryValue("L");
         if(sideData == null){
             sideData = setEmptySideData();
@@ -163,7 +165,10 @@ public class BiometryFunctions {
         basicMeasurementData.setRefractionAxisLeft(BigDecimal.valueOf(sideData.getRefractionAxis()));
         DicomEyeStatus eyeStatusLeft = new DicomEyeStatus(sideData.getEyeStatus());
         basicMeasurementData.setEyeStatusLeft(eyeStatusLeft);
+        basicMeasurementData.setKModifiedLeft(sideData.getisKModified());
+        basicMeasurementData.setAlModifiedLeft(sideData.getisALModified());
         
+        // saving right side
         sideData = databaseFunctions.eventBiometry.getBiometryValue("R");
         if(sideData == null){
             sideData = setEmptySideData();
@@ -187,6 +192,8 @@ public class BiometryFunctions {
         basicMeasurementData.setRefractionAxisRight(BigDecimal.valueOf(sideData.getRefractionAxis()));
         DicomEyeStatus eyeStatusRight = new DicomEyeStatus(sideData.getEyeStatus());
         basicMeasurementData.setEyeStatusRight(eyeStatusRight);
+        basicMeasurementData.setKModifiedRight(sideData.getisKModified());
+        basicMeasurementData.setAlModifiedRight(sideData.getisALModified());
     }
 
     /**
@@ -222,8 +229,8 @@ public class BiometryFunctions {
         newBasicCalculationData.setEyeId(new Eye(databaseFunctions.eventBiometry.getEyeId()));
         newBasicCalculationData.setFormulaIdLeft(new OphinbiometryCalculationFormula(1));
         newBasicCalculationData.setFormulaIdRight(new OphinbiometryCalculationFormula(1));
-        newBasicCalculationData.setTargetRefractionLeft(BigDecimal.ZERO);
-        newBasicCalculationData.setTargetRefractionRight(BigDecimal.ZERO);
+        newBasicCalculationData.setTargetRefractionLeft(BigDecimal.valueOf(databaseFunctions.eventBiometry.getBiometryValue("L").getTargetRef()));
+        newBasicCalculationData.setTargetRefractionRight(BigDecimal.valueOf(databaseFunctions.eventBiometry.getBiometryValue("R").getTargetRef()));
         newBasicCalculationData.setComments(databaseFunctions.eventStudy.getComments() );
         databaseFunctions.session.save(newBasicCalculationData);
     }

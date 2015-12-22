@@ -384,6 +384,31 @@ public class DICOMParser {
                             //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, SpecificCharacterSet.DEFAULT).toString());
                         }
 
+                        // target refraction
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*29")){
+                           //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" =========="+CurrentSide+"============ Seq: "+sequenceTag);
+                           Biometry.setBiometryValue("TargetRef", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        }
+                        
+                        // K values modified
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*45")){
+                           //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString()+" ++++++++++"+CurrentSide+"++++++++++ Seq: "+sequenceTag);
+                           Biometry.setBiometryValue("isALModified", CurrentSide, VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
+                        }
+                        
+                        // K values modified
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*46")){
+                           //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString()+" ++++++++++"+CurrentSide+"++++++++++ Seq: "+sequenceTag);
+                           Biometry.setBiometryValue("isKModified", CurrentSide, VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
+                        }
+                        
+                        // ACD values modified
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*48")){
+                           debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString()+" ------------------------"+CurrentSide+"--------------- Seq: "+sequenceTag);
+                           Biometry.setBiometryValue("isACDModified", CurrentSide, VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
+                        }
+                        
+                        
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*26") && sequenceTag.matches("(?i).*02")){
                            // the sequence *02 is inside a *01 sequence, and the IOL_laterity is stored at the end of the sequence, so we need to store this value, and handle it we we leave the *01 sequence
                             //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+"<---- ACD / sequence: ---->"+sequenceTag.toString()+" Current side: "+CurrentSide);
