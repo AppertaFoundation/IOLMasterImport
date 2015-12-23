@@ -347,8 +347,12 @@ public class DICOMParser {
                             Biometry.setBiometryValue("DeltaK", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
                         
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*43")){
-                           Biometry.setBiometryValue("AL", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        if((TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*43") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0B")) && 
+                                (sequenceTag.matches("(?i).*30") || sequenceTag.matches("(?i).*02"))){
+                            //debugMessage("AL: "+String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" ---- seq:"+sequenceTag);
+                            if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
+                                Biometry.setBiometryValue("AL", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                            }
                         }
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*44")){
@@ -359,13 +363,16 @@ public class DICOMParser {
                             Biometry.setBiometryValue("SNRMin", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
 
                         }
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4A")){
-                           //debugMessage(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0));
-                           Biometry.setBiometryValue("K1", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4A") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*20")){
+                           if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
+                                Biometry.setBiometryValue("K1", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                           }
                         }
-                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4D")){
-                           Biometry.setBiometryValue("K2", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                       
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4D") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*21")){
+                            if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
+                                Biometry.setBiometryValue("K2", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                            }
                         }
                         
                         if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4B")){
@@ -373,11 +380,10 @@ public class DICOMParser {
                            Biometry.setBiometryValue("DeltaKAxis", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
                         
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4E")){
-                           Biometry.setBiometryValue("AxisK2", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4E") ){
+                            Biometry.setBiometryValue("AxisK2", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                         }
-                        
-                        
+                       
                         
                         if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*04")
                                 ||TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*5D")){
