@@ -7,6 +7,7 @@ package uk.org.openeyes;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -534,10 +535,36 @@ public class DICOMParser {
         if(database.getSelectedPatient() != null){
             BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
         }else{
-            // search for patient data has been failed - need to print and log!!
-            logger.getLogger().setPatientNumber(Patient.getPatientID());
-            logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
-            return false;
+            // we try to search through the API, and if that one is successfull then try to search again
+            // the reason of this is to check if the patient is already exists in the PAS and 
+            
+            logger.addToRawOutput("Patient not exists, starting API search...");
+            APIUtils API = new APIUtils();
+            API.setHost();
+            
+            try {
+                int APIstatus = API.searchPatient(Patient.getPatientID());
+                //System.out.println("API status CODE: "+APIstatus);
+                //System.out.println(API.getResponse());
+                
+                logger.addToRawOutput("API return status: "+APIstatus);                
+                // OK: 200
+                if( APIstatus == 200){
+                    // try the patient search again
+                    database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+                }
+            } catch (ConnectException ex) {
+                Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            if(database.getSelectedPatient() != null){
+                BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
+            }else{
+                // search for patient data has been failed - need to print and log!!
+                logger.getLogger().setPatientNumber(Patient.getPatientID());
+                logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
+                return false;
+            }
         }
 
 
