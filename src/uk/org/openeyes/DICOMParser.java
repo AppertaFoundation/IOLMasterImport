@@ -540,7 +540,7 @@ public class DICOMParser {
             
             logger.addToRawOutput("Patient not exists, starting API search...");
             APIUtils API = new APIUtils();
-            API.setHost();
+            //API.setHost();
             
             try {
                 int APIstatus = API.searchPatient(Patient.getPatientID());
