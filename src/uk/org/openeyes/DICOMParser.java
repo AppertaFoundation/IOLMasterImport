@@ -38,11 +38,13 @@ public class DICOMParser {
     
     private int LenseCount = -1;
     public boolean debug = true;
+    private String APIconfigFile = "";
     
     private String CurrentSide = "R";
     private String LastSide = "";
     private String ACD = "";
     private String EyeStatus = "";
+
     
     private DatabaseFunctions database = new DatabaseFunctions();
     
@@ -50,9 +52,10 @@ public class DICOMParser {
     
     private DICOMLogger logger;
  
-    public DICOMParser(boolean debugState, String configFile, DICOMLogger SystemLogger){
+    public DICOMParser(boolean debugState, String configFile, DICOMLogger SystemLogger, String APIconfigFile){
         this.logger = SystemLogger;
         this.debug = debugState;
+        this.APIconfigFile = APIconfigFile;
                 
         database.initSessionFactory(configFile, SystemLogger);
         debugMessage("Connection status: "+database.checkConnection());
@@ -349,8 +352,8 @@ public class DICOMParser {
                         }
                         
                         if((TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*43") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0B")) && 
-                                (sequenceTag.matches("(?i).*30") || sequenceTag.matches("(?i).*02"))){
-                            //debugMessage("AL: "+String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" ---- seq:"+sequenceTag);
+                                (sequenceTag.matches("(?i).*30"))){
+                            //debugMessage("AL: "+String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" ---- seq:"+sequenceTag+" side: "+CurrentSide);
                             if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
                                 Biometry.setBiometryValue("AL", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                             }
@@ -364,13 +367,15 @@ public class DICOMParser {
                             Biometry.setBiometryValue("SNRMin", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
 
                         }
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4A") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*20")){
-                           if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4A") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*20") && sequenceTag.matches("(?i).*32") ){
+                            //debugMessage("K1: "+String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" ---- seq:"+sequenceTag+" side: "+CurrentSide);
+                            if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
                                 Biometry.setBiometryValue("K1", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                            }
                         }
                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4D") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*21")){
+                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4D") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*21") && sequenceTag.matches("(?i).*32")){
+                            //debugMessage("K2: "+String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" ---- seq:"+sequenceTag+" side: "+CurrentSide);
                             if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
                                 Biometry.setBiometryValue("K2", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
                             }
@@ -539,31 +544,40 @@ public class DICOMParser {
             // the reason of this is to check if the patient is already exists in the PAS and 
             
             logger.addToRawOutput("Patient not exists, starting API search...");
-            APIUtils API = new APIUtils();
-            //API.setHost();
-            
-            try {
-                int APIstatus = API.searchPatient(Patient.getPatientID());
-                //System.out.println("API status CODE: "+APIstatus);
-                //System.out.println(API.getResponse());
-                
-                logger.addToRawOutput("API return status: "+APIstatus);                
-                // OK: 200
-                if( APIstatus == 200){
-                    // try the patient search again
-                    database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
-                }
-            } catch (ConnectException ex) {
-                Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
-            if(database.getSelectedPatient() != null){
-                BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
-            }else{
+            if(APIconfigFile.equals("")){
+                logger.addToRawOutput("No API config file specified, skipping API search...");
                 // search for patient data has been failed - need to print and log!!
                 logger.getLogger().setPatientNumber(Patient.getPatientID());
                 logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
                 return false;
+            }else{
+                APIUtils API = new APIUtils(APIconfigFile);
+                //API.setHost();
+
+                try {
+                    int APIstatus = API.searchPatient(Patient.getPatientID());
+                    //System.out.println("API status CODE: "+APIstatus);
+                    //System.out.println(API.getResponse());
+
+                    logger.addToRawOutput("API return status: "+APIstatus);                
+                    // OK: 200
+                    if( APIstatus == 200){
+                        // try the patient search again
+                        database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+                    }
+                } catch (ConnectException ex) {
+                    Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                if(database.getSelectedPatient() != null){
+                    // we try to search again
+                    BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
+                }else{
+                    // search for patient data has been failed - need to print and log!!
+                    logger.getLogger().setPatientNumber(Patient.getPatientID());
+                    logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
+                    return false;
+                }
             }
         }
 

@@ -5,9 +5,12 @@
  */
 package uk.org.openeyes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.ConnectException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.http.HttpEntity;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -17,6 +20,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.hibernate.cfg.Configuration;
+import org.ini4j.Wini;
 
 /**
  *
@@ -24,6 +29,7 @@ import org.apache.http.util.EntityUtils;
  */
 public class APIUtils {
     
+        // default values match with the default localhost settings (admin need API access rights!)
         private String host = "localhost";
         private Integer port = 8888;
         private String authUserName = "admin";
@@ -31,6 +37,22 @@ public class APIUtils {
         
         private String response;
     
+        public APIUtils(String configFile){
+            File APIConfig = new File(configFile);
+            if(APIConfig.exists() && !APIConfig.isDirectory()){
+                Wini ini = null;
+                try {
+                    ini = new Wini(new File(configFile));
+                    this.host = ini.get("?","api_host");
+                    this.port = Integer.parseInt(ini.get("?","api_port"));
+                    this.authUserName = ini.get("?","api_user");
+                    this.authUserPassword = ini.get("?","api_password");
+                } catch (IOException ex) {
+                    Logger.getLogger(APIUtils.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        
         public void setHost(String host){
             this.host = host;
         }
