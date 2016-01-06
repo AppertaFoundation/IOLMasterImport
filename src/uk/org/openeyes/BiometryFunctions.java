@@ -157,7 +157,14 @@ public class BiometryFunctions {
         basicMeasurementData.setSnrLeft(SNR);
         basicMeasurementData.setSnrMinLeft(sideData.getSNRMin());
         basicMeasurementData.setK2AxisLeft(BigDecimal.valueOf(sideData.getAxisK2()));
-        basicMeasurementData.setDeltaKLeft(BigDecimal.valueOf(sideData.getDeltaK()));
+        Double currentDeltaK = sideData.getDeltaK();
+        
+        // in the device is an IOLMaster 500 than we make sure that the value is negative
+        // Based on documentation: Manufacturer’s model name of the equipment that produced the composite instances. Always “IOLMaster 500”.
+        if(databaseFunctions.eventStudy.getDeviceModel().equals("IOLMaster 500") && currentDeltaK > 0){
+            currentDeltaK = -1 * currentDeltaK;
+        }
+        basicMeasurementData.setDeltaKLeft(BigDecimal.valueOf(currentDeltaK));
         basicMeasurementData.setDeltaKAxisLeft(BigDecimal.valueOf(sideData.getDeltaKAxis()));
         basicMeasurementData.setAcdLeft(BigDecimal.valueOf(sideData.getACD()));
         basicMeasurementData.setRefractionSphereLeft(BigDecimal.valueOf(sideData.getRefractionSphere()));
@@ -184,7 +191,14 @@ public class BiometryFunctions {
         basicMeasurementData.setSnrRight(SNR);
         basicMeasurementData.setSnrMinRight(sideData.getSNRMin());
         basicMeasurementData.setK2AxisRight(BigDecimal.valueOf(sideData.getAxisK2()));
-        basicMeasurementData.setDeltaKRight(BigDecimal.valueOf(sideData.getDeltaK()));
+        currentDeltaK = sideData.getDeltaK();
+        
+        // in the device is an IOLMaster 500 than we make sure that the value is negative
+        // Based on documentation: Manufacturer’s model name of the equipment that produced the composite instances. Always “IOLMaster 500”.
+        if(databaseFunctions.eventStudy.getDeviceModel().equals("IOLMaster 500") && currentDeltaK > 0){
+            currentDeltaK = -1 * currentDeltaK;
+        }
+        basicMeasurementData.setDeltaKRight(BigDecimal.valueOf(currentDeltaK));
         basicMeasurementData.setDeltaKAxisRight(BigDecimal.valueOf(sideData.getDeltaKAxis()));
         basicMeasurementData.setAcdRight(BigDecimal.valueOf(sideData.getACD()));
         basicMeasurementData.setRefractionSphereRight(BigDecimal.valueOf(sideData.getRefractionSphere()));
