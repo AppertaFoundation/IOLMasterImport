@@ -143,9 +143,13 @@ public class DICOMParser {
         String StudyDate="";
         String StudyTime="";
         String IOLType = "";
-                        
+                
+        // todo: using get functions to get specific tags instead of the for(...)
         dcmTags = inputAttrs.tags();
         
+        //Sequence testSequence = inputAttrs.getSequence(LenseCount);
+        //testSequence.get(0).getDoubles(LenseCount);
+                
         // TODO: need to create an XML structure for this data extraction to make it more general!!!
         // Soultion 1: define the structure - we need: tag group, tag element, data type, object, data field (where to store and assign)
         // OR
@@ -563,6 +567,12 @@ public class DICOMParser {
                     // OK: 200
                     if( APIstatus == 200){
                         // try the patient search again
+                        logger.addToRawOutput("Waiting for 10 seconds before search again...");
+                        try {
+                            Thread.sleep(10000);
+                        } catch(InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
                         database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
                     }
                 } catch (ConnectException ex) {

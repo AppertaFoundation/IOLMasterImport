@@ -397,7 +397,10 @@ public class BiometryFunctions {
         currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+databaseFunctions.eventStudy.getStudyInstanceID()+"')"));        
         if (!currentEvent.list().isEmpty()) {
             importedEvent = (OphinbiometryImportedEvents) currentEvent.list().get(0);
+            // if the event is in deleted state we cerate a new record
             if(importedEvent.getEventId().getDeleted() == 0){
+                dicomLogger.addToRawOutput("StudyID exists in database, merging with existing event...");
+
                 databaseFunctions.isNewEvent = false;
                 // we decide if the imported file content time is newer then the stored content date
                 if(importedEvent.getContentDateTime() != null){
@@ -418,6 +421,7 @@ public class BiometryFunctions {
                             ex.printStackTrace();
                         }
                         importedEvent.setIsMerged(true);
+                        dicomLogger.addToRawOutput("Event content date and time is newer then the stored values, updating existing measuerements...");
                     }
                 }
             }else{
