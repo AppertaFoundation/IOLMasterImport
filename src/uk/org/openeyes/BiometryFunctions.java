@@ -13,10 +13,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.parser.JSONParser;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import uk.org.openeyes.models.DicomEyeStatus;
 import uk.org.openeyes.models.EtOphinbiometryCalculation;
 import uk.org.openeyes.models.EtOphinbiometryIolRefValues;
@@ -249,11 +253,82 @@ public class BiometryFunctions {
         databaseFunctions.session.save(newBasicCalculationData);
     }
 
+    private JSONObject decodeJSONData(String IOLJSON){
+        JSONParser parser=new JSONParser();
+        JSONObject dataObj = null;
+        try {
+            dataObj = (JSONObject)parser.parse(IOLJSON);
+            return dataObj;
+            //JSONArray dataArray=(JSONArray)dataObj;
+            //return dataArray;
+        } catch (org.json.simple.parser.ParseException ex) {
+            Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    private String mergeIolRefValues(EtOphinbiometryIolRefValues currentIolRefValues, String newIolRefValues, String side){
+        String IOLJSON = "";
+        if(side.equals("L")){
+            IOLJSON = currentIolRefValues.getIolRefValuesLeft();    
+        }else if(side.equals("R")){
+            IOLJSON = currentIolRefValues.getIolRefValuesRight();    
+        }
+        if(IOLJSON == null){
+            return newIolRefValues;
+        }else{
+            JSONObject currentIOLRefData = decodeJSONData(IOLJSON);
+            JSONObject newIOLRefData = decodeJSONData(newIolRefValues);
+                        
+            // merge logic based on IOL values
+            JSONArray currentIOLArray = (JSONArray) currentIOLRefData.get("IOL");
+            JSONArray currentREFArray = (JSONArray) currentIOLRefData.get("REF");
+            JSONArray newIOLArray = (JSONArray) newIOLRefData.get("IOL");
+            JSONArray newREFArray = (JSONArray) newIOLRefData.get("REF");
+            
+            JSONObject mergedIOLRefData = new JSONObject();
+            
+            for(Integer i=0; i<newIOLArray.size(); i++){
+                if(!currentIOLArray.contains(newIOLArray.get(i))){
+                    currentIOLArray.add(newIOLArray.get(i));
+                    currentREFArray.add(newREFArray.get(i));
+                }
+            }
+            mergedIOLRefData.put("IOL", currentIOLArray);
+            mergedIOLRefData.put("REF", currentREFArray);
+        
+            return mergedIOLRefData.toJSONString();
+        }
+    }
+    
+    private EtOphinbiometryIolRefValues searchCurrentIolRefValues(  DatabaseFunctions databaseFunctions,         
+                                        OphinbiometryLenstypeLens lensType, 
+                                        OphinbiometryCalculationFormula formulaType){
+        // we need to check if there is a saved value in the database now, and merge the new values to the existing records
+        if(databaseFunctions.importedBiometryEvent.getEventId() != null){
+            Criteria crit = databaseFunctions.getSession().createCriteria(EtOphinbiometryIolRefValues.class);
+        
+            crit.add(Restrictions.eq("eventId",databaseFunctions.importedBiometryEvent.getEventId()));
+            crit.add(Restrictions.eq("lensId", lensType));
+            crit.add(Restrictions.eq("formulaId", formulaType));
+            List iolDataList = crit.list();
+            if(!iolDataList.isEmpty()){
+                EtOphinbiometryIolRefValues currentIOLValues = (EtOphinbiometryIolRefValues) iolDataList.get(0);
+                return currentIOLValues;
+            }else{
+                return null;
+            }
+        }else{
+            return null;
+        }
+    }
+    
     /**
      *
      * @param databaseFunctions the value of databaseFunctions
      */
     private void saveIolRefValues(DatabaseFunctions databaseFunctions) {
+        
         ArrayList<BiometryMeasurementData> storedBiometryMeasurementDataLeft = databaseFunctions.eventBiometry.getBiometryValue("L").getMeasurements();
         ArrayList<BiometryMeasurementData> storedBiometryMeasurementDataRight = databaseFunctions.eventBiometry.getBiometryValue("R").getMeasurements();
         Integer ArrayListSize;
@@ -290,7 +365,14 @@ public class BiometryFunctions {
                 formulaType = searchForFormulaData(rowData.getFormulaName(), databaseFunctions);
                 lensType = searchForLensData(databaseFunctions.eventStudy.getLenseName(), 0.0, databaseFunctions);
             }
-            EtOphinbiometryIolRefValues iolRefValues = new EtOphinbiometryIolRefValues();
+            // we search for current values
+            EtOphinbiometryIolRefValues iolRefValues = searchCurrentIolRefValues(databaseFunctions, lensType, formulaType);
+            
+            boolean isNewIolRefValues = false;
+            if( iolRefValues == null){
+                isNewIolRefValues = true;
+                iolRefValues = new EtOphinbiometryIolRefValues();
+            }
             iolRefValues.setCreatedUserId(databaseFunctions.selectedUser);
             iolRefValues.setLastModifiedUserId(databaseFunctions.selectedUser);
             iolRefValues.setCreatedDate(new Date());
@@ -300,21 +382,37 @@ public class BiometryFunctions {
             iolRefValues.setFormulaId(formulaType);
             iolRefValues.setLensId(lensType);
             if (ReferenceSide.equals("L")) {
-                iolRefValues.setIolRefValuesLeft(rowData.getIOLREFJSON());
+                if(isNewIolRefValues){
+                    iolRefValues.setIolRefValuesLeft(rowData.getIOLREFJSON());
+                }else{
+                    iolRefValues.setIolRefValuesLeft(mergeIolRefValues(iolRefValues, rowData.getIOLREFJSON(), "L" ));
+                }
                 iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(rowData.getEmmetropia()));
                 if (storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()) {
-                    iolRefValues.setIolRefValuesRight(storedBiometryMeasurementDataRight.get(i).getIOLREFJSON());
+                    if(isNewIolRefValues){    
+                        iolRefValues.setIolRefValuesRight(storedBiometryMeasurementDataRight.get(i).getIOLREFJSON());
+                    }else{
+                        iolRefValues.setIolRefValuesRight(mergeIolRefValues(iolRefValues, storedBiometryMeasurementDataRight.get(i).getIOLREFJSON(),"R"));
+                    }
                     iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(storedBiometryMeasurementDataRight.get(i).getEmmetropia()));
                 }
             } else {
-                iolRefValues.setIolRefValuesRight(rowData.getIOLREFJSON());
+                if(isNewIolRefValues){
+                    iolRefValues.setIolRefValuesRight(rowData.getIOLREFJSON());
+                }else{
+                    iolRefValues.setIolRefValuesRight(mergeIolRefValues(iolRefValues, rowData.getIOLREFJSON(), "R" ));
+                }
                 iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(rowData.getEmmetropia()));
                 if (storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()) {
-                    iolRefValues.setIolRefValuesLeft(storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON());
+                    if(isNewIolRefValues){
+                        iolRefValues.setIolRefValuesLeft(storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON());
+                    }else{
+                        iolRefValues.setIolRefValuesLeft(mergeIolRefValues(iolRefValues, storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON(),"L"));
+                    }
                     iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(storedBiometryMeasurementDataLeft.get(i).getEmmetropia()));
                 }
             }
-            databaseFunctions.session.save(iolRefValues);
+            databaseFunctions.session.saveOrUpdate(iolRefValues);
             formulaType = null;
             lensType = null;
         }
