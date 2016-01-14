@@ -240,7 +240,7 @@ public class DICOMParser {
     
     private void collectStudyData(Attributes Attrs){
         Study.setComments(Attrs.getString(getTagInteger("00104000")));
-        Study.setStudyDateTime(Attrs.getString(getTagInteger("00080020")) + Attrs.getString(getTagInteger("00080030")));
+        Study.setStudyDateTime(Attrs.getString(getTagInteger("00080021")) + Attrs.getString(getTagInteger("00080031")));
         Study.setContentTime(Attrs.getString(getTagInteger("00080033")));
         Study.setContentDate(Attrs.getString(getTagInteger("00080023")));
         Study.setPhysicianName(Attrs.getString(getTagInteger("00080090")));
@@ -250,6 +250,7 @@ public class DICOMParser {
         Study.setDeviceModel(Attrs.getString(getTagInteger("00081090")));
         Study.setDeviceSoftwareVersion(Attrs.getString(getTagInteger("00181020")));
         Study.setStudyInstanceID(Attrs.getString(getTagInteger("0020000D")));
+        Study.setSeriesInstanceID(Attrs.getString(getTagInteger("0020000E")));
         Study.setStudyID(Attrs.getString(getTagInteger("00200010")));
         if(Attrs.contains(getTagInteger("771B102C"))){
             Study.setSurgeonName(VR.PN.toStrings(Attrs.getValue(getTagInteger("771B102C")), true, CharacterSet).toString());
@@ -272,14 +273,15 @@ public class DICOMParser {
     }
     
     private void collectCommonMeasuredValues(Attributes Attrs){
-        BiometryLeft.setAxisK1(getDoubleValueFromSequence("771B1032","771B104B","L",Attrs));
-        BiometryLeft.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B","L",Attrs));
-        BiometryLeft.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F","L",Attrs));
+        if(Attrs.contains(getTagInteger("771B1032"))){
+            BiometryLeft.setAxisK1(getDoubleValueFromSequence("771B1032","771B104B","L",Attrs));
+            BiometryLeft.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B","L",Attrs));
+            BiometryLeft.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F","L",Attrs));
 
-        BiometryRight.setAxisK1(getDoubleValueFromSequence("771B1032","771B104B","R",Attrs));
-        BiometryRight.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B","R",Attrs));
-        BiometryRight.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F","R",Attrs));
-        
+            BiometryRight.setAxisK1(getDoubleValueFromSequence("771B1032","771B104B","R",Attrs));
+            BiometryRight.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B","R",Attrs));
+            BiometryRight.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F","R",Attrs));
+        }
         // check for SNR
         if(Attrs.contains(getTagInteger("771B1030"))){
             BiometryLeft.setSNR(getDoubleValueFromSequence("771B1030","771B1044","L",Attrs));

@@ -17,12 +17,11 @@ public class StudyData {
     private Calendar StudyDateTime = new GregorianCalendar();
     private String PhysicianName;
     private String SurgeonName;
-    private String FormulaName;
-    private String LenseName;
     private String InstitutionName;
     private String StationName;             // unique station ID
     private String StudyID;         
     private String StudyInstanceID;
+    private String SeriesInstanceID;
     private String DeviceManufacturer;
     private String DeviceModel;             // human readable machine model (eg. IOL Master 700)
     private String DeviceSoftwareVersion;
@@ -51,26 +50,6 @@ public class StudyData {
         return this.SurgeonName;
     }
 
-    public void setFormulaName(String SFormulaName){
-        
-        // in some files there are not only one formula stored!!!
-        if(this.FormulaName == null){
-            this.FormulaName = SFormulaName;
-        }
-    }
-    
-    public String getFormulaName(){
-        return this.FormulaName;
-    }
-    
-    public void setLenseName(String SLenseName){
-        this.LenseName = SLenseName;
-    }
-    
-    public String getLenseName(){
-        return this.LenseName;
-    }
-    
     public void setInstituionName(String SInstitutionName){
         this.InstitutionName = SInstitutionName;
     }
@@ -101,6 +80,14 @@ public class StudyData {
     
     public String getStudyInstanceID(){
         return this.StudyInstanceID;
+    }
+    
+    public void setSeriesInstanceID(String SSeriesInstanceID){
+        this.SeriesInstanceID = SSeriesInstanceID;
+    }
+    
+    public String getSeriesInstanceID(){
+        return this.SeriesInstanceID;
     }
     
     public void setDeviceManufacturer(String SDeviceManufacturer){
@@ -158,9 +145,8 @@ public class StudyData {
         output += "Study content time: "+this.ContentTime+"\n";
         output += "Study physician: "+this.PhysicianName+"\n";
         output += "Study surgeon: "+this.SurgeonName+"\n";
-        output += "Study formula: "+this.FormulaName+"\n";
-        output += "Study lense: "+this.LenseName+"\n";
         output += "Study instance ID: "+this.StudyInstanceID+"\n";
+        output += "Series instance ID: "+this.SeriesInstanceID+"\n";
         output += "Study ID: "+this.StudyID+"\n";
         output += "Device name: "+this.InstitutionName+"\n";
         output += "Device ID: "+this.StationName+"\n";

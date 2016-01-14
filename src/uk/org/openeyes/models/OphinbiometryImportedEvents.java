@@ -90,6 +90,8 @@ public class OphinbiometryImportedEvents implements Serializable {
     @JoinColumn(name = "patient_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Patient patientId;
+    @Column(name = "series_id")
+    private String seriesId;
 
     public OphinbiometryImportedEvents() {
     }
@@ -239,7 +241,15 @@ public class OphinbiometryImportedEvents implements Serializable {
     public void setPatientId(Patient patientId) {
         this.patientId = patientId;
     }
+    
+    public String getSeriesId() {
+        return seriesId;
+    }
 
+    public void setSeriesId(String seriesId) {
+        this.seriesId = seriesId;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;

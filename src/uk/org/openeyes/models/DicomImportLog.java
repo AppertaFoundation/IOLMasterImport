@@ -86,6 +86,9 @@ public class DicomImportLog implements Serializable {
     private DicomFiles dicomFileId;
     @Column(name = "raw_importer_output", columnDefinition = "TEXT")
     private String rawImporterOutput;
+    @Column(name = "series_instance_id")
+    private String seriesInstanceId;
+
 
     public DicomImportLog() {
     }
@@ -220,6 +223,14 @@ public class DicomImportLog implements Serializable {
 
     public void setRawImporterOutput(String rawImporterOutput) {
         this.rawImporterOutput = rawImporterOutput;
+    }
+   
+    public String getSeriesInstanceId() {
+        return seriesInstanceId;
+    }
+
+    public void setSeriesInstanceId(String seriesInstanceId) {
+        this.seriesInstanceId = seriesInstanceId;
     }
 
     @Override

@@ -468,6 +468,7 @@ public class BiometryFunctions {
         
         // we save the log entry for the import
         dicomLogger.getLogger().setStudyInstanceId(databaseFunctions.eventStudy.getStudyInstanceID());
+        dicomLogger.getLogger().setSeriesInstanceId(databaseFunctions.eventStudy.getSeriesInstanceID());
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
         dicomLogger.getLogger().setStudyDatetime(df.parse(databaseFunctions.getStudyYMD(databaseFunctions.eventStudy.getStudyDateTime())));
         dicomLogger.getLogger().setStudyLocation(databaseFunctions.eventStudy.getInstituionName());
@@ -493,9 +494,10 @@ public class BiometryFunctions {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
         Criteria currentEvent = databaseFunctions.session.createCriteria(OphinbiometryImportedEvents.class);
         currentEvent.add(Restrictions.eq("studyId", databaseFunctions.eventStudy.getStudyInstanceID()));
+        currentEvent.add(Restrictions.eq("seriesId", databaseFunctions.eventStudy.getSeriesInstanceID()));
         
         // we should check if event is deleted, and we should create a new one if yes
-        currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+databaseFunctions.eventStudy.getStudyInstanceID()+"')"));        
+        currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+databaseFunctions.eventStudy.getStudyInstanceID()+"' AND series_id='"+databaseFunctions.eventStudy.getSeriesInstanceID()+"')"));        
         if (!currentEvent.list().isEmpty()) {
             importedEvent = (OphinbiometryImportedEvents) currentEvent.list().get(0);
             // if the event is in deleted state we cerate a new record
@@ -539,6 +541,7 @@ public class BiometryFunctions {
             importedEvent.setDeviceModel(databaseFunctions.eventStudy.getDeviceModel());
             importedEvent.setDeviceSoftwareVersion(databaseFunctions.eventStudy.getDeviceSoftwareVersion());
             importedEvent.setStudyId(databaseFunctions.eventStudy.getStudyInstanceID());
+            importedEvent.setSeriesId(databaseFunctions.eventStudy.getSeriesInstanceID());
             importedEvent.setPatientId(databaseFunctions.getSelectedPatient());
             importedEvent.setSurgeonName(databaseFunctions.eventStudy.getSurgeonName());
             try {
