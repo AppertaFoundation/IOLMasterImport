@@ -34,9 +34,9 @@ public class BiometrySide {
     private boolean isACDModified = false;
     private ArrayList<BiometryMeasurementData> Measurements = new ArrayList<>();
 
-    public void setK1(String BK1){
+    public void setK1(Double BK1){
         if(K1 == 0){
-            this.K1 = Double.parseDouble(BK1);
+            this.K1 = BK1;
         }
     }
     
@@ -44,57 +44,57 @@ public class BiometrySide {
         return this.K1;
     }
     
-    public void setK2(String BK2){
-        this.K2 = Double.parseDouble(BK2);
+    public void setK2(Double BK2){
+        this.K2 = BK2;
     }
     
     public double getK2(){
         return this.K2;
     }
 
-    public void setAxisK1(String BAxisK1){
-        this.AxisK1 = Double.parseDouble(BAxisK1);
+    public void setAxisK1(Double BAxisK1){
+        this.AxisK1 = BAxisK1;
     }
     
     public double getAxisK1(){
         return this.AxisK1;
     }
     
-    public void setAxisK2(String BAxisK2){
-        this.AxisK2 = Double.parseDouble(BAxisK2);
+    public void setAxisK2(Double BAxisK2){
+        this.AxisK2 = BAxisK2;
     }
     
     public double getAxisK2(){
         return this.AxisK2;
     }
     
-    public void setDeltaK(String DeltaK){
-        this.DeltaK = Double.parseDouble(DeltaK);
+    public void setDeltaK(Double DeltaK){
+        this.DeltaK = DeltaK;
     }
     
     public double getDeltaK(){
         return this.DeltaK;
     }
     
-    public void setTargetRef(String TargetRef){
-        this.TargetRef = Double.parseDouble(TargetRef);
+    public void setTargetRef(Double TargetRef){
+        this.TargetRef = TargetRef;
     }
     
     public double getTargetRef(){
         return this.TargetRef;
     }
     
-    public void setDeltaKAxis(String DeltaKAxis){
-        this.DeltaKAxis = Double.parseDouble(DeltaKAxis);
+    public void setDeltaKAxis(Double DeltaKAxis){
+        this.DeltaKAxis = DeltaKAxis;
     }
     
     public double getDeltaKAxis(){
         return this.DeltaKAxis;
     }
 
-    public void setRefractionSphere(String RefractionSphere){
+    public void setRefractionSphere(Double RefractionSphere){
         if(this.RefractionSphere == 0){
-            this.RefractionSphere = Double.parseDouble(RefractionSphere);
+            this.RefractionSphere = RefractionSphere;
         }
     }
     
@@ -102,9 +102,9 @@ public class BiometrySide {
         return this.RefractionSphere;
     }
     
-    public void setRefractionDelta(String RefractionDelta){
+    public void setRefractionDelta(Double RefractionDelta){
         if(this.RefractionDelta == 0){
-            this.RefractionDelta = Double.parseDouble(RefractionDelta);
+            this.RefractionDelta = RefractionDelta;
         }
     }
     
@@ -112,9 +112,9 @@ public class BiometrySide {
         return this.RefractionDelta;
     }
 
-    public void setRefractionAxis(String RefractionAxis){
+    public void setRefractionAxis(Double RefractionAxis){
         if(this.RefractionAxis == 0){
-            this.RefractionAxis = Double.parseDouble(RefractionAxis);
+            this.RefractionAxis = RefractionAxis;
         }
     }
     
@@ -130,9 +130,9 @@ public class BiometrySide {
         return this.EyeStatus;
     }
 
-    public void setACD(String BACD){
+    public void setACD(Double BACD){
         //if(this.ACD == 0){
-            this.ACD = Double.parseDouble(BACD);
+            this.ACD = BACD;
         //}
     }
     
@@ -140,17 +140,17 @@ public class BiometrySide {
         return this.ACD;
     }
     
-    public void setAL(String BAL){
-        this.AL = Double.parseDouble(BAL);
+    public void setAL(Double BAL){
+        this.AL = BAL;
     }
     
     public double getAL(){
         return this.AL;
     }
 
-    public void setSNRMin(String BSNRMin){
-        if(this.SNRMin == null || this.SNRMin.equals(BigDecimal.ZERO) || BigDecimal.valueOf(Double.parseDouble(BSNRMin)).compareTo(this.SNRMin) == -1 ){
-            this.SNRMin = BigDecimal.valueOf(Double.parseDouble(BSNRMin));
+    public void setSNRMin(Double BSNRMin){
+        if(this.SNRMin == null || this.SNRMin.equals(BigDecimal.ZERO) || BigDecimal.valueOf(BSNRMin).compareTo(this.SNRMin) == -1 ){
+            this.SNRMin = BigDecimal.valueOf(BSNRMin);
         }
     }
     
@@ -158,8 +158,8 @@ public class BiometrySide {
         return this.SNRMin;
     }
     
-    public void setSNR(String BSNR){
-        this.SNR = BigDecimal.valueOf(Double.parseDouble(BSNR));
+    public void setSNR(Double BSNR){
+        this.SNR = BigDecimal.valueOf(BSNR);
     }
     
     public BigDecimal getSNR(){
@@ -167,11 +167,12 @@ public class BiometrySide {
     }
     
     // add new lenses to the selected side
-    public void setLenses(String LName){
-        if(Measurements == null){
-            Measurements = new ArrayList<>();    
-        }
+    public void addCalculations(){
         Measurements.add(new BiometryMeasurementData());
+    }
+    
+    public Integer getMeasurementsIndex(){
+        return Measurements.size()-1;
     }
     
     public void setLensesName(String LName, Integer LNum){
@@ -182,19 +183,19 @@ public class BiometrySide {
         Measurements.get(LNum).setFormulaName(LName);
     }
     
-    public void setLenseAConst(String LAConst, Integer LNum){
+    public void setLenseAConst(Double LAConst, Integer LNum){
         Measurements.get(LNum).setAConst(LAConst);
     }
     
-    public void setLenseEmmetropia(String LEmmetropia, Integer LNum){
+    public void setLenseEmmetropia(Double LEmmetropia, Integer LNum){
         Measurements.get(LNum).setEmmetropia(LEmmetropia);
     }
     
-    public void setLenseIOL(String LIOL, Integer LNum){
+    public void setLenseIOL(Double LIOL, Integer LNum){
         Measurements.get(LNum).setIOL(LIOL);
     }
     
-    public void setLenseREF(String LREF, Integer LNum){
+    public void setLenseREF(Double LREF, Integer LNum){
         Measurements.get(LNum).setREF(LREF);
     }
     

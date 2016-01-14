@@ -35,6 +35,9 @@ public class DICOMParser {
     private StudyData Study = new StudyData();
     
     private BiometryData Biometry = new BiometryData();
+    private final BiometrySide BiometryLeft = new BiometrySide();
+    private final BiometrySide BiometryRight = new BiometrySide();
+
     
     private int LenseCount = -1;
     public boolean debug = true;
@@ -118,7 +121,7 @@ public class DICOMParser {
        
     public void parseDicomFile(String inputFile)  {
         
-        Attributes attrs = new Attributes(false, 64);
+        Attributes attrs = new Attributes();
         
         DicomInputStream dis = null;        
         try {
@@ -135,399 +138,376 @@ public class DICOMParser {
             logger.systemExitWithLog(3, "Failed to read DICOM file, not a valid file or file not exists!", database);
         }
         
-        readAttributes(attrs, "");
+        collectPatientData(attrs);
+        collectStudyData(attrs);
+        
+        collectBiometryData(attrs);
+        
+        //readAttributes(attrs, "");
     }
     
-    private void readAttributes(Attributes inputAttrs, String sequenceTag){
-        int[] dcmTags;
-        String StudyDate="";
-        String StudyTime="";
-        String IOLType = "";
-                
-        // todo: using get functions to get specific tags instead of the for(...)
-        dcmTags = inputAttrs.tags();
-        
-        //Sequence testSequence = inputAttrs.getSequence(LenseCount);
-        //testSequence.get(0).getDoubles(LenseCount);
-                
-        // TODO: need to create an XML structure for this data extraction to make it more general!!!
-        // Soultion 1: define the structure - we need: tag group, tag element, data type, object, data field (where to store and assign)
-        // OR
-        // Solution 2: create reader classes for all dicom types (biometryReader, visualFieldsReader, etc)
-        
-        for( int tag : dcmTags){
-            if(inputAttrs.getVR(tag).toString().equals("SQ")){
-                //debugMessage("Reading sequence "+tag);
-                readSequence(inputAttrs.getSequence(tag), TagUtils.toHexString(TagUtils.elementNumber(tag)));
+   
+    private Integer getTagInteger(String tag){
+        return Integer.decode("0x"+tag);
+    }
+    
+    private String getSideFromSequence(Sequence inputSequence){
+        int[] sequenceTags;
+        if(!inputSequence.isEmpty()){
+            for(int i = 0; i<inputSequence.size(); i++){
+                Attributes memberAttr = (Attributes) inputSequence.get(i);
+                return getSideFromAttributes(memberAttr);
             }
-            if( !inputAttrs.getValue(tag).toString().equals("")){
-                //debugMessage(TagUtils.toHexString(TagUtils.groupNumber(tag))+"::"+TagUtils.toHexString(TagUtils.elementNumber(tag))+" - "+inputAttrs.getVR(tag)+"::"+inputAttrs.getValue(tag));
-                // collecting patient data
-                if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000010")){
-                    // patient name
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000010")){
-                        Patient.setPatientName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Patient's name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT).toString().replace("^", " "));
-                    }
-                    // patient id
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000020")){
-                        Patient.setPatientID(VR.LO.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Patient's ID: "+VR.LO.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-                    // patient birth date
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000030")){
-                        Patient.setPatientBirth(VR.DA.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Patient's birth date: "+VR.DA.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-                    // patient gender
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000040")){
-                        Patient.setPatientGender(VR.CS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString().charAt(0));
-                        //debugMessage("Patient's sex: "+VR.CS.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-                    // patient comments
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00004000")){
-                        Study.setComments(VR.LT.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Comments: "+VR.LT.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-
+        }
+        return "";
+    }
+    
+    private String getSideFromAttributes(Attributes inputAttrs){
+        int[] sequenceTags;
+        sequenceTags = inputAttrs.tags();
+        for( int tag : sequenceTags){
+            if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*08")){
+                return VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString();
+            }
+        }
+        return "";
+    }
+    
+    private Double getDoubleValueFromSequence(String hexTagSequence, String hexTagValue, String side, Attributes Attrs){
+        Sequence Seq = Attrs.getSequence(getTagInteger(hexTagSequence));
+        for(int ks=0; ks<Seq.size();ks++){
+            Attributes AttrData = (Attributes) Seq.get(ks);
+            CurrentSide = getSideFromAttributes(AttrData);
+            if(CurrentSide == null || CurrentSide.equals("")){
+                CurrentSide = getSideFromAttributes(Attrs);
+            }
+            if(CurrentSide.equals(side)){
+                return VR.FD.toDouble(AttrData.getValue(getTagInteger(hexTagValue)), false, 0, 0);
+            }
+        }
+        return 0.0;
+    }
+    
+    private String getStringValueFromSequence(String hexTagSequence, String hexTagValue, String side, Attributes Attrs){
+        Sequence Seq = Attrs.getSequence(getTagInteger(hexTagSequence));
+        for(int ks=0; ks<Seq.size();ks++){
+            Attributes AttrData = (Attributes) Seq.get(ks);
+            if(!side.equals("")){
+                CurrentSide = getSideFromAttributes(AttrData);
+                if(CurrentSide == null || CurrentSide.equals("")){
+                    CurrentSide = getSideFromAttributes(Attrs);
                 }
-
-                // collecting study data
-                if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000008")){
-                    // character set
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000005")){
-                        CharacterSet = SpecificCharacterSet.valueOf(VR.CS.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT).toString());
-                    }
-                    
-                    // study date
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000020")){
-                        //debugMessage("Study date: "+VR.DA.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                        StudyDate = VR.DA.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString();
-                    }
-                    // study time
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000030")){
-                        //debugMessage("Study time: "+VR.TM.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                        StudyTime = VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString();
-                        if(!StudyDate.equals("") && !StudyTime.equals("")){
-                            Study.setStudyDateTime(StudyDate + StudyTime);
-                        }
-                    }
-
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000033")){
-                        //debugMessage("<--------- Study content time: "+VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        Study.setContentTime(VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                    }
-                    
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000023")){
-                        //debugMessage("<--------- Study content time: "+VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        Study.setContentDate(VR.TM.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                    }
-
-                    // physician's name
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000090")){
-                        Study.setPhysicianName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Physician's name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-                    // institution name
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000080")){
-                        Study.setInstituionName(VR.LO.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Institution name: "+VR.LO.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-                    // station name
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00001010")){
-                        Study.setStationName(VR.SH.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Station name: "+VR.SH.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-                    
-                    // device manufacturer
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000070")){
-                        Study.setDeviceManufacturer(VR.LO.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Device manufacturer: "+VR.LO.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-                    
-                    // Device model name
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00001090")){
-                        Study.setDeviceModel(VR.LO.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Device model name: "+VR.LO.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-
+                if(CurrentSide.equals(side)){                
+                    return VR.PN.toStrings(AttrData.getValue(getTagInteger(hexTagValue)), true, CharacterSet).toString();
                 }
+            }else{
+                return VR.PN.toStrings(AttrData.getValue(getTagInteger(hexTagValue)), true, CharacterSet).toString();
+            }
+        }
+        return "";
+    }
 
-                if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000018")){
-                    
-                    // Device software version
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00001020")){
-                        Study.setDeviceSoftwareVersion(VR.LO.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Device software version: "+VR.LO.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    }
-                }
-                
-                // collecting study data
-                if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("00000020")){
-                   // study instance ID
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("0000000D")){
-                        Study.setStudyInstanceID(VR.UI.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Study instance ID: "+VR.UI.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    } 
-                    // study ID
-                    if(TagUtils.toHexString(TagUtils.elementNumber(tag)).equals("00000010")){
-                        Study.setStudyID(VR.SH.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        //debugMessage("Study ID: "+VR.SH.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                    } 
-                }
-
-                // collecting measurement data
-                if( TagUtils.toHexString(TagUtils.groupNumber(tag)).equals("0000771B")){
-                        // eye side: R or L
-                        if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*08")){
-                            CurrentSide = VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString();
-                            this.LenseCount = -1;
-                            //debugMessage("We are in seqence: "+sequenceTag.toString());
-                            // we need to do this, because in the measurement sequence the IOL side is the last element!!!
-                            if( sequenceTag.matches("(?i).*01")){
-                                Biometry.setSideData(CurrentSide);
-                                //debugMessage("ACD: "+ACD+" Side: "+CurrentSide);
-                                if(!ACD.equals("")){
-                                    Biometry.setBiometryValue("ACD", CurrentSide, ACD);
-                                }
-                                if(!EyeStatus.equals("")){
-                                    Biometry.setBiometryValue("EyeStatus", CurrentSide, EyeStatus);
-                                }
-                            }
-                            //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, null).toString());
-                        }
-                        
-                        // IOL type (can be LENSES or FORMULA !!!!)
-                        if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*04")){
-                            //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
-                            IOLType = VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString();
-                            // capitalize the string because we will use it as a function name later!!!
-                            IOLType = IOLType.charAt(0)+IOLType.substring(1).toLowerCase();
-                            //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, null).toString());
-                        }
-                        
-                        if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*06")){
-                            //debugMessage(VR.LO.toStrings(inputAttrs.getValue(tag), false, null).toString());
-                        }
-                        
-                        // surgeon name (top)
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*2C")){
-                            Study.setSurgeonName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            //debugMessage("Physician's name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                        }
-                        
-                        // formula name (top)
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*09") && (sequenceTag.matches("(?i).*36") || sequenceTag.matches("(?i).*37"))){
-                            Study.setFormulaName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            //debugMessage("Sequence: "+sequenceTag.toString());                                   
-                            //debugMessage("<------------- Formula name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                        }
-                      
-                        // lense name (top)
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0A")){
-                            Study.setLenseName(VR.PN.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                            //debugMessage("<------------ Lense name: "+VR.PN.toStrings(inputAttrs.getValue(tag), true, SpecificCharacterSet.DEFAULT));
-                        }
-
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*25")){
-                            //debugMessage(VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString()+"<----- Status / Sequence: ----->"+sequenceTag.toString());
-                            EyeStatus = VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString();
-                            //Biometry.setBiometryValue("EyeStatus", CurrentSide, VR.IS.toStrings(inputAttrs.getValue(tag), true, CharacterSet).toString());
-                        }
-
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*40")){
-                           //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                           Biometry.setBiometryValue("RefractionSphere", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*41")){
-                           //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                           Biometry.setBiometryValue("RefractionDelta", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*42")){
-                            //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                           Biometry.setBiometryValue("RefractionAxis", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4F")){
-                            //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                            Biometry.setBiometryValue("DeltaK", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-                        
-                        if((TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*43") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0B")) && 
-                                (sequenceTag.matches("(?i).*30"))){
-                            //debugMessage("AL: "+String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" ---- seq:"+sequenceTag+" side: "+CurrentSide);
-                            if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
-                                Biometry.setBiometryValue("AL", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                            }
-                        }
-                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*44")){
-                           Biometry.setBiometryValue("SNR", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0C") && sequenceTag.matches("(?i).*31")){
-                            Biometry.setBiometryValue("SNRMin", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-
-                        }
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4A") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*20") && sequenceTag.matches("(?i).*32") ){
-                            //debugMessage("K1: "+String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" ---- seq:"+sequenceTag+" side: "+CurrentSide);
-                            if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
-                                Biometry.setBiometryValue("K1", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                           }
-                        }
-                       
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4D") || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*21") && sequenceTag.matches("(?i).*32")){
-                            //debugMessage("K2: "+String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" ---- seq:"+sequenceTag+" side: "+CurrentSide);
-                            if(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0) != 0){
-                                Biometry.setBiometryValue("K2", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                            }
-                        }
-                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4B")){
-                           Biometry.setBiometryValue("AxisK1", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                           Biometry.setBiometryValue("DeltaKAxis", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4E") ){
-                            Biometry.setBiometryValue("AxisK2", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-                       
-                        
-                        if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*04")
-                                ||TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*5D")){
-                            //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, SpecificCharacterSet.DEFAULT).toString());
-                        }
-
-                        // target refraction
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*29")){
-                           //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+" =========="+CurrentSide+"============ Seq: "+sequenceTag);
-                           Biometry.setBiometryValue("TargetRef", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-                        
-                        // K values modified
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*45")){
-                           //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString()+" ++++++++++"+CurrentSide+"++++++++++ Seq: "+sequenceTag);
-                           Biometry.setBiometryValue("isALModified", CurrentSide, VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
-                        }
-                        
-                        // K values modified
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*46")){
-                           //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString()+" ++++++++++"+CurrentSide+"++++++++++ Seq: "+sequenceTag);
-                           Biometry.setBiometryValue("isKModified", CurrentSide, VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
-                        }
-                        
-                        // ACD values modified
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*48")){
-                           //debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString()+" ------------------------"+CurrentSide+"--------------- Seq: "+sequenceTag);
-                           Biometry.setBiometryValue("isACDModified", CurrentSide, VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
-                        }
-                        
-                        
-                        if(TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*26") && sequenceTag.matches("(?i).*02")){
-                           // the sequence *02 is inside a *01 sequence, and the IOL_laterity is stored at the end of the sequence, so we need to store this value, and handle it we we leave the *01 sequence
-                            //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0))+"<---- ACD / sequence: ---->"+sequenceTag.toString()+" Current side: "+CurrentSide);
-                            ACD = String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0));
-                            //Biometry.setBiometryValue("ACD", CurrentSide, String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                        }
-                        
-                        // we are inside the measurement sequence
-                        if( sequenceTag.matches("(?i).*05")){
-                            // IOL Power 
-                            if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*28")){
-                                if(this.LenseCount > -1){
-                                    Biometry.setBiometryValueNum("LenseREF", "U", String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)), this.LenseCount);
-                                }
-                            }
-
-                            // Predicted refraction
-                            if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*2A")){
-                                if(this.LenseCount > -1){
-                                    Biometry.setBiometryValueNum("LenseIOL", "U", String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)), this.LenseCount);
-                                }
-                            }
-                            
-                            // eye side: R or L
-                            //if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*08")){
-                            //    CurrentSide = VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString();
-                            //    Biometry.setSideData(CurrentSide);
-                            //    debugMessage(VR.CS.toStrings(inputAttrs.getValue(tag), false, null).toString());
-                            //}
-                        }
-                        
-                        // we are inside a lens sequence
-                        if( sequenceTag.matches("(?i).*03")){
-                            // TODO: get a proper solution for sides here!!!
-                            // Name of lenses
-
-                            if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*06")){
-                                if(this.LenseCount > -1){
-                                    //debugMessage(VR.LO.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString());
-                                    Biometry.setBiometryValueNum(IOLType+"Name", "U", VR.LO.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString() , this.LenseCount);
-                                }
-                            }
-
-                            // A constant
-                            if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*07")){
-                                if(this.LenseCount > -1){
-                                    //debugMessage(String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)));
-                                    Biometry.setBiometryValueNum("LenseAConst", "U", String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)), this.LenseCount);
-                                }
-                            } 
-                            
-                            // Emmetropia IOL
-                            if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*2B")){
-                                if(this.LenseCount > -1){
-                                    Biometry.setBiometryValueNum("LenseEmmetropia", "U", String.valueOf(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0)), this.LenseCount);
-                                }
-                            } 
-                           
-                        }
-                        
-                        // TODO: remove this part
-                        // this is just for debug!!!
-                        if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0B") 
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0C")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*0D")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*43")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*44")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*22")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*12")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*11")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*13")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*20")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*49")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4A")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4B")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*4D")
-                                || TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*21")){
-                            //debugMessage(VR.FD.toDouble(inputAttrs.getValue(tag), false, 0, 0));
-                        }
-
-                        
+    
+    private void setMinSnrForSides(Attributes Attrs){
+        Sequence basicMeasurement = Attrs.getSequence(getTagInteger("771B1030"));
+        for(int bm =0; bm<basicMeasurement.size(); bm++){
+            Attributes basicMeasurementData = (Attributes) basicMeasurement.get(bm);
+            // AL mean value: 771B1043
+            // SNR mean value: 771B1044
+            CurrentSide = getSideFromAttributes(basicMeasurementData);
+               
+            // Sequence of single axial length measurements, we need to extract minSNR from here!
+            Sequence ALSeq = basicMeasurementData.getSequence(getTagInteger("771B1031"));
+            for(int as=0; as<ALSeq.size();as++){
+                Attributes ALData = (Attributes) ALSeq.get(as);
+                //debugMessage(CurrentSide+" Measured SNR (SNRMin): "+VR.FD.toDouble(ALData.getValue(getTagInteger("771B100C")), false, 0, 0));
+                if(CurrentSide.equals("L")){
+                    BiometryLeft.setSNRMin(VR.FD.toDouble(ALData.getValue(getTagInteger("771B100C")), false, 0, 0));
+                }else{
+                    BiometryRight.setSNRMin(VR.FD.toDouble(ALData.getValue(getTagInteger("771B100C")), false, 0, 0));
                 }
             }
         }
-    }   
+    }
     
-    private void readSequence(Sequence inputSeq, String sequenceTag) {
-        Iterator<Attributes> sequenceIterator;
-        sequenceIterator = inputSeq.iterator();
+    private void collectPatientData(Attributes Attrs){
+        CharacterSet = SpecificCharacterSet.valueOf(VR.CS.toStrings(Attrs.getValue(getTagInteger("00080005")), true, SpecificCharacterSet.DEFAULT).toString());
+        Patient.setPatientName(Attrs.getString(getTagInteger("00100010")));
+        Patient.setPatientID(Attrs.getString(getTagInteger("00100020")));
+        Patient.setPatientBirth(Attrs.getString(getTagInteger("00100030")));
+        Patient.setPatientGender(Attrs.getString(getTagInteger("00100040")).charAt(0));
+    }
     
-        //debugMessage("SQ Tag: "+sequenceTag);
-        if( sequenceTag.matches("(?i).*05")){
-            this.LenseCount++;
-            this.Biometry.setBiometryValue("Lenses", "U", "N/A");
+    private void collectStudyData(Attributes Attrs){
+        Study.setComments(Attrs.getString(getTagInteger("00104000")));
+        Study.setStudyDateTime(Attrs.getString(getTagInteger("00080020")) + Attrs.getString(getTagInteger("00080030")));
+        Study.setContentTime(Attrs.getString(getTagInteger("00080033")));
+        Study.setContentDate(Attrs.getString(getTagInteger("00080023")));
+        Study.setPhysicianName(Attrs.getString(getTagInteger("00080090")));
+        Study.setInstituionName(Attrs.getString(getTagInteger("00080080")));
+        Study.setStationName(Attrs.getString(getTagInteger("00081010")));
+        Study.setDeviceManufacturer(Attrs.getString(getTagInteger("00080070")));
+        Study.setDeviceModel(Attrs.getString(getTagInteger("00081090")));
+        Study.setDeviceSoftwareVersion(Attrs.getString(getTagInteger("00181020")));
+        Study.setStudyInstanceID(Attrs.getString(getTagInteger("0020000D")));
+        Study.setStudyID(Attrs.getString(getTagInteger("00200010")));
+        if(Attrs.contains(getTagInteger("771B102C"))){
+            Study.setSurgeonName(VR.PN.toStrings(Attrs.getValue(getTagInteger("771B102C")), true, CharacterSet).toString());
+        }
+    }
+    
+    private void collectMeasuredValues(Attributes Attrs){
+        setMinSnrForSides(Attrs);
+        
+        BiometryLeft.setAL(getDoubleValueFromSequence("771B1030","771B1043","L",Attrs));
+        BiometryLeft.setK1(getDoubleValueFromSequence("771B1032","771B104A","L",Attrs));
+        BiometryLeft.setK2(getDoubleValueFromSequence("771B1032","771B104D","L",Attrs));
+        BiometryLeft.setAxisK2(getDoubleValueFromSequence("771B1032","771B104E","L",Attrs));
+        
+        BiometryRight.setAL(getDoubleValueFromSequence("771B1030","771B1043","R",Attrs));
+        BiometryRight.setK1(getDoubleValueFromSequence("771B1032","771B104A","R",Attrs));
+        BiometryRight.setK2(getDoubleValueFromSequence("771B1032","771B104D","R",Attrs));
+        BiometryRight.setAxisK2(getDoubleValueFromSequence("771B1032","771B104E","R",Attrs));
+
+    }
+    
+    private void collectCommonMeasuredValues(Attributes Attrs){
+        BiometryLeft.setAxisK1(getDoubleValueFromSequence("771B1032","771B104B","L",Attrs));
+        BiometryLeft.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B","L",Attrs));
+        BiometryLeft.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F","L",Attrs));
+
+        BiometryRight.setAxisK1(getDoubleValueFromSequence("771B1032","771B104B","R",Attrs));
+        BiometryRight.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B","R",Attrs));
+        BiometryRight.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F","R",Attrs));
+        
+        // check for SNR
+        if(Attrs.contains(getTagInteger("771B1030"))){
+            BiometryLeft.setSNR(getDoubleValueFromSequence("771B1030","771B1044","L",Attrs));
+            BiometryRight.setSNR(getDoubleValueFromSequence("771B1030","771B1044","R",Attrs));                
+        }
+    }
+    
+    private void collectMeasuredValuesFromFormulaSeq(Attributes Attrs, String side){
+        BiometrySide sideData;
+        if(side.equals("L")){
+            sideData = BiometryLeft;
+        }else{
+            sideData = BiometryRight;
+        }
+        
+        sideData.setAL(getDoubleValueFromSequence("771B1002","771B100B",side,Attrs));
+        sideData.setisALModified(getStringValueFromSequence("771B1002","771B1045",side,Attrs));
+        // TODO: SNR exists only in seq 1030!!!
+        sideData.setK1(getDoubleValueFromSequence("771B1002","771B1020",side,Attrs));
+        sideData.setisKModified(getStringValueFromSequence("771B1002","771B1046",side,Attrs));
+        sideData.setK2(getDoubleValueFromSequence("771B1002","771B1021",side,Attrs));
+        sideData.setAxisK2(getDoubleValueFromSequence("771B1002","771B1013",side,Attrs));
+        sideData.setACD(getDoubleValueFromSequence("771B1002","771B1026",side,Attrs));
+        sideData.setisACDModified(getStringValueFromSequence("771B1002","771B1048",side,Attrs));
+        sideData.setTargetRef(getDoubleValueFromSequence("771B1002","771B1029",side,Attrs));
+        sideData.setRefractionSphere(getDoubleValueFromSequence("771B1002","771B1040",side,Attrs));
+        sideData.setRefractionDelta(getDoubleValueFromSequence("771B1002","771B1041",side,Attrs));
+        sideData.setRefractionAxis(getDoubleValueFromSequence("771B1002","771B1042",side,Attrs));
+        sideData.setEyeStatus(getStringValueFromSequence("771B1002","771B1025",side,Attrs));
+
+    }
+    
+    private String selectSequenceTag(Attributes Attrs){
+        String sequenceTag = "";
+        if(Attrs.contains(getTagInteger("771B1001"))){
+            sequenceTag = "771B1001";
+        }else if(Attrs.contains(getTagInteger("771B1036"))){
+            sequenceTag = "771B1036";
+        }else if(Attrs.contains(getTagInteger("771B1037"))){
+            sequenceTag = "771B1037";
+        }
+        return sequenceTag;
+    }
+    
+    private void collectMeasuredValuesFromCalculation(Attributes Attrs){
+        // the sequence structure is different, with different TAG numbers!!!
+        String sequenceTag = selectSequenceTag(Attrs);
+        
+        Sequence CalcSeq = Attrs.getSequence(getTagInteger(sequenceTag));
+        if(CalcSeq != null && !CalcSeq.isEmpty()){
+            if(sequenceTag.equals("771B1001")){
+                for(int cs = 0; cs < CalcSeq.size(); cs++ ){
+                    collectMeasuredValuesFromFormulaSeq(CalcSeq.get(cs), getSideFromAttributes(CalcSeq.get(cs)));
+                }
+            }else{
+                Attributes CalcAttrs = (Attributes) CalcSeq.get(0);
+                Sequence FormulaSeq = CalcAttrs.getSequence(getTagInteger("771B1001"));
+                if(FormulaSeq != null && !FormulaSeq.isEmpty()){
+                    for(int fs = 0; fs < FormulaSeq.size(); fs++ ){
+                        collectMeasuredValuesFromFormulaSeq(FormulaSeq.get(fs), getSideFromAttributes(FormulaSeq.get(fs)));
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    private void collectCalculationValuesFromSeq(Attributes Attrs, String side, String inFormulaName, String inLensName){
+        String FormulaName;
+        String LensName;
+        BiometrySide sideData;
+        if(side.equals("L")){
+            sideData = BiometryLeft;
+        }else{
+            sideData = BiometryRight;
+        }
+        //debugMessage(":: "+side+"::"+inFormulaName+"::"+inLensName);
+        CurrentSide = getSideFromAttributes(Attrs);
+        if(side.equals(CurrentSide)){
+            Sequence CalcSeq = Attrs.getSequence(getTagInteger("771B1003"));
+            if(CalcSeq != null && !CalcSeq.isEmpty()){
+                for(int cs=0; cs<CalcSeq.size(); cs++){
+                    Attributes CalcAttrs = CalcSeq.get(cs);
+                    if(inFormulaName.equals("")){
+                        FormulaName = VR.PN.toStrings(CalcAttrs.getValue(getTagInteger("771B1006")), true, CharacterSet).toString();
+                        LensName=inLensName;
+                    }else{
+                        LensName = VR.PN.toStrings(CalcAttrs.getValue(getTagInteger("771B1006")), true, CharacterSet).toString();
+                        FormulaName = inFormulaName;
+                    }
+                    // we add new data set
+                    sideData.addCalculations();
+                    //debugMessage("Index: "+sideData.getMeasurementsIndex());
+                    sideData.setFormulaName(FormulaName, sideData.getMeasurementsIndex());
+                    sideData.setLensesName(LensName, sideData.getMeasurementsIndex());
+                    sideData.setLenseEmmetropia(VR.FD.toDouble(CalcAttrs.getValue(getTagInteger("771B102B")), false, 0, 0), sideData.getMeasurementsIndex());
+                    sideData.setLenseAConst(VR.FD.toDouble(CalcAttrs.getValue(getTagInteger("771B1007")), false, 0, 0), sideData.getMeasurementsIndex());
+                    Sequence IOLCalcSeq = CalcAttrs.getSequence(getTagInteger("771B1005"));
+                    if(IOLCalcSeq != null && !IOLCalcSeq.isEmpty()){
+                        for(int iols=0; iols<IOLCalcSeq.size(); iols++){
+                            Attributes IOLCalcAttrs = IOLCalcSeq.get(iols);
+                            sideData.setLenseIOL(VR.FD.toDouble(IOLCalcAttrs.getValue(getTagInteger("771B102A")), false, 0, 0), sideData.getMeasurementsIndex());
+                            sideData.setLenseREF(VR.FD.toDouble(IOLCalcAttrs.getValue(getTagInteger("771B1028")), false, 0, 0), sideData.getMeasurementsIndex());
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+    
+    private void collectCalculationValuesSequenceSide(Attributes Attrs, String side, String sequenceTag){
+        String LensName = "";
+        String FormulaName = "";
+
+        if(!sequenceTag.equals("771B1001")){
+            // single formula, multi lense
+            // TODO similar solution required as for the side!!!
+            Study.setSurgeonName(getStringValueFromSequence(sequenceTag,"771B102C","",Attrs));
+            Sequence innerSeq = Attrs.getSequence(getTagInteger(sequenceTag));
+            if(innerSeq != null && !innerSeq.isEmpty()){
+                for(int is=0; is<innerSeq.size();is++){
+                    Attributes innerAttrs = innerSeq.get(is);
+                    //dumpDCMStructure(innerAttrs);
+                    FormulaName = VR.PN.toStrings(innerAttrs.getValue(getTagInteger("771B1009")), true, CharacterSet).toString();
+                    Sequence CalcSeq = innerAttrs.getSequence(getTagInteger("771B1001"));
+                    if(CalcSeq != null && !CalcSeq.isEmpty()){
+                        for(int cs=0; cs<CalcSeq.size(); cs++){
+                            //dumpDCMStructure(CalcSeq.get(cs));
+                            collectCalculationValuesFromSeq(CalcSeq.get(cs), side, FormulaName, LensName);
+                        }
+                    }   
+                }
+            }
+        }else{
+            // single lens multi formula
+            LensName = VR.PN.toStrings(Attrs.getValue(getTagInteger("771B100A")), true, CharacterSet).toString();
+            Sequence CalcSeq = Attrs.getSequence(getTagInteger("771B1001"));
+            if(CalcSeq != null && !CalcSeq.isEmpty()){
+                for(int cs=0; cs<CalcSeq.size(); cs++){
+                    //dumpDCMStructure(CalcSeq.get(cs));
+                    collectCalculationValuesFromSeq(CalcSeq.get(cs), side, FormulaName, LensName);
+                }
+            }
         }
 
-        while(sequenceIterator.hasNext()){
-            Attributes sequenceData = sequenceIterator.next();
-            //debugMessage(sequenceData.toString());
-            this.readAttributes(sequenceData, sequenceTag);
 
+    }
+
+    private void collectCalculationValues(Attributes Attrs){
+        
+        if(Attrs.contains(getTagInteger("771B1036"))){
+            debugMessage("Collecting data from 771B1036");
+            collectCalculationValuesSequenceSide(Attrs, "L", "771B1036");
+            collectCalculationValuesSequenceSide(Attrs, "R", "771B1036");
         }
-       
+        if(Attrs.contains(getTagInteger("771B1037"))){
+            debugMessage("Collecting data from 771B1037");
+            collectCalculationValuesSequenceSide(Attrs, "L", "771B1037");
+            collectCalculationValuesSequenceSide(Attrs, "R", "771B1037");            
+        }
+        if(Attrs.contains(getTagInteger("771B1001"))){
+            debugMessage("Collecting data from 771B1001");
+            collectCalculationValuesSequenceSide(Attrs, "L", "771B1001");
+            collectCalculationValuesSequenceSide(Attrs, "R", "771B1001");
+        }
+    }
+    
+    private void dumpDCMStructure(Attributes Attrs){
+        int[] biometryTags = Attrs.tags();
+        for( int tag : biometryTags){
+            Integer level = Attrs.getLevel();
+            String indent = "";
+            for(int i=0;i<level;i++){
+                indent += ">";
+            }
+            debugMessage(indent+" "+TagUtils.toHexString(tag)+" :: "+tag);
+
+            if(Attrs.getVR(tag).toString().equals("SQ")){
+                Sequence seq = Attrs.getSequence(tag);
+                if(seq != null && !seq.isEmpty()){
+                    for(int s=0; s<seq.size();s++){
+                        dumpDCMStructure(seq.get(s));
+                    }
+                }
+            }
+        }
+    }
+    
+    private void collectBiometryData(Attributes Attrs){
+        
+        /* ---- IOLMaster 500 SQ tags ---
+        *  IOL_Measured_Values sequence: 771Bxx30 (first page)
+        *       >> Sequence of single axial length measurements: 771Bxx31
+        *  Sequence of keratometry values:  771Bxx32  >> Sequence of single keratometry measurements 771Bxx33
+        *  Sequence of anterior chamber depth values: 771Bxx34
+        *  Sequence of white-to-white values measured for one eye: 771Bxx35 >> Sequence of single white-to-white measurements: 771Bxx3B
+        *  Sequence of standard formula IOL calculations for 4 different IOL types with a sequence of 7 calculations each, may contain up to 6 items: 771Bxx36
+        *  Sequence of sandard formula IOL calculations for one eye: 771Bxx01 >> Container of measurement values used for calculation: 771Bxx02 
+        *                                                         + >> Sequence of standard formula calculation results for 4 different IOL types: 771Bxx03
+        *                                                                       >> Sequence of IOL calculation results for IOL as pair of lens power and residual refraction: 771Bxx05
+        */
+        
+        // data priority: if we have calculation data we should extract all values from there
+        //dumpDCMStructure(Attrs);
+        
+        if(Attrs.contains(getTagInteger("771B1032"))){
+            // Axis K1, DeltaK and SNR values
+            collectCommonMeasuredValues(Attrs);
+        }
+        
+        if(Attrs.contains(getTagInteger("771B1036")) || Attrs.contains(getTagInteger("771B1037")) || Attrs.contains(getTagInteger("771B1001"))){
+            debugMessage("Calculation sequence exists, extracting values");
+            if(Attrs.contains(getTagInteger("771B1030"))){
+                setMinSnrForSides(Attrs);
+            }
+            collectMeasuredValuesFromCalculation(Attrs);
+            collectCalculationValues(Attrs);
+        } else if(Attrs.contains(getTagInteger("771B1030"))){
+            debugMessage("IOL_Measured_Values sequence exists, extracting values");
+            collectMeasuredValues(Attrs);
+        }else{
+            debugMessage("No basic measurement data found");
+        }
+
+        Biometry.setSideData("L", BiometryLeft);
+        Biometry.setSideData("R", BiometryRight);
+
     }
     
     public boolean processParsedData() throws ParseException{

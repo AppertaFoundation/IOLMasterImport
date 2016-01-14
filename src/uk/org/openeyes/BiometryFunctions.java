@@ -119,11 +119,11 @@ public class BiometryFunctions {
 
     private BiometrySide setEmptySideData(){
         BiometrySide sideData = new BiometrySide();
-        sideData.setK1("0");
-        sideData.setK2("0");
-        sideData.setAxisK1("0");
-        sideData.setAL("0"); 
-        sideData.setSNR("0");       
+        sideData.setK1(0.0);
+        sideData.setK2(0.0);
+        sideData.setAxisK1(0.0);
+        sideData.setAL(0.0); 
+        sideData.setSNR(0.0);       
         return  sideData;
     }
     
@@ -352,7 +352,10 @@ public class BiometryFunctions {
             
             // Haigis-L is a special format!
             // TODO: what is the A constant and emmetropia value here??
-            if(databaseFunctions.eventStudy.getFormulaName() != null && (databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L") || (databaseFunctions.eventStudy.getFormulaName().contains("HofferQ") && rowData.getFormulaName() != null))){
+            lensType = searchForLensData(rowData.getLenseName(), rowData.getAConst(), databaseFunctions);
+            formulaType = searchForFormulaData(rowData.getFormulaName(), databaseFunctions);
+            
+            /*if(databaseFunctions.eventStudy.getFormulaName() != null && (databaseFunctions.eventStudy.getFormulaName().contains("Haigis-L") || (databaseFunctions.eventStudy.getFormulaName().contains("HofferQ") && rowData.getFormulaName() != null))){
                 dicomLogger.addToRawOutput(databaseFunctions.eventStudy.getFormulaName()+" - Multi lens - single formula format...");
                 lensType = searchForLensData(rowData.getFormulaName(), rowData.getAConst(), databaseFunctions);
                 formulaType = searchForFormulaData(databaseFunctions.eventStudy.getFormulaName(), databaseFunctions);
@@ -364,7 +367,7 @@ public class BiometryFunctions {
                 dicomLogger.addToRawOutput("Multi formula - singe lens format...");
                 formulaType = searchForFormulaData(rowData.getFormulaName(), databaseFunctions);
                 lensType = searchForLensData(databaseFunctions.eventStudy.getLenseName(), 0.0, databaseFunctions);
-            }
+            }*/
             // we search for current values
             EtOphinbiometryIolRefValues iolRefValues = searchCurrentIolRefValues(databaseFunctions, lensType, formulaType);
             

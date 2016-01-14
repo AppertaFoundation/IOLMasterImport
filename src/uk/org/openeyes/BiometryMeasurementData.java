@@ -39,32 +39,32 @@ public class BiometryMeasurementData {
         return this.FormulaName;
     }
     
-    public void setAConst(String LAConst){
-        this.AConst = Double.parseDouble(LAConst);
+    public void setAConst(Double LAConst){
+        this.AConst = LAConst;
     }
     
     public Double getAConst(){
         return this.AConst;
     }
     
-    public void setEmmetropia(String LEmmetropia){
-        this.Emmetropia = Double.parseDouble(LEmmetropia);
+    public void setEmmetropia(Double LEmmetropia){
+        this.Emmetropia = LEmmetropia;
     }
     
     public Double getEmmetropia(){
         return this.Emmetropia;
     }
     
-    public void setIOL(String LIOL){
-        this.IOL.add(Double.parseDouble(LIOL));
+    public void setIOL(Double LIOL){
+        this.IOL.add(LIOL);
     }
     
     public List<Double> getIOL(){
         return this.IOL;
     }
     
-    public void setREF(String LREF){
-        this.REF.add(Double.parseDouble(LREF));
+    public void setREF(Double LREF){
+        this.REF.add(LREF);
     }
     
     public List<Double> getREF(){
