@@ -34,25 +34,17 @@ public class DICOMParser {
     
     private StudyData Study = new StudyData();
     
-    private BiometryData Biometry = new BiometryData();
+    private final BiometryData Biometry = new BiometryData();
     private final BiometrySide BiometryLeft = new BiometrySide();
     private final BiometrySide BiometryRight = new BiometrySide();
 
-    
-    private int LenseCount = -1;
     public boolean debug = true;
     private String APIconfigFile = "";
     
     private String CurrentSide = "R";
-    private String LastSide = "";
-    private String ACD = "";
-    private String EyeStatus = "";
-
-    
-    private DatabaseFunctions database = new DatabaseFunctions();
-    
     private SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
     
+    private DatabaseFunctions database = new DatabaseFunctions();
     private DICOMLogger logger;
  
     public DICOMParser(boolean debugState, String configFile, DICOMLogger SystemLogger, String APIconfigFile){
@@ -458,7 +450,7 @@ public class DICOMParser {
             for(int i=0;i<level;i++){
                 indent += ">";
             }
-            debugMessage(indent+" "+TagUtils.toHexString(tag)+" :: "+tag);
+            //debugMessage(indent+" "+TagUtils.toHexString(tag)+" :: "+tag+" :: "+Attrs.getVR(tag));
 
             if(Attrs.getVR(tag).toString().equals("SQ")){
                 Sequence seq = Attrs.getSequence(tag);

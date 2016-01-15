@@ -150,7 +150,9 @@ public class BiometrySide {
 
     public void setSNRMin(Double BSNRMin){
         if(this.SNRMin == null || this.SNRMin.equals(BigDecimal.ZERO) || BigDecimal.valueOf(BSNRMin).compareTo(this.SNRMin) == -1 ){
-            this.SNRMin = BigDecimal.valueOf(BSNRMin);
+            if(BSNRMin != 0.0){
+                this.SNRMin = BigDecimal.valueOf(BSNRMin);
+            }
         }
     }
     
