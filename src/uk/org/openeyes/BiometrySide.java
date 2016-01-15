@@ -6,7 +6,6 @@
 package uk.org.openeyes;
 
 import java.math.BigDecimal;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 
 /**

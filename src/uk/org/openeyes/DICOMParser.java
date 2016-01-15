@@ -8,11 +8,8 @@ package uk.org.openeyes;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcm4che3.data.Attributes;
@@ -71,14 +68,6 @@ public class DICOMParser {
     public BiometryData getBiometryData(){
         return this.Biometry;
     }
-     
-    private String InvertSide(String Side){
-        if(Side.equals("L")){
-            return "R";
-        }else{
-            return "L";
-        }
-    }
     
     private void debugMessage(String message){
         if(this.debug){
@@ -86,7 +75,6 @@ public class DICOMParser {
             //System.out.println(message);
         }
     }
-    
     
     public DicomFiles searchDicomFile(String inputFile){
         File file = new File(inputFile);

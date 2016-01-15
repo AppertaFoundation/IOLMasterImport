@@ -5,11 +5,6 @@
  */
 package uk.org.openeyes;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author VEDELEKT
@@ -17,7 +12,6 @@ import java.util.logging.Logger;
 public class BiometryData {
     private BiometrySide Left = new BiometrySide();
     private BiometrySide Right = new BiometrySide();
-    private BiometrySide Unknown = new BiometrySide(); // because some sequences contain information about the side at the end of the sequence we use this side for collecting data temporary
     
     public void setSideData(String Side, BiometrySide SideData){
         if(Side.equals("L")){
