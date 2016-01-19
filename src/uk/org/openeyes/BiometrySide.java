@@ -167,7 +167,7 @@ public class BiometrySide {
         return this.SNR;
     }
     
-    // add new lenses to the selected side
+    // add new lens to the selected side
     public void addCalculations(){
         Measurements.add(new BiometryMeasurementData());
     }
@@ -176,27 +176,27 @@ public class BiometrySide {
         return Measurements.size()-1;
     }
     
-    public void setLensesName(String LName, Integer LNum){
-        Measurements.get(LNum).setLenseName(LName);
+    public void setLensName(String LName, Integer LNum){
+        Measurements.get(LNum).setLensName(LName);
     }
     
     public void setFormulaName(String LName, Integer LNum){
         Measurements.get(LNum).setFormulaName(LName);
     }
     
-    public void setLenseAConst(Double LAConst, Integer LNum){
+    public void setLensAConst(Double LAConst, Integer LNum){
         Measurements.get(LNum).setAConst(LAConst);
     }
     
-    public void setLenseEmmetropia(Double LEmmetropia, Integer LNum){
+    public void setLensEmmetropia(Double LEmmetropia, Integer LNum){
         Measurements.get(LNum).setEmmetropia(LEmmetropia);
     }
     
-    public void setLenseIOL(Double LIOL, Integer LNum){
+    public void setLensIOL(Double LIOL, Integer LNum){
         Measurements.get(LNum).setIOL(LIOL);
     }
     
-    public void setLenseREF(Double LREF, Integer LNum){
+    public void setLensREF(Double LREF, Integer LNum){
         Measurements.get(LNum).setREF(LREF);
     }
     
@@ -245,7 +245,7 @@ public class BiometrySide {
     // check if this side have any particular data
     // if all values are in default than we return false
     public boolean isSideHaveData(){
-        if( this.K1 == 0.0 && this.K2 == 0.0 && this.AxisK1 == 0.0 && this.AL == 0.0 && this.Measurements.size() == 0){
+        if( this.K1 == 0.0 && this.K2 == 0.0 && this.AxisK1 == 0.0 && this.AL == 0.0 && this.Measurements.isEmpty()){
             return false;
         }else{
             return true;
@@ -274,7 +274,7 @@ public class BiometrySide {
        output += sideName+" ACD modified: "+this.isACDModified+"\n";
        output += "\n";
        for(BiometryMeasurementData LensData: Measurements){
-           output += LensData.printLenses();
+           output += LensData.printLensData();
        }
        //System.out.println("Predicted refraction: "+this.PredictedREF);
        return output;

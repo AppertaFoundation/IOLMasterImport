@@ -20,7 +20,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.hibernate.cfg.Configuration;
 import org.ini4j.Wini;
 
 /**

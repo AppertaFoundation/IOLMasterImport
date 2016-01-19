@@ -98,7 +98,7 @@ public class OE_IOLMasterImport  {
             }
             
             SystemLogger.getLogger().setStatus("failed");
-            SystemLogger.addToRawOutput("ERROR: unable to parse command line arguments");
+            SystemLogger.addToRawOutput("ERROR: something went wrong, please check the error messages!");
 
             // exit code 1: unable to parse command line arguments
             System.exit(1);

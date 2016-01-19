@@ -15,7 +15,7 @@ import org.json.simple.JSONArray;
  * @author VEDELEKT
  */
 public class BiometryMeasurementData {
-    private String LenseName;
+    private String LensName;
     private String FormulaName;
     private Double AConst;
     private Double Emmetropia;
@@ -23,12 +23,12 @@ public class BiometryMeasurementData {
     private List<Double> REF = new ArrayList<Double>();
     
    
-    public void setLenseName(String LName){
-        this.LenseName = LName;
+    public void setLensName(String LName){
+        this.LensName = LName;
     }
     
-    public String getLenseName(){
-        return this.LenseName;
+    public String getLensName(){
+        return this.LensName;
     }
     
     public void setFormulaName(String LName){
@@ -86,9 +86,9 @@ public class BiometryMeasurementData {
         return exportJSON.toJSONString();
     }
     
-    public String printLenses(){
+    public String printLensData(){
         String output;
-        output = "Lenses name: "+this.LenseName+"\n";
+        output = "Lens name: "+this.LensName+"\n";
         output += "Formula name: "+this.FormulaName+"\n";
         output += "A constant: "+this.AConst+"\n";
         output += "Emmetropia: "+this.Emmetropia+"\n";
