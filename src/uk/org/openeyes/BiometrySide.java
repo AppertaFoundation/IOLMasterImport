@@ -6,6 +6,7 @@
 package uk.org.openeyes;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 /**
@@ -34,9 +35,7 @@ public class BiometrySide {
     private ArrayList<BiometryMeasurementData> Measurements = new ArrayList<>();
 
     public void setK1(Double BK1){
-        if(K1 == 0){
-            this.K1 = BK1;
-        }
+        this.K1 = BK1;
     }
     
     public double getK1(){
@@ -72,7 +71,9 @@ public class BiometrySide {
     }
     
     public double getDeltaK(){
-        return this.DeltaK;
+        BigDecimal bd = new BigDecimal(Math.abs(this.K2-this.K1));
+        bd = bd.setScale(2, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
     
     public void setTargetRef(Double TargetRef){
@@ -92,9 +93,7 @@ public class BiometrySide {
     }
 
     public void setRefractionSphere(Double RefractionSphere){
-        if(this.RefractionSphere == 0){
-            this.RefractionSphere = RefractionSphere;
-        }
+        this.RefractionSphere = RefractionSphere;
     }
     
     public double getRefractionSphere(){
@@ -102,9 +101,7 @@ public class BiometrySide {
     }
     
     public void setRefractionDelta(Double RefractionDelta){
-        if(this.RefractionDelta == 0){
-            this.RefractionDelta = RefractionDelta;
-        }
+        this.RefractionDelta = RefractionDelta;
     }
     
     public double getRefractionDelta(){
@@ -112,9 +109,7 @@ public class BiometrySide {
     }
 
     public void setRefractionAxis(Double RefractionAxis){
-        if(this.RefractionAxis == 0){
-            this.RefractionAxis = RefractionAxis;
-        }
+        this.RefractionAxis = RefractionAxis;
     }
     
     public double getRefractionAxis(){
@@ -130,9 +125,7 @@ public class BiometrySide {
     }
 
     public void setACD(Double BACD){
-        //if(this.ACD == 0){
-            this.ACD = BACD;
-        //}
+        this.ACD = BACD;
     }
     
     public double getACD(){
@@ -258,7 +251,7 @@ public class BiometrySide {
        output += sideName+" K2: "+this.K2+"\n";
        output += sideName+" Axis K1: "+this.AxisK1+"\n";
        output += sideName+" Axis K2: "+this.AxisK2+"\n";
-       output += sideName+" Delta K: "+this.DeltaK+"\n";
+       output += sideName+" Delta K: "+this.getDeltaK()+"\n";
        output += sideName+" Delta K Axis: "+this.DeltaKAxis+"\n";
        output += sideName+" Target refraction: "+this.TargetRef+"\n";
        output += sideName+" Refraction sphere: "+this.RefractionSphere+"\n";

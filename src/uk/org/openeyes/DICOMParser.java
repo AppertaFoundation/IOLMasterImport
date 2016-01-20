@@ -301,8 +301,8 @@ public class DICOMParser {
         }
         if(Attrs.contains(getTagInteger("771B1032"))){
             sideData.setAxisK1(getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
-            sideData.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
-            sideData.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F",side,Attrs));
+            //sideData.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
+            //sideData.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F",side,Attrs));
         }
         // check for SNR
         if(Attrs.contains(getTagInteger("771B1030"))){
