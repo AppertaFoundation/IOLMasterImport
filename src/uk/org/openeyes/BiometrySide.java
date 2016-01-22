@@ -89,7 +89,8 @@ public class BiometrySide {
     }
     
     public double getDeltaKAxis(){
-        return this.DeltaKAxis;
+        double returnvalue = (this.K1 < this.K2) ? this.AxisK1 : this.AxisK2;
+        return returnvalue;
     }
 
     public void setRefractionSphere(Double RefractionSphere){
@@ -252,7 +253,7 @@ public class BiometrySide {
        output += sideName+" Axis K1: "+this.AxisK1+"\n";
        output += sideName+" Axis K2: "+this.AxisK2+"\n";
        output += sideName+" Delta K: "+this.getDeltaK()+"\n";
-       output += sideName+" Delta K Axis: "+this.DeltaKAxis+"\n";
+       output += sideName+" Delta K Axis: "+this.getDeltaKAxis()+"\n";
        output += sideName+" Target refraction: "+this.TargetRef+"\n";
        output += sideName+" Refraction sphere: "+this.RefractionSphere+"\n";
        output += sideName+" Refraction delta: "+this.RefractionDelta+"\n";

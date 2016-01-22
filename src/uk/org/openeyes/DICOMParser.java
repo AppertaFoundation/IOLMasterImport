@@ -44,7 +44,7 @@ public class DICOMParser {
     private String CurrentSide = "R";
     private SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
     
-    private DatabaseFunctions database = new DatabaseFunctions();
+    private BiometryFunctions database;
     private DICOMLogger logger;
  
     /**
@@ -58,17 +58,10 @@ public class DICOMParser {
         this.logger = SystemLogger;
         this.debug = debugState;
         this.APIconfigFile = APIconfigFile;
-                
+        database = new BiometryFunctions(logger);            
+        
         database.initSessionFactory(configFile, SystemLogger);
         debugMessage("Connection status: "+database.checkConnection());
-    }
-    
-    /**
-     *
-     * @return
-     */
-    public DatabaseFunctions getDatabase(){
-        return this.database;
     }
     
     /**
@@ -556,9 +549,9 @@ public class DICOMParser {
         }
         
         database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
-        BiometryFunctions BiometryProcessor = new BiometryFunctions(logger);
+        
         if(database.getSelectedPatient() != null){
-            BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
+            database.processBiometryEvent(Study,  Biometry);
         }else{
             // we try to search through the API, and if that one is successfull then try to search again
             // the reason of this is to check if the patient is already exists in the PAS and 
@@ -597,7 +590,7 @@ public class DICOMParser {
 
                 if(database.getSelectedPatient() != null){
                     // we try to search again
-                    BiometryProcessor.processBiometryEvent(Study,  Biometry, database);
+                    database.processBiometryEvent(Study,  Biometry);
                 }else{
                     // search for patient data has been failed - need to print and log!!
                     logger.getLogger().setPatientNumber(Patient.getPatientID());

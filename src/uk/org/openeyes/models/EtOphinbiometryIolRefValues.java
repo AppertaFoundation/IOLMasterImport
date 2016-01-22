@@ -56,6 +56,15 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     private BigDecimal emmetropiaLeft;
     @Column(name = "emmetropia_right")
     private BigDecimal emmetropiaRight;
+    @Column(name = "constant")
+    private BigDecimal constant;
+    @Column(name = "constant1")
+    private BigDecimal constant1;
+    @Column(name = "constant2")
+    private BigDecimal constant2;
+    @Basic(optional = false)
+    @Column(name = "active")
+    private boolean active=true;
     @Basic(optional = false)
     @Column(name = "last_modified_date")
     @Temporal(TemporalType.TIMESTAMP)
@@ -82,6 +91,9 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     @JoinColumn(name = "last_modified_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User lastModifiedUserId;
+    @JoinColumn(name = "surgeon_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private OphinbiometrySurgeon surgeonId;
 
     public EtOphinbiometryIolRefValues() {
     }
@@ -136,6 +148,38 @@ public class EtOphinbiometryIolRefValues implements Serializable {
         this.emmetropiaRight = emmetropiaRight;
     }
 
+    public BigDecimal getConstant() {
+        return constant;
+    }
+
+    public void setConstant(BigDecimal constant) {
+        this.constant = constant;
+    }
+    
+    public BigDecimal getConstant1() {
+        return constant1;
+    }
+
+    public void setConstant1(BigDecimal constant1) {
+        this.constant1 = constant1;
+    }
+    
+    public BigDecimal getConstant2() {
+        return constant2;
+    }
+
+    public void setConstant2(BigDecimal constant2) {
+        this.constant2 = constant2;
+    }
+    
+    public boolean getActive(){
+        return active;
+    }
+    
+    public void setActive(boolean active){
+        this.active = active;
+    }
+    
     public Date getLastModifiedDate() {
         return lastModifiedDate;
     }
@@ -191,6 +235,15 @@ public class EtOphinbiometryIolRefValues implements Serializable {
     public void setLensId(OphinbiometryLenstypeLens lensId) {
         this.lensId = lensId;
     }
+    
+    public OphinbiometrySurgeon getSurgeonId() {
+        return surgeonId;
+    }
+
+    public void setSurgeonId(OphinbiometrySurgeon surgeonId) {
+        this.surgeonId = surgeonId;
+    }
+
 
     public User getLastModifiedUserId() {
         return lastModifiedUserId;
