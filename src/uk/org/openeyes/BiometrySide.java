@@ -89,7 +89,7 @@ public class BiometrySide {
     }
     
     public double getDeltaKAxis(){
-        double returnvalue = (this.K1 < this.K2) ? this.AxisK1 : this.AxisK2;
+        double returnvalue = (this.K1 < this.K2) ? this.AxisK2 : this.AxisK1;
         return returnvalue;
     }
 
