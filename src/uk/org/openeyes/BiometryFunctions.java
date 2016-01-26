@@ -191,11 +191,6 @@ public class BiometryFunctions extends DatabaseFunctions{
         basicMeasurementData.setK2AxisRight(BigDecimal.valueOf(sideData.getAxisK2()));
         currentDeltaK = sideData.getDeltaK();
         
-        // in the device is an IOLMaster 500 than we make sure that the value is negative
-        // Based on documentation: Manufacturer’s model name of the equipment that produced the composite instances. Always “IOLMaster 500”.
-        if(eventStudy.getDeviceModel().equals("IOLMaster 500") && currentDeltaK > 0){
-            currentDeltaK = -1 * currentDeltaK;
-        }
         basicMeasurementData.setDeltaKRight(BigDecimal.valueOf(currentDeltaK));
         basicMeasurementData.setDeltaKAxisRight(BigDecimal.valueOf(sideData.getDeltaKAxis()));
         basicMeasurementData.setAcdRight(BigDecimal.valueOf(sideData.getACD()));
