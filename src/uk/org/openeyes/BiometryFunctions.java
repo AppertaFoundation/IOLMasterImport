@@ -375,73 +375,75 @@ public class BiometryFunctions extends DatabaseFunctions{
                 rowData = storedBiometryMeasurementDataRight.get(i);
             }
             
-            // TODO: what is the A constant and emmetropia value here??
-            lensType = searchForLensData(rowData.getLensName(), rowData.getAConst());
-            formulaType = searchForFormulaData(rowData.getFormulaName());
-            
-            // we search for current values
-            EtOphinbiometryIolRefValues iolRefValues = null;
-            iolRefValues = searchCurrentIolRefValues(lensType, formulaType);    
-            
-            if(isDataModified()){
-                if(iolRefValues != null){
-                    iolRefValues.setActive(false);
-                    session.saveOrUpdate(iolRefValues);
-                    iolRefValues = null;
-                }
-                dicomLogger.addToRawOutput("Measurement data modified manually (AL, K or ACD values), creating new IOL REF record...");
-            }
+            if(!rowData.isIOLREFEmpty()){
+                // TODO: what is the A constant and emmetropia value here??
+                lensType = searchForLensData(rowData.getLensName(), rowData.getAConst());
+                formulaType = searchForFormulaData(rowData.getFormulaName());
 
-            boolean isNewIolRefValues = false;
-            if( iolRefValues == null){
-                isNewIolRefValues = true;
-                iolRefValues = new EtOphinbiometryIolRefValues();
-            }
+                // we search for current values
+                EtOphinbiometryIolRefValues iolRefValues = null;
+                iolRefValues = searchCurrentIolRefValues(lensType, formulaType);    
 
-            iolRefValues.setCreatedUserId(selectedUser);
-            iolRefValues.setLastModifiedUserId(selectedUser);
-            iolRefValues.setCreatedDate(new Date());
-            iolRefValues.setLastModifiedDate(new Date());
-            iolRefValues.setEventId(importedBiometryEvent.getEventId());
-            iolRefValues.setEyeId(new Eye(eventBiometry.getEyeId()));
-            iolRefValues.setFormulaId(formulaType);
-            iolRefValues.setLensId(lensType);
-            iolRefValues.setConstant(BigDecimal.valueOf(rowData.getAConst()));
-            iolRefValues.setSurgeonId(searchSurgeon(eventStudy.getSurgeonName()));
-            if (ReferenceSide.equals("L")) {
-                if(isNewIolRefValues){
-                    iolRefValues.setIolRefValuesLeft(rowData.getIOLREFJSON());
-                }else{
-                    iolRefValues.setIolRefValuesLeft(mergeIolRefValues(iolRefValues, rowData.getIOLREFJSON(), "L" ));
-                }
-                iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(rowData.getEmmetropia()));
-                if (storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()) {
-                    if(isNewIolRefValues){    
-                        iolRefValues.setIolRefValuesRight(storedBiometryMeasurementDataRight.get(i).getIOLREFJSON());
-                    }else{
-                        iolRefValues.setIolRefValuesRight(mergeIolRefValues(iolRefValues, storedBiometryMeasurementDataRight.get(i).getIOLREFJSON(),"R"));
+                if(isDataModified()){
+                    if(iolRefValues != null){
+                        iolRefValues.setActive(false);
+                        session.saveOrUpdate(iolRefValues);
+                        iolRefValues = null;
                     }
-                    iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(storedBiometryMeasurementDataRight.get(i).getEmmetropia()));
+                    dicomLogger.addToRawOutput("Measurement data modified manually (AL, K or ACD values), creating new IOL REF record...");
                 }
-            } else {
-                if(isNewIolRefValues){
-                    iolRefValues.setIolRefValuesRight(rowData.getIOLREFJSON());
-                }else{
-                    iolRefValues.setIolRefValuesRight(mergeIolRefValues(iolRefValues, rowData.getIOLREFJSON(), "R" ));
+
+                boolean isNewIolRefValues = false;
+                if( iolRefValues == null){
+                    isNewIolRefValues = true;
+                    iolRefValues = new EtOphinbiometryIolRefValues();
                 }
-                iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(rowData.getEmmetropia()));
-                if (storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()) {
+
+                iolRefValues.setCreatedUserId(selectedUser);
+                iolRefValues.setLastModifiedUserId(selectedUser);
+                iolRefValues.setCreatedDate(new Date());
+                iolRefValues.setLastModifiedDate(new Date());
+                iolRefValues.setEventId(importedBiometryEvent.getEventId());
+                iolRefValues.setEyeId(new Eye(eventBiometry.getEyeId()));
+                iolRefValues.setFormulaId(formulaType);
+                iolRefValues.setLensId(lensType);
+                iolRefValues.setConstant(BigDecimal.valueOf(rowData.getAConst()));
+                iolRefValues.setSurgeonId(searchSurgeon(eventStudy.getSurgeonName()));
+                if (ReferenceSide.equals("L")) {
                     if(isNewIolRefValues){
-                        iolRefValues.setIolRefValuesLeft(storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON());
+                        iolRefValues.setIolRefValuesLeft(rowData.getIOLREFJSON());
                     }else{
-                        iolRefValues.setIolRefValuesLeft(mergeIolRefValues(iolRefValues, storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON(),"L"));
+                        iolRefValues.setIolRefValuesLeft(mergeIolRefValues(iolRefValues, rowData.getIOLREFJSON(), "L" ));
                     }
-                    iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(storedBiometryMeasurementDataLeft.get(i).getEmmetropia()));
+                    iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(rowData.getEmmetropia()));
+                    if (storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()) {
+                        if(isNewIolRefValues){    
+                            iolRefValues.setIolRefValuesRight(storedBiometryMeasurementDataRight.get(i).getIOLREFJSON());
+                        }else{
+                            iolRefValues.setIolRefValuesRight(mergeIolRefValues(iolRefValues, storedBiometryMeasurementDataRight.get(i).getIOLREFJSON(),"R"));
+                        }
+                        iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(storedBiometryMeasurementDataRight.get(i).getEmmetropia()));
+                    }
+                } else {
+                    if(isNewIolRefValues){
+                        iolRefValues.setIolRefValuesRight(rowData.getIOLREFJSON());
+                    }else{
+                        iolRefValues.setIolRefValuesRight(mergeIolRefValues(iolRefValues, rowData.getIOLREFJSON(), "R" ));
+                    }
+                    iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(rowData.getEmmetropia()));
+                    if (storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()) {
+                        if(isNewIolRefValues){
+                            iolRefValues.setIolRefValuesLeft(storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON());
+                        }else{
+                            iolRefValues.setIolRefValuesLeft(mergeIolRefValues(iolRefValues, storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON(),"L"));
+                        }
+                        iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(storedBiometryMeasurementDataLeft.get(i).getEmmetropia()));
+                    }
                 }
+                session.saveOrUpdate(iolRefValues);
+                formulaType = null;
+                lensType = null;
             }
-            session.saveOrUpdate(iolRefValues);
-            formulaType = null;
-            lensType = null;
         }
     }
 

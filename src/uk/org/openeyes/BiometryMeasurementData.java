@@ -71,6 +71,20 @@ public class BiometryMeasurementData {
         return this.REF;
     }
     
+    public boolean isIOLREFEmpty(){
+        for( Double valueIOL : IOL){
+            if(valueIOL != 0.0){
+                return false;
+            }
+        }
+        for( Double valueREF : REF){
+            if(valueREF != 0.0){
+                return false;
+            }
+        }
+        return true;
+    }
+    
     public String getIOLREFJSON(){
         JSONObject exportJSON = new JSONObject();
         JSONArray dataIOL = new JSONArray();
@@ -87,17 +101,21 @@ public class BiometryMeasurementData {
     }
     
     public String printLensData(){
-        String output;
-        output = "Lens name: "+this.LensName+"\n";
-        output += "Formula name: "+this.FormulaName+"\n";
-        output += "A constant: "+this.AConst+"\n";
-        output += "Emmetropia: "+this.Emmetropia+"\n";
-        int n = 0;
-        for (Double iolValue : this.IOL) {
-            output += n+". REF "+this.REF.get(n) + " - IOL "+n+": "+iolValue+"\n";
-            n++;
-	}
-        return output;
+        if(!isIOLREFEmpty()){
+            String output;
+            output = "Lens name: "+this.LensName+"\n";
+            output += "Formula name: "+this.FormulaName+"\n";
+            output += "A constant: "+this.AConst+"\n";
+            output += "Emmetropia: "+this.Emmetropia+"\n";
+            int n = 0;
+            for (Double iolValue : this.IOL) {
+                output += n+". REF "+this.REF.get(n) + " - IOL "+n+": "+iolValue+"\n";
+                n++;
+            }
+            output += "\n";
+            return output;
+        }
+        return "";
     }
     
 }
