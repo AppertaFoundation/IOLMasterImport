@@ -70,10 +70,13 @@ public class BiometrySide {
         this.DeltaK = DeltaK;
     }
     
+    public double round2Decimals(BigDecimal number){
+        number = number.setScale(2, RoundingMode.HALF_UP);
+        return number.doubleValue();
+    }
+    
     public double getDeltaK(){
-        BigDecimal bd = new BigDecimal(Math.abs(this.K2-this.K1));
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        return bd.doubleValue();
+        return round2Decimals(new BigDecimal(Math.abs(this.K2-this.K1)));
     }
     
     public void setTargetRef(Double TargetRef){
@@ -191,7 +194,7 @@ public class BiometrySide {
     }
     
     public void setLensREF(Double LREF, Integer LNum){
-        Measurements.get(LNum).setREF(LREF);
+        Measurements.get(LNum).setREF(round2Decimals(BigDecimal.valueOf(LREF)));
     }
     
     public ArrayList<BiometryMeasurementData> getMeasurements(){
