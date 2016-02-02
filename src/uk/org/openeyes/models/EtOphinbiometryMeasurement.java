@@ -47,6 +47,54 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "EtOphinbiometryMeasurement.findBySnrLeft", query = "SELECT e FROM EtOphinbiometryMeasurement e WHERE e.snrLeft = :snrLeft"),
     @NamedQuery(name = "EtOphinbiometryMeasurement.findBySnrRight", query = "SELECT e FROM EtOphinbiometryMeasurement e WHERE e.snrRight = :snrRight")})
 public class EtOphinbiometryMeasurement implements Serializable {
+    @Basic(optional = false)
+    @Column(name = "k2_axis_left")
+    private BigDecimal k2AxisLeft;
+    @Basic(optional = false)
+    @Column(name = "k2_axis_right")
+    private BigDecimal k2AxisRight;
+    @Basic(optional = false)
+    @Column(name = "delta_k_left")
+    private BigDecimal deltaKLeft;
+    @Basic(optional = false)
+    @Column(name = "delta_k_right")
+    private BigDecimal deltaKRight;
+    @Basic(optional = false)
+    @Column(name = "delta_k_axis_left")
+    private BigDecimal deltaKAxisLeft;
+    @Basic(optional = false)
+    @Column(name = "delta_k_axis_right")
+    private BigDecimal deltaKAxisRight;
+    @Basic(optional = false)
+    @Column(name = "acd_left")
+    private BigDecimal acdLeft;
+    @Basic(optional = false)
+    @Column(name = "acd_right")
+    private BigDecimal acdRight;
+    @Basic(optional = false)
+    @Column(name = "refraction_sphere_left")
+    private BigDecimal refractionSphereLeft;
+    @Basic(optional = false)
+    @Column(name = "refraction_sphere_right")
+    private BigDecimal refractionSphereRight;
+    @Basic(optional = false)
+    @Column(name = "refraction_delta_left")
+    private BigDecimal refractionDeltaLeft;
+    @Basic(optional = false)
+    @Column(name = "refraction_delta_right")
+    private BigDecimal refractionDeltaRight;
+    @Basic(optional = false)
+    @Column(name = "refraction_axis_left")
+    private BigDecimal refractionAxisLeft;
+    @Basic(optional = false)
+    @Column(name = "refraction_axis_right")
+    private BigDecimal refractionAxisRight;
+    @JoinColumn(name = "eye_status_right", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private DicomEyeStatus eyeStatusRight;
+    @JoinColumn(name = "eye_status_left", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private DicomEyeStatus eyeStatusLeft;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -91,10 +139,16 @@ public class EtOphinbiometryMeasurement implements Serializable {
     private BigDecimal axialLengthRight;
     @Basic(optional = false)
     @Column(name = "snr_left")
-    private int snrLeft;
+    private BigDecimal snrLeft;
     @Basic(optional = false)
     @Column(name = "snr_right")
-    private int snrRight;
+    private BigDecimal snrRight;
+    @Basic(optional = false)
+    @Column(name = "snr_min_left")
+    private BigDecimal snrMinLeft;
+    @Basic(optional = false)
+    @Column(name = "snr_min_right")
+    private BigDecimal snrMinRight;
     @JoinColumn(name = "created_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User createdUserId;
@@ -107,6 +161,14 @@ public class EtOphinbiometryMeasurement implements Serializable {
     @JoinColumn(name = "last_modified_user_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User lastModifiedUserId;
+    @Column(name = "al_modified_left")
+    private Boolean alModifiedLeft;
+    @Column(name = "al_modified_right")
+    private Boolean alModifiedRight;
+    @Column(name = "k_modified_left")
+    private Boolean kModifiedLeft;
+    @Column(name = "k_modified_right")
+    private Boolean kModifiedRight;
 
     public EtOphinbiometryMeasurement() {
     }
@@ -115,7 +177,7 @@ public class EtOphinbiometryMeasurement implements Serializable {
         this.id = id;
     }
 
-    public EtOphinbiometryMeasurement(Integer id, Date lastModifiedDate, Date createdDate, boolean deleted, BigDecimal k1Left, BigDecimal k1Right, BigDecimal k2Left, BigDecimal k2Right, BigDecimal axisK1Left, BigDecimal axisK1Right, BigDecimal axialLengthLeft, BigDecimal axialLengthRight, int snrLeft, int snrRight) {
+    public EtOphinbiometryMeasurement(Integer id, Date lastModifiedDate, Date createdDate, boolean deleted, BigDecimal k1Left, BigDecimal k1Right, BigDecimal k2Left, BigDecimal k2Right, BigDecimal axisK1Left, BigDecimal axisK1Right, BigDecimal axialLengthLeft, BigDecimal axialLengthRight, BigDecimal snrLeft, BigDecimal snrRight, BigDecimal snrMinLeft, BigDecimal snrMinRight) {
         this.id = id;
         this.lastModifiedDate = lastModifiedDate;
         this.createdDate = createdDate;
@@ -130,6 +192,9 @@ public class EtOphinbiometryMeasurement implements Serializable {
         this.axialLengthRight = axialLengthRight;
         this.snrLeft = snrLeft;
         this.snrRight = snrRight;
+        this.snrMinLeft = snrMinLeft;
+        this.snrMinRight = snrMinRight;
+        
     }
 
     public Integer getId() {
@@ -228,22 +293,38 @@ public class EtOphinbiometryMeasurement implements Serializable {
         this.axialLengthRight = axialLengthRight;
     }
 
-    public int getSnrLeft() {
+    public BigDecimal getSnrLeft() {
         return snrLeft;
     }
 
-    public void setSnrLeft(int snrLeft) {
+    public void setSnrLeft(BigDecimal snrLeft) {
         this.snrLeft = snrLeft;
     }
 
-    public int getSnrRight() {
+    public BigDecimal getSnrRight() {
         return snrRight;
     }
 
-    public void setSnrRight(int snrRight) {
+    public void setSnrRight(BigDecimal snrRight) {
         this.snrRight = snrRight;
     }
 
+    public BigDecimal getSnrMinLeft() {
+        return snrMinLeft;
+    }
+
+    public void setSnrMinLeft(BigDecimal snrMinLeft) {
+        this.snrMinLeft = snrMinLeft;
+    }
+
+    public BigDecimal getSnrMinRight() {
+        return snrMinRight;
+    }
+
+    public void setSnrMinRight(BigDecimal snrMinRight) {
+        this.snrMinRight = snrMinRight;
+    }
+    
     public User getCreatedUserId() {
         return createdUserId;
     }
@@ -300,5 +381,165 @@ public class EtOphinbiometryMeasurement implements Serializable {
     public String toString() {
         return "uk.org.openeyes.models.EtOphinbiometryMeasurement[ id=" + id + " ]";
     }
+
+    public BigDecimal getK2AxisLeft() {
+        return k2AxisLeft;
+    }
+
+    public void setK2AxisLeft(BigDecimal k2AxisLeft) {
+        this.k2AxisLeft = k2AxisLeft;
+    }
+
+    public BigDecimal getK2AxisRight() {
+        return k2AxisRight;
+    }
+
+    public void setK2AxisRight(BigDecimal k2AxisRight) {
+        this.k2AxisRight = k2AxisRight;
+    }
+
+    public BigDecimal getDeltaKLeft() {
+        return deltaKLeft;
+    }
+
+    public void setDeltaKLeft(BigDecimal deltaKLeft) {
+        this.deltaKLeft = deltaKLeft;
+    }
+
+    public BigDecimal getDeltaKRight() {
+        return deltaKRight;
+    }
+
+    public void setDeltaKRight(BigDecimal deltaKRight) {
+        this.deltaKRight = deltaKRight;
+    }
+
+    public BigDecimal getDeltaKAxisLeft() {
+        return deltaKAxisLeft;
+    }
+
+    public void setDeltaKAxisLeft(BigDecimal deltaKAxisLeft) {
+        this.deltaKAxisLeft = deltaKAxisLeft;
+    }
+
+    public BigDecimal getDeltaKAxisRight() {
+        return deltaKAxisRight;
+    }
+
+    public void setDeltaKAxisRight(BigDecimal deltaKAxisRight) {
+        this.deltaKAxisRight = deltaKAxisRight;
+    }
+
+    public BigDecimal getAcdLeft() {
+        return acdLeft;
+    }
+
+    public void setAcdLeft(BigDecimal acdLeft) {
+        this.acdLeft = acdLeft;
+    }
+
+    public BigDecimal getAcdRight() {
+        return acdRight;
+    }
+
+    public void setAcdRight(BigDecimal acdRight) {
+        this.acdRight = acdRight;
+    }
+
+    public BigDecimal getRefractionSphereLeft() {
+        return refractionSphereLeft;
+    }
+
+    public void setRefractionSphereLeft(BigDecimal refractionSphereLeft) {
+        this.refractionSphereLeft = refractionSphereLeft;
+    }
+
+    public BigDecimal getRefractionSphereRight() {
+        return refractionSphereRight;
+    }
+
+    public void setRefractionSphereRight(BigDecimal refractionSphereRight) {
+        this.refractionSphereRight = refractionSphereRight;
+    }
+
+    public BigDecimal getRefractionDeltaLeft() {
+        return refractionDeltaLeft;
+    }
+
+    public void setRefractionDeltaLeft(BigDecimal refractionDeltaLeft) {
+        this.refractionDeltaLeft = refractionDeltaLeft;
+    }
+
+    public BigDecimal getRefractionDeltaRight() {
+        return refractionDeltaRight;
+    }
+
+    public void setRefractionDeltaRight(BigDecimal refractionDeltaRight) {
+        this.refractionDeltaRight = refractionDeltaRight;
+    }
+
+    public BigDecimal getRefractionAxisLeft() {
+        return refractionAxisLeft;
+    }
+
+    public void setRefractionAxisLeft(BigDecimal refractionAxisLeft) {
+        this.refractionAxisLeft = refractionAxisLeft;
+    }
+
+    public BigDecimal getRefractionAxisRight() {
+        return refractionAxisRight;
+    }
+
+    public void setRefractionAxisRight(BigDecimal refractionAxisRight) {
+        this.refractionAxisRight = refractionAxisRight;
+    }
+
+    public DicomEyeStatus getEyeStatusRight() {
+        return eyeStatusRight;
+    }
+
+    public void setEyeStatusRight(DicomEyeStatus eyeStatusRight) {
+        this.eyeStatusRight = eyeStatusRight;
+    }
+
+    public DicomEyeStatus getEyeStatusLeft() {
+        return eyeStatusLeft;
+    }
+
+    public void setEyeStatusLeft(DicomEyeStatus eyeStatusLeft) {
+        this.eyeStatusLeft = eyeStatusLeft;
+    }
     
+    public void setAlModifiedLeft(boolean isALModified){
+        this.alModifiedLeft = isALModified;
+    }
+    
+    public boolean getAlModifiedLeft(){
+        return this.alModifiedLeft;
+    }
+
+    public void setAlModifiedRight(boolean isALModified){
+        this.alModifiedRight = isALModified;
+    }
+    
+    public boolean getAlModifiedRight(){
+        return this.alModifiedRight;
+    }
+    
+    public void setKModifiedLeft(boolean isKModified){
+        this.kModifiedLeft = isKModified;
+    }
+    
+    public boolean getKModifiedLeft(){
+        return this.kModifiedLeft;
+    }
+
+    public void setKModifiedRight(boolean isKModified){
+        this.kModifiedRight = isKModified;
+    }
+    
+    public boolean getKModifiedRight(){
+        return this.kModifiedRight;
+    }
+
 }

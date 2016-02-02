@@ -35,6 +35,8 @@ public class OE_IOLMasterImport  {
 	
         String inputFile = "";
         String configFile = "";
+        String APIconfigFile = "";
+        
         boolean debug = false;
         DICOMLogger SystemLogger = new DICOMLogger();
 
@@ -44,13 +46,16 @@ public class OE_IOLMasterImport  {
         Option optionFileName = new Option("f", "file", true,
                             "Specify a filename to import.");
         Option optionConfigFile = new Option("c", "config", true,
-                            "Specify a Hibernate config file. The default can be found in resources/hibernate.cfg.xml");
+                            "Specify a Hibernate config file. The default can be found in resources/hibernate.cfg.xml, if the name of the config file is not hibernate it will try to parse it as an ini file (eg. /etc/openeyes/dbconf)");
+        Option optionAPIConfigFile = new Option("a", "apiconfig", true,
+                            "Specify an API ini config file. If no API config specified the program won't use API call.");
         Option optionDebug = new Option("d", "debug", false,
                             "If specified all the processes will run in debug mode, and display more output messages");
 
         options.addOption(optionHelp);
         options.addOption(optionFileName);
         options.addOption(optionConfigFile);
+        options.addOption(optionAPIConfigFile);
         options.addOption(optionDebug);
 
         CommandLineParser parser;
@@ -66,11 +71,14 @@ public class OE_IOLMasterImport  {
             if (cmd.hasOption("c") || cmd.hasOption("config")) {
                 configFile = cmd.getOptionValue("config");
             }
+            if (cmd.hasOption("a") || cmd.hasOption("apiconfig")) {
+                APIconfigFile = cmd.getOptionValue("apiconfig");
+            }
             if (cmd.hasOption("d") || cmd.hasOption("debug")) {
                 debug = true;
             }
             
-            DICOMParser DicomParser = new DICOMParser(debug);
+            DICOMParser DicomParser = new DICOMParser(debug, configFile, SystemLogger, APIconfigFile);
             
             if(inputFile.equals("")){
                 inputFile = "test/data/input_test.dcm";    // original IOLMaster file with multi lense
@@ -79,16 +87,21 @@ public class OE_IOLMasterImport  {
                 //String fname = "test/data/vfa_test.dcm";      // visual fields dicom file
             }
 
-            
-            DicomParser.parseDicomFile(inputFile, SystemLogger);
-            DicomParser.processParsedData(configFile, SystemLogger);
+            SystemLogger.getLogger().setDicomFileId(DicomParser.searchDicomFile(inputFile));
+            DicomParser.parseDicomFile(inputFile);
+            DicomParser.processParsedData();
             
         } catch (Exception ex) {
             System.err.println("Error: " + ex.getMessage());
             if(debug){
                 ex.printStackTrace();
             }
-            System.exit(2);
+            
+            SystemLogger.getLogger().setStatus("failed");
+            SystemLogger.addToRawOutput("ERROR: something went wrong, please check the error messages!");
+
+            // exit code 1: unable to parse command line arguments
+            System.exit(1);
         }
     }
 

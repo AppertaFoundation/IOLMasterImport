@@ -13,6 +13,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -25,24 +28,25 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author VEDELEKT
  */
 @Entity
-@Table(name = "audit_dicom_import")
+@Table(name = "dicom_import_log")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "AuditDicomImport.findAll", query = "SELECT a FROM AuditDicomImport a"),
-    @NamedQuery(name = "AuditDicomImport.findById", query = "SELECT a FROM AuditDicomImport a WHERE a.id = :id"),
-    @NamedQuery(name = "AuditDicomImport.findByImportDatetime", query = "SELECT a FROM AuditDicomImport a WHERE a.importDatetime = :importDatetime"),
-    @NamedQuery(name = "AuditDicomImport.findByStudyDatetime", query = "SELECT a FROM AuditDicomImport a WHERE a.studyDatetime = :studyDatetime"),
-    @NamedQuery(name = "AuditDicomImport.findByStudyInstanceId", query = "SELECT a FROM AuditDicomImport a WHERE a.studyInstanceId = :studyInstanceId"),
-    @NamedQuery(name = "AuditDicomImport.findByStationId", query = "SELECT a FROM AuditDicomImport a WHERE a.stationId = :stationId"),
-    @NamedQuery(name = "AuditDicomImport.findByStudyLocation", query = "SELECT a FROM AuditDicomImport a WHERE a.studyLocation = :studyLocation"),
-    @NamedQuery(name = "AuditDicomImport.findByMachineManufacturer", query = "SELECT a FROM AuditDicomImport a WHERE a.machineManufacturer = :machineManufacturer"),
-    @NamedQuery(name = "AuditDicomImport.findByMachineModel", query = "SELECT a FROM AuditDicomImport a WHERE a.machineModel = :machineModel"),
-    @NamedQuery(name = "AuditDicomImport.findByMachineSoftwareVersion", query = "SELECT a FROM AuditDicomImport a WHERE a.machineSoftwareVersion = :machineSoftwareVersion"),
-    @NamedQuery(name = "AuditDicomImport.findByReportType", query = "SELECT a FROM AuditDicomImport a WHERE a.reportType = :reportType"),
-    @NamedQuery(name = "AuditDicomImport.findByPatientNumber", query = "SELECT a FROM AuditDicomImport a WHERE a.patientNumber = :patientNumber"),
-    @NamedQuery(name = "AuditDicomImport.findByStatus", query = "SELECT a FROM AuditDicomImport a WHERE a.status = :status"),
-    @NamedQuery(name = "AuditDicomImport.findByComment", query = "SELECT a FROM AuditDicomImport a WHERE a.comment = :comment")})
-public class AuditDicomImport implements Serializable {
+    @NamedQuery(name = "DicomImportLog.findAll", query = "SELECT d FROM DicomImportLog d"),
+    @NamedQuery(name = "DicomImportLog.findById", query = "SELECT d FROM DicomImportLog d WHERE d.id = :id"),
+    @NamedQuery(name = "DicomImportLog.findByImportDatetime", query = "SELECT d FROM DicomImportLog d WHERE d.importDatetime = :importDatetime"),
+    @NamedQuery(name = "DicomImportLog.findByStudyDatetime", query = "SELECT d FROM DicomImportLog d WHERE d.studyDatetime = :studyDatetime"),
+    @NamedQuery(name = "DicomImportLog.findByStudyInstanceId", query = "SELECT d FROM DicomImportLog d WHERE d.studyInstanceId = :studyInstanceId"),
+    @NamedQuery(name = "DicomImportLog.findByStationId", query = "SELECT d FROM DicomImportLog d WHERE d.stationId = :stationId"),
+    @NamedQuery(name = "DicomImportLog.findByStudyLocation", query = "SELECT d FROM DicomImportLog d WHERE d.studyLocation = :studyLocation"),
+    @NamedQuery(name = "DicomImportLog.findByMachineManufacturer", query = "SELECT d FROM DicomImportLog d WHERE d.machineManufacturer = :machineManufacturer"),
+    @NamedQuery(name = "DicomImportLog.findByMachineModel", query = "SELECT d FROM DicomImportLog d WHERE d.machineModel = :machineModel"),
+    @NamedQuery(name = "DicomImportLog.findByMachineSoftwareVersion", query = "SELECT d FROM DicomImportLog d WHERE d.machineSoftwareVersion = :machineSoftwareVersion"),
+    @NamedQuery(name = "DicomImportLog.findByReportType", query = "SELECT d FROM DicomImportLog d WHERE d.reportType = :reportType"),
+    @NamedQuery(name = "DicomImportLog.findByPatientNumber", query = "SELECT d FROM DicomImportLog d WHERE d.patientNumber = :patientNumber"),
+    @NamedQuery(name = "DicomImportLog.findByStatus", query = "SELECT d FROM DicomImportLog d WHERE d.status = :status"),
+    @NamedQuery(name = "DicomImportLog.findByComment", query = "SELECT d FROM DicomImportLog d WHERE d.comment = :comment"),
+    @NamedQuery(name = "DicomImportLog.findByImportType", query = "SELECT d FROM DicomImportLog d WHERE d.importType = :importType")})
+public class DicomImportLog implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,11 +79,21 @@ public class AuditDicomImport implements Serializable {
     private String status;
     @Column(name = "comment")
     private String comment;
+    @Column(name = "import_type")
+    private String importType;
+    @JoinColumn(name = "dicom_file_id", referencedColumnName = "id")
+    @ManyToOne
+    private DicomFiles dicomFileId;
+    @Column(name = "raw_importer_output", columnDefinition = "TEXT")
+    private String rawImporterOutput;
+    @Column(name = "series_instance_id")
+    private String seriesInstanceId;
 
-    public AuditDicomImport() {
+
+    public DicomImportLog() {
     }
 
-    public AuditDicomImport(Integer id) {
+    public DicomImportLog(Integer id) {
         this.id = id;
     }
 
@@ -187,6 +201,38 @@ public class AuditDicomImport implements Serializable {
         this.comment = comment;
     }
 
+    public String getImportType() {
+        return importType;
+    }
+
+    public void setImportType(String importType) {
+        this.importType = importType;
+    }
+
+    public DicomFiles getDicomFileIame() {
+        return dicomFileId;
+    }
+
+    public void setDicomFileId(DicomFiles dicomFileId) {
+        this.dicomFileId = dicomFileId;
+    }
+
+    public String getRawImporterOutput() {
+        return rawImporterOutput;
+    }
+
+    public void setRawImporterOutput(String rawImporterOutput) {
+        this.rawImporterOutput = rawImporterOutput;
+    }
+   
+    public String getSeriesInstanceId() {
+        return seriesInstanceId;
+    }
+
+    public void setSeriesInstanceId(String seriesInstanceId) {
+        this.seriesInstanceId = seriesInstanceId;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -197,10 +243,10 @@ public class AuditDicomImport implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof AuditDicomImport)) {
+        if (!(object instanceof DicomImportLog)) {
             return false;
         }
-        AuditDicomImport other = (AuditDicomImport) object;
+        DicomImportLog other = (DicomImportLog) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -209,7 +255,7 @@ public class AuditDicomImport implements Serializable {
 
     @Override
     public String toString() {
-        return "uk.org.openeyes.models.AuditDicomImport[ id=" + id + " ]";
+        return "uk.org.openeyes.models.DicomImportLog[ id=" + id + " ]";
     }
     
 }

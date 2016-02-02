@@ -11,7 +11,7 @@
     <!-- Database connection settings -->
     <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
     <property name="connection.url">jdbc:mysql://localhost:3333/openeyes</property>
-    <property name="connection.username">root</property>
+    <property name="connection.username">openeyes</property>
     <property name="connection.password">openeyes</property>
     <!-- JDBC connection pool (use the built-in) -->
     <property name="connection.pool_size">1</property>
@@ -26,6 +26,9 @@
     <!-- Names the annotated entity class -->
     <mapping class="uk.org.openeyes.models.Contact"/>
     <mapping class="uk.org.openeyes.models.ContactLabel"/>
+	<mapping class="uk.org.openeyes.models.DicomEyeStatus"/>
+    <mapping class="uk.org.openeyes.models.DicomFiles"/>
+    <mapping class="uk.org.openeyes.models.DicomImportLog"/>
     <mapping class="uk.org.openeyes.models.Disorder"/>
     <mapping class="uk.org.openeyes.models.DoctorGrade"/>
     <mapping class="uk.org.openeyes.models.Episode"/>

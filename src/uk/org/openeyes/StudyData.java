@@ -16,18 +16,20 @@ public class StudyData {
     private Calendar StudyDateTime = new GregorianCalendar();
     private String PhysicianName;
     private String SurgeonName;
-    private String FormulaName;
-    private String LenseName;
     private String InstitutionName;
     private String StationName;             // unique station ID
     private String StudyID;         
     private String StudyInstanceID;
+    private String SeriesInstanceID;
     private String DeviceManufacturer;
     private String DeviceModel;             // human readable machine model (eg. IOL Master 700)
     private String DeviceSoftwareVersion;
+    private String Comments;
+    private String ContentTime;
+    private String ContentDate;
     
     public void setStudyDateTime(String SDateTime){
-        System.out.println(SDateTime);
+        //System.out.println(SDateTime);
         this.StudyDateTime.set(Integer.parseInt(SDateTime.substring(0,4)), Integer.parseInt(SDateTime.substring(4,6)), Integer.parseInt(SDateTime.substring(6,8)), Integer.parseInt(SDateTime.substring(8,10)), Integer.parseInt(SDateTime.substring(10,12)));
     }
     
@@ -47,22 +49,6 @@ public class StudyData {
         return this.SurgeonName;
     }
 
-    public void setFormulaName(String SFormulaName){
-        this.FormulaName = SFormulaName;
-    }
-    
-    public String getFormulaName(){
-        return this.FormulaName;
-    }
-    
-    public void setLenseName(String SLenseName){
-        this.LenseName = SLenseName;
-    }
-    
-    public String getLenseName(){
-        return this.LenseName;
-    }
-    
     public void setInstituionName(String SInstitutionName){
         this.InstitutionName = SInstitutionName;
     }
@@ -95,6 +81,14 @@ public class StudyData {
         return this.StudyInstanceID;
     }
     
+    public void setSeriesInstanceID(String SSeriesInstanceID){
+        this.SeriesInstanceID = SSeriesInstanceID;
+    }
+    
+    public String getSeriesInstanceID(){
+        return this.SeriesInstanceID;
+    }
+    
     public void setDeviceManufacturer(String SDeviceManufacturer){
         this.DeviceManufacturer = SDeviceManufacturer;
     }
@@ -118,22 +112,49 @@ public class StudyData {
     public String getDeviceSoftwareVersion(){
         return this.DeviceSoftwareVersion;
     }
+   
+    public void setComments(String PComments){
+        this.Comments = PComments;
+    }
+    
+    public String getComments(){
+        return this.Comments;
+    }
+    
+    public void setContentTime(String PContentTime){
+        this.ContentTime = PContentTime;
+    }
+    
+    
+    public void setContentDate(String PContentDate){
+        this.ContentDate = PContentDate;
+    }
+    
+    public Calendar getContentDateTime(){
+        GregorianCalendar contentDateTime = new GregorianCalendar();
+        contentDateTime.set(Integer.parseInt(this.ContentDate.substring(0,4)), Integer.parseInt(this.ContentDate.substring(4,6))-1, Integer.parseInt(this.ContentDate.substring(6,8)), Integer.parseInt(this.ContentTime.substring(0,2)), Integer.parseInt(this.ContentTime.substring(2,4)), Integer.parseInt(this.ContentTime.substring(4,6)));
+        return contentDateTime;
+    }
+
         
-    public void printStudyData(){
-        System.out.println("--== Study data ==--");
-        System.out.println("Study date and time: "+this.StudyDateTime.get(Calendar.DAY_OF_MONTH)+"/"+this.StudyDateTime.get(Calendar.MONTH)+"/"+this.StudyDateTime.get(Calendar.YEAR)+" "+this.StudyDateTime.get(Calendar.HOUR_OF_DAY)+":"+this.StudyDateTime.get(Calendar.MINUTE));
-        System.out.println("Study physician: "+this.PhysicianName);
-        System.out.println("Study surgeon: "+this.SurgeonName);
-        System.out.println("Study formula: "+this.FormulaName);
-        System.out.println("Study lense: "+this.LenseName);
-        System.out.println("Study instance ID: "+this.StudyInstanceID);
-        System.out.println("Study ID: "+this.StudyID);
-        System.out.println("Device name: "+this.InstitutionName);
-        System.out.println("Device ID: "+this.StationName);
-        System.out.println("Device Model: "+this.DeviceModel);
-        System.out.println("Device Manufacturer: "+this.DeviceManufacturer);
-        System.out.println("Device Software Version: "+this.DeviceSoftwareVersion);
-        System.out.println("");
+    public String printStudyData(){
+        String output;
+        output = "--== Study data ==--\n";
+        output += "Study date and time: "+this.StudyDateTime.get(Calendar.DAY_OF_MONTH)+"/"+this.StudyDateTime.get(Calendar.MONTH)+"/"+this.StudyDateTime.get(Calendar.YEAR)+" "+this.StudyDateTime.get(Calendar.HOUR_OF_DAY)+":"+this.StudyDateTime.get(Calendar.MINUTE)+"\n";
+        output += "Study content date and time: "+this.ContentDate+" "+this.ContentTime+"\n";
+        output += "Study physician: "+this.PhysicianName+"\n";
+        output += "Study surgeon: "+this.SurgeonName+"\n";
+        output += "Study instance ID: "+this.StudyInstanceID+"\n";
+        output += "Series instance ID: "+this.SeriesInstanceID+"\n";
+        output += "Study ID: "+this.StudyID+"\n";
+        output += "Device name: "+this.InstitutionName+"\n";
+        output += "Device ID: "+this.StationName+"\n";
+        output += "Device Model: "+this.DeviceModel+"\n";
+        output += "Device Manufacturer: "+this.DeviceManufacturer+"\n";
+        output += "Device Software Version: "+this.DeviceSoftwareVersion+"\n";
+        output += "Comments (Remark): "+this.Comments+"\n";
+        output += "\n";
+        return output;
     }
     
 }

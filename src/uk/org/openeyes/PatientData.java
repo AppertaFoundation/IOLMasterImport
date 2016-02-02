@@ -5,9 +5,6 @@
  */
 package uk.org.openeyes;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -19,7 +16,6 @@ public class PatientData {
     private String PatientName;
     private String PatientID;
     private char PatientGender;
-    private String PatientComments;
     private Calendar PatientBirth = new GregorianCalendar();
     
     public void setPatientName(String PName){
@@ -32,10 +28,6 @@ public class PatientData {
     
     public void setPatientGender(char PGender){
         this.PatientGender = PGender;
-    }
-
-    public void setPatientComments(String PComments){
-        this.PatientComments = PComments;
     }
 
     public void setPatientBirth(String PBirth) {
@@ -54,15 +46,37 @@ public class PatientData {
         //return this.PatientBirth.get(Calendar.YEAR)+"-"+this.PatientBirth.get(Calendar.MONTH)+"-"+this.PatientBirth.get(Calendar.DAY_OF_MONTH);
         return PatientBirth;
     }
+
+    private String displayDOB(){
+        int dateMonth;
+        int dateYear;
+        if(this.PatientBirth.get(Calendar.MONTH) == 0){
+            dateMonth = 12;
+            dateYear = this.PatientBirth.get(Calendar.YEAR)-1;
+        }else{
+            dateMonth = this.PatientBirth.get(Calendar.MONTH);
+            dateYear = this.PatientBirth.get(Calendar.YEAR);
+        }
+        return this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+dateMonth+"/"+dateYear;
+    }
     
-    public void printPatientData(){
-        System.out.println("--== Patient data ==--");
-        System.out.println("Patient's name: "+this.PatientName);
-        System.out.println("Patient's hospital number: "+this.PatientID);
-        System.out.println("Patient's gender: "+this.PatientGender);
-        System.out.println("Patient's birth date: "+this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+this.PatientBirth.get(Calendar.MONTH)+"/"+this.PatientBirth.get(Calendar.YEAR));
-        System.out.println("Comments: "+this.PatientComments);
-        System.out.println("");
+    public String getDetails(){
+        String output = "";
+        output += "Patient's hospital number: "+this.PatientID+"\n";
+        output += "Patient's gender: "+this.PatientGender+"\n";        
+        output += "Patient's birth date: "+displayDOB()+"\n";
+        return output;
+    }
+    
+    public String printPatientData(){
+        String output;
+        output = "--== Patient data ==--\n";
+        output += "Patient's name: "+this.PatientName+"\n";
+        output += "Patient's hospital number: "+this.PatientID+"\n";
+        output += "Patient's gender: "+this.PatientGender+"\n";
+        output += "Patient's birth date: "+displayDOB()+"\n";
+        output += "\n";
+        return output;
     }
     
 }

@@ -6,6 +6,7 @@
 package uk.org.openeyes;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -15,14 +16,18 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.Criteria;
+import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.context.internal.ManagedSessionContext;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
+import org.ini4j.Wini;
 import uk.org.openeyes.models.Episode;
 import uk.org.openeyes.models.Event;
 import uk.org.openeyes.models.EventType;
@@ -43,8 +48,9 @@ public class DatabaseFunctions {
     protected User selectedUser;
     protected StudyData eventStudy;
     protected BiometryData eventBiometry;
-    protected OphinbiometryImportedEvents importedBiometryEvent;
+    public OphinbiometryImportedEvents importedBiometryEvent;
     protected boolean isNewEvent = true;
+    protected DICOMLogger dicomLogger;
     
     protected User searchStudyUser(String userName){
 
@@ -105,47 +111,119 @@ public class DatabaseFunctions {
         return returnUser;
     }
     
+    private Configuration configureHibernate(String iniFile){
+        try {
+            Wini ini = new Wini(new File(iniFile));
+            Configuration configuration = new Configuration();
+            configuration.setProperty("hibernate.connection.url", "jdbc:mysql://"+ini.get("?","host")+":"+ini.get("?","port")+"/"+ini.get("?","dbname"));
+            configuration.setProperty("hibernate.connection.username", ""+ini.get("?","username"));
+            configuration.setProperty("hibernate.connection.password", ""+ini.get("?","password"));
+            configuration.setProperty("dialect", "org.hibernate.dialect.MySQLDialect");
+            if(ini.get("?", "devmode", int.class) == 1){
+                configuration.setProperty("show_sql", "true");
+                configuration.setProperty("hbm2ddl.auto", "validate");
+            }
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Contact.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.ContactLabel.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.DicomEyeStatus.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.DicomFiles.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.DicomImportLog.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Disorder.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.DoctorGrade.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Episode.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EpisodeStatus.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EthnicGroup.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EtOphinbiometryCalculation.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EtOphinbiometryMeasurement.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EtOphinbiometrySelection.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EtOphinbiometryIolRefValues.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryImportedEvents.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryCalculationFormula.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryLenstypeLens.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometrySurgeon.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Event.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EventGroup.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.EventType.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Eye.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Firm.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Gp.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.ImportSource.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Institution.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Patient.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Practice.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Service.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.ServiceSubspecialtyAssignment.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Site.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Specialty.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.SpecialtyType.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.Subspecialty.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.User.class);
+            
+            return configuration;
+        } catch (IOException ex) {
+            Logger.getLogger(DatabaseFunctions.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+        
+    }
     
-    public void initSessionFactory(String configFile){
+    public void initSessionFactory(String configFile, DICOMLogger SystemLogger){
         // A SessionFactory is set up once for an application!
         // if no config specified we should use the default one
         
         // TODO: need to check for /etc/openeyes/db.conf here!!
         
-        String defaultConfig = "resources/hibernate.cfg.xml";
-        File inputFile = null;
-        final StandardServiceRegistry registry;
-                
-        if( ! configFile.equals("")){
-           inputFile = new File(configFile);
+        if(this.dicomLogger == null){
+            this.dicomLogger = SystemLogger;
         }
         
-        if( inputFile != null){
-            registry = new StandardServiceRegistryBuilder()
-                        .configure(inputFile) // configures settings from hibernate.cfg.xml
-                        .build();
+        if(configFile.matches("(?i).*hibernate.cfg.xml") || configFile.equals("")){
+            String defaultConfig = "resources/hibernate.cfg.xml";
+            File inputFile = null;
+            final StandardServiceRegistry registry;
+
+            if( ! configFile.equals("")){
+               inputFile = new File(configFile);
+            }
+
+            if( inputFile != null){
+                registry = new StandardServiceRegistryBuilder()
+                            .configure(inputFile) // configures settings from hibernate.cfg.xml
+                            .build();
+            }else{
+                registry = new StandardServiceRegistryBuilder()
+                            .configure(defaultConfig) // configures settings from hibernate.cfg.xml
+                            .build();
+            }
+
+            try {
+                sessionFactory = new MetadataSources( registry ).buildMetadata().buildSessionFactory();
+                setSession();
+                setTransaction();
+            }
+            catch (Exception e) {
+                // The registry would be destroyed by the SessionFactory, but we had trouble building the SessionFactory
+                // so destroy it manually.
+                //System.out.println("Failed to connect to the database, please check your hibernate configuration file!");
+                dicomLogger.addToRawOutput("Failed to connect to the database, please check your hibernate configuration file!");
+
+                // TODO: need to add debug config here!
+                e.printStackTrace();
+                StandardServiceRegistryBuilder.destroy( registry );
+                dicomLogger.systemExitWithLog(5, "Failed to connect to the database, please check your hibernate configuration file!", this);
+                //System.exit(5);
+            }
         }else{
-            registry = new StandardServiceRegistryBuilder()
-                        .configure(defaultConfig) // configures settings from hibernate.cfg.xml
-                        .build();
-        }
-        
-        try {
-            sessionFactory = new MetadataSources( registry ).buildMetadata().buildSessionFactory();
-        }
-        catch (Exception e) {
-            // The registry would be destroyed by the SessionFactory, but we had trouble building the SessionFactory
-            // so destroy it manually.
-            System.out.println("Failed to connect to the database, please check your hibernate configuration file!");
+            // try to open /etc/ database config
             
-            // TODO: need to add debug config here!
-            e.printStackTrace();
-            StandardServiceRegistryBuilder.destroy( registry );
+            sessionFactory = configureHibernate(configFile).buildSessionFactory();
+            setSession();
+            setTransaction();
         }
     }
     
     public boolean checkConnection(){
-        Session session = sessionFactory.openSession();
+        //Session session = sessionFactory.openSession();
         return session.isConnected();
     }
     
@@ -162,31 +240,49 @@ public class DatabaseFunctions {
     public void searchPatient(String hosNum, char gender, Calendar birthDate){
         Session session = sessionFactory.openSession();
         Criteria crit = session.createCriteria(Patient.class);
+        
+        // add leading 0s to the hosNum string
+        if(hosNum.length() < 7){
+            hosNum = ("0000000" + hosNum).substring(hosNum.length());
+        }
+        
         crit.add(Restrictions.eq("hosNum",hosNum));
         // we should search for M or F only
         if( Character.toString(gender).equals("F") || Character.toString(gender).equals("M")){
             crit.add(Restrictions.eq("gender", Character.toString(gender)));
         }
-        crit.add(Restrictions.sqlRestriction("dob = '"+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+"'"));
+        int dateMonth;
+        int dateYear;
+        if(birthDate.get(Calendar.MONTH) == 0){
+            dateMonth = 12;
+            dateYear = birthDate.get(Calendar.YEAR)-1;
+        }else{
+            dateMonth = birthDate.get(Calendar.MONTH);
+            dateYear = birthDate.get(Calendar.YEAR);
+        }
+        crit.add(Restrictions.sqlRestriction("dob = '"+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+"'"));
         List patientList = crit.list();
         
         if(patientList.isEmpty()){
             // TODO: How to handle this case??
-            System.out.println("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            dicomLogger.addToRawOutput("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
         }else if(patientList.size() > 1){
             // TODO: How to handle this case??
-            System.out.println("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+birthDate.get(Calendar.YEAR)+"-"+birthDate.get(Calendar.MONTH)+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            dicomLogger.addToRawOutput("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
         }else{
             // TODO: is everything OK?
             selectedPatient = (Patient) patientList.get(0);
         }
         if(selectedPatient != null){
-            System.out.println("Selected patient: "+selectedPatient);
+            dicomLogger.addToRawOutput("Selected patient: "+selectedPatient);
         }
         session.close();
     }
     
     public void selectActiveEpisode(){
+        selectedEpisode = null;
+        /*
+        // New requirement: always follow the manual linking process, so this part has been removed
         if(this.selectedPatient != null){
             Session session = sessionFactory.openSession();
             Criteria episodeCrit = session.createCriteria(Episode.class);
@@ -199,19 +295,24 @@ public class DatabaseFunctions {
             List episodesList = episodeCrit.list();
 
             if(episodesList.isEmpty()){
-                System.out.println("ERROR: No open episodes found!");
+                //System.out.println("ERROR: No open episodes found!");
+                dicomLogger.addToRawOutput("ERROR: No open episodes found!");
             }else if(episodesList.size() != 1){
-                System.out.println("ERROR: More than 1 open episodes found!");
+                //System.out.println("ERROR: More than 1 open episodes found!");
+                dicomLogger.addToRawOutput("ERROR: More than 1 open episodes found!");
             }else{
                 selectedEpisode = (Episode) episodesList.get(0);
-                System.out.println("Selected episode: "+selectedEpisode.toString());
+                //System.out.println("Selected episode: "+selectedEpisode.toString());
+                dicomLogger.addToRawOutput("Selected episode: "+selectedEpisode.toString());
             }
             
             session.close();
         }
         if(selectedEpisode == null){
-            System.out.println("ERROR: No unique open episode found, will create data without episode!");
+            //System.out.println("ERROR: No unique open episode found, will create data without episode!");
+            dicomLogger.addToRawOutput("ERROR: No unique open episode found, will create data without episode!");
         }
+        */
     }
     
     public Episode getSelectedEpisode(){
@@ -223,6 +324,7 @@ public class DatabaseFunctions {
     * 
     **/
     public String getStudyYMD(Calendar studyDate) {
+        
         String formattedStudyDate = String.format("%04d-%02d-%02d %02d:%02d:%02d",
                 studyDate.get(Calendar.YEAR),
                 studyDate.get(Calendar.MONTH),
@@ -234,10 +336,16 @@ public class DatabaseFunctions {
         return formattedStudyDate;
     }
     
+    public String getSQLFormattedDate(Date inputDate){
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        return df.format(inputDate);
+    }
+    
     protected Event createNewEvent(){
         Event newBiometryEvent = new Event();
         
-        System.out.println("Starting event...");
+        //System.out.println("Starting event...");
+        dicomLogger.addToRawOutput("Starting event...");
         if(this.selectedEpisode != null){
             newBiometryEvent.setEpisodeId(selectedEpisode);
         }else{
@@ -263,7 +371,8 @@ public class DatabaseFunctions {
         // let's save it!
         // 1. create new event
         session.save(newBiometryEvent);
-        System.out.println("Event saved...");
+        //System.out.println("Event saved...");
+        dicomLogger.addToRawOutput("Event saved... Event id: "+newBiometryEvent.getId());
         
         return newBiometryEvent;
     }
@@ -271,22 +380,27 @@ public class DatabaseFunctions {
 
     // for unit testing it need to be public
     public void setSession(){
-        this.session = sessionFactory.openSession();
+        if(this.session == null || !(this.session.isConnected()) ){
+            this.session = sessionFactory.openSession();
+            session.setFlushMode(FlushMode.MANUAL);
+            ManagedSessionContext.bind(session);
+        }
     }
     
-    private Session getSession(){
+    public Session getSession(){
+        setSession();
         return this.session;
     }
     
     // for unit testing it need to be public
     public void setTransaction(){
-        if(session == null){
-            this.setSession();
-        }
-        this.transaction = session.beginTransaction();
+        //if(this.session == null){
+        //    this.setSession();
+        // }
+        this.transaction = this.session.beginTransaction();
     }
     
-    private Transaction getTransaction(){
+    public Transaction getTransaction(){
         return this.transaction;
     }
     
@@ -319,12 +433,4 @@ public class DatabaseFunctions {
         }
     }
     
-    
-   
-    public void logAuditData(){
-        Session session = sessionFactory.openSession();
-        Transaction transaction = session.beginTransaction();
-        
-    }
-
 }

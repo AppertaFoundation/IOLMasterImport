@@ -5,85 +5,19 @@
  */
 package uk.org.openeyes;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author VEDELEKT
  */
 public class BiometryData {
-    private final BiometrySide Left = new BiometrySide();
-    private final BiometrySide Right = new BiometrySide();
-    private final BiometrySide Unknown = new BiometrySide(); // because some sequences contain information about the side at the end of the sequence we use this side for collecting data temporary
+    private BiometrySide Left = new BiometrySide();
+    private BiometrySide Right = new BiometrySide();
     
-    public void setSideData(String Side){
-        BiometrySide WhichSide;
+    public void setSideData(String Side, BiometrySide SideData){
         if(Side.equals("L")){
-            WhichSide = Left;
+            this.Left = SideData;
         }else{
-            WhichSide = Right;
-        }
-        // we copy the results to the specified side
-        WhichSide.setMeasurements(Unknown.getMeasurements());
-        // and remove everything from the Unknown, so we can use it for data collection again
-        Unknown.setMeasurements(null);
-    }
-            
-    public void setBiometryValue(String ValueName, String Side, String Value){
-        BiometrySide WhichSide;
-        switch (Side) {
-            case "U":
-                WhichSide = Unknown;
-                break;
-            case "L":
-                WhichSide = Left;
-                break;
-            default:
-                WhichSide = Right;
-                break;
-        }
-        
-        Method method = null;
-        try {
-            method = Class.forName("uk.org.openeyes.BiometrySide").getMethod("set"+ValueName, new Class[] {String.class});
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
-            Logger.getLogger(BiometryData.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            method.invoke(WhichSide, Value); // 4 is the argument to pass to the method
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(BiometryData.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-    }
-    
-    public void setBiometryValueNum(String ValueName, String Side, String Value, int Position){
-        BiometrySide WhichSide;
-        switch (Side) {
-            case "U":
-                WhichSide = Unknown;
-                break;
-            case "L":
-                WhichSide = Left;
-                break;
-            default:
-                WhichSide = Right;
-                break;
-        }
-
-        Method method = null;
-        try {
-            method = Class.forName("uk.org.openeyes.BiometrySide").getMethod("set"+ValueName, new Class[] {String.class, Integer.class});
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
-            Logger.getLogger(BiometryData.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            method.invoke(WhichSide, Value, Position); // 4 is the argument to pass to the method
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(BiometryData.class.getName()).log(Level.SEVERE, null, ex);
+            this.Right = SideData;
         }
     }
     
@@ -112,11 +46,13 @@ public class BiometryData {
         }
     }
     
-    public void printBiometryData(){
-        System.out.println("--== Biometry data ==--");
-        System.out.println("-- Left side: ");
-        Left.printBiometrySide();
-        System.out.println("-- Right side: ");
-        Right.printBiometrySide();
+    public String printBiometryData(){
+        String output;
+        output = "--== Biometry data ==--\n";
+        output += "-- Left side: \n";
+        output += Left.printBiometrySide("Left");
+        output += "-- Right side: \n";
+        output += Right.printBiometrySide("Right");
+        return output;
     }
 }
