@@ -141,7 +141,7 @@ public class StudyData {
         String output;
         output = "--== Study data ==--\n";
         output += "Study date and time: "+this.StudyDateTime.get(Calendar.DAY_OF_MONTH)+"/"+this.StudyDateTime.get(Calendar.MONTH)+"/"+this.StudyDateTime.get(Calendar.YEAR)+" "+this.StudyDateTime.get(Calendar.HOUR_OF_DAY)+":"+this.StudyDateTime.get(Calendar.MINUTE)+"\n";
-        output += "Study content time: "+this.ContentTime+"\n";
+        output += "Study content date and time: "+this.ContentDate+" "+this.ContentTime+"\n";
         output += "Study physician: "+this.PhysicianName+"\n";
         output += "Study surgeon: "+this.SurgeonName+"\n";
         output += "Study instance ID: "+this.StudyInstanceID+"\n";

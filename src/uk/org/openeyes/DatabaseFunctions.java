@@ -140,6 +140,7 @@ public class DatabaseFunctions {
             configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryImportedEvents.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryCalculationFormula.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometryLenstypeLens.class);
+            configuration.addAnnotatedClass (uk.org.openeyes.models.OphinbiometrySurgeon.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.Event.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.EventGroup.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.EventType.class);

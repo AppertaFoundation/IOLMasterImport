@@ -6,6 +6,7 @@
 package uk.org.openeyes;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 /**
@@ -34,9 +35,7 @@ public class BiometrySide {
     private ArrayList<BiometryMeasurementData> Measurements = new ArrayList<>();
 
     public void setK1(Double BK1){
-        if(K1 == 0){
-            this.K1 = BK1;
-        }
+        this.K1 = BK1;
     }
     
     public double getK1(){
@@ -71,8 +70,13 @@ public class BiometrySide {
         this.DeltaK = DeltaK;
     }
     
+    public double round2Decimals(BigDecimal number){
+        number = number.setScale(2, RoundingMode.HALF_UP);
+        return number.doubleValue();
+    }
+    
     public double getDeltaK(){
-        return this.DeltaK;
+        return round2Decimals(new BigDecimal(Math.abs(this.K2-this.K1)));
     }
     
     public void setTargetRef(Double TargetRef){
@@ -88,13 +92,12 @@ public class BiometrySide {
     }
     
     public double getDeltaKAxis(){
-        return this.DeltaKAxis;
+        double returnvalue = (this.K1 < this.K2) ? this.AxisK2 : this.AxisK1;
+        return returnvalue;
     }
 
     public void setRefractionSphere(Double RefractionSphere){
-        if(this.RefractionSphere == 0){
-            this.RefractionSphere = RefractionSphere;
-        }
+        this.RefractionSphere = RefractionSphere;
     }
     
     public double getRefractionSphere(){
@@ -102,9 +105,7 @@ public class BiometrySide {
     }
     
     public void setRefractionDelta(Double RefractionDelta){
-        if(this.RefractionDelta == 0){
-            this.RefractionDelta = RefractionDelta;
-        }
+        this.RefractionDelta = RefractionDelta;
     }
     
     public double getRefractionDelta(){
@@ -112,9 +113,7 @@ public class BiometrySide {
     }
 
     public void setRefractionAxis(Double RefractionAxis){
-        if(this.RefractionAxis == 0){
-            this.RefractionAxis = RefractionAxis;
-        }
+        this.RefractionAxis = RefractionAxis;
     }
     
     public double getRefractionAxis(){
@@ -130,9 +129,7 @@ public class BiometrySide {
     }
 
     public void setACD(Double BACD){
-        //if(this.ACD == 0){
-            this.ACD = BACD;
-        //}
+        this.ACD = BACD;
     }
     
     public double getACD(){
@@ -197,7 +194,7 @@ public class BiometrySide {
     }
     
     public void setLensREF(Double LREF, Integer LNum){
-        Measurements.get(LNum).setREF(LREF);
+        Measurements.get(LNum).setREF(round2Decimals(BigDecimal.valueOf(LREF)));
     }
     
     public ArrayList<BiometryMeasurementData> getMeasurements(){
@@ -258,8 +255,8 @@ public class BiometrySide {
        output += sideName+" K2: "+this.K2+"\n";
        output += sideName+" Axis K1: "+this.AxisK1+"\n";
        output += sideName+" Axis K2: "+this.AxisK2+"\n";
-       output += sideName+" Delta K: "+this.DeltaK+"\n";
-       output += sideName+" Delta K Axis: "+this.DeltaKAxis+"\n";
+       output += sideName+" Delta K: "+this.getDeltaK()+"\n";
+       output += sideName+" Delta K Axis: "+this.getDeltaKAxis()+"\n";
        output += sideName+" Target refraction: "+this.TargetRef+"\n";
        output += sideName+" Refraction sphere: "+this.RefractionSphere+"\n";
        output += sideName+" Refraction delta: "+this.RefractionDelta+"\n";
