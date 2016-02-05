@@ -7,6 +7,9 @@ package uk.org.openeyes;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -27,6 +31,8 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.context.internal.ManagedSessionContext;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.ini4j.Wini;
 import uk.org.openeyes.models.Episode;
 import uk.org.openeyes.models.Event;
@@ -220,6 +226,28 @@ public class DatabaseFunctions {
             setSession();
             setTransaction();
         }
+    }
+    
+    public int addVersionTableData(Object originalTable, Integer originalID){
+        // http://www.tutorialspoint.com/hibernate/hibernate_native_sql.htm
+        AbstractEntityPersister aep=((AbstractEntityPersister)session.getSessionFactory().getClassMetadata(originalTable.getClass()));  
+        String tableName = aep.getTableName();
+        String[] properties=aep.getPropertyNames();  
+        String[] originalColumns = new String[properties.length];
+        
+        for(int nameIndex=0;nameIndex!=properties.length;nameIndex++){  
+           //System.out.println("Property name: "+properties[nameIndex]);  
+           String[] columns=aep.getPropertyColumnNames(nameIndex);  
+           for(int columnIndex=0;columnIndex!=columns.length;columnIndex++){  
+              //System.out.println("Column name: "+columns[columnIndex]);  
+              originalColumns[nameIndex] = columns[columnIndex];
+           }  
+        } 
+
+        //System.out.println("INSERT INTO "+tableName+"_version (id,"+String.join(",", originalColumns)+",`version_date`,`version_id`) SELECT "+tableName+".*, now(), NULL FROM "+tableName+" WHERE id="+originalID.toString());
+        Query query = this.session.createSQLQuery("INSERT INTO "+tableName+"_version (id, "+String.join(",", originalColumns)+",`version_date`,`version_id`) SELECT id, "+String.join(",", originalColumns)+", now(), NULL FROM "+tableName+" WHERE id="+originalID.toString());
+        dicomLogger.addToRawOutput("Version audit trail has been added to: "+tableName+"_version");
+        return query.executeUpdate();
     }
     
     public boolean checkConnection(){
