@@ -583,6 +583,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             importedEvent.setIsMerged(false);
         }
         session.saveOrUpdate(importedEvent);
+
         return importedEvent;
     }
     

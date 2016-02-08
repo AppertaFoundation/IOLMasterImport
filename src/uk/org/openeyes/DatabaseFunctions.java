@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dcm4che3.util.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
 import org.hibernate.Query;
@@ -244,8 +245,8 @@ public class DatabaseFunctions {
            }  
         } 
 
-        //System.out.println("INSERT INTO "+tableName+"_version (id,"+String.join(",", originalColumns)+",`version_date`,`version_id`) SELECT "+tableName+".*, now(), NULL FROM "+tableName+" WHERE id="+originalID.toString());
-        Query query = this.session.createSQLQuery("INSERT INTO "+tableName+"_version (id, "+String.join(",", originalColumns)+",`version_date`,`version_id`) SELECT id, "+String.join(",", originalColumns)+", now(), NULL FROM "+tableName+" WHERE id="+originalID.toString());
+        //System.out.println("INSERT INTO "+tableName+"_version (id, "+String.join(",", originalColumns)+",`version_date`,`version_id`) SELECT id, "+String.join(",", originalColumns)+", now(), NULL FROM "+tableName+" WHERE id="+originalID.toString());
+        Query query = this.session.createSQLQuery("INSERT INTO "+tableName+"_version (id, "+StringUtils.concat(originalColumns, ',')+",`version_date`,`version_id`) SELECT id, "+StringUtils.concat(originalColumns, ',')+", now(), NULL FROM "+tableName+" WHERE id="+originalID.toString());
         dicomLogger.addToRawOutput("Version audit trail has been added to: "+tableName+"_version");
         return query.executeUpdate();
     }
@@ -399,6 +400,9 @@ public class DatabaseFunctions {
         // let's save it!
         // 1. create new event
         session.save(newBiometryEvent);
+        
+        //addVersionTableData(newBiometryEvent, newBiometryEvent.getId());
+
         //System.out.println("Event saved...");
         dicomLogger.addToRawOutput("Event saved... Event id: "+newBiometryEvent.getId());
         
