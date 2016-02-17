@@ -238,6 +238,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         newBasicCalculationData.setTargetRefractionRight(BigDecimal.valueOf(eventBiometry.getBiometryValue("R").getTargetRef()));
         newBasicCalculationData.setComments(eventStudy.getComments() );
         session.save(newBasicCalculationData);
+        addVersionTableData(newBasicCalculationData, newBasicCalculationData.getId());
     }
 
     private JSONObject decodeJSONData(String IOLJSON){
@@ -431,6 +432,9 @@ public class BiometryFunctions extends DatabaseFunctions{
                     }
                 }
                 session.saveOrUpdate(iolRefValues);
+                
+                addVersionTableData(iolRefValues, iolRefValues.getId());
+                
                 formulaType = null;
                 lensType = null;
             }
@@ -476,6 +480,8 @@ public class BiometryFunctions extends DatabaseFunctions{
         setMeasurementData(basicMeasurementData);
         //databaseFunctions.session.merge(basicMeasurementData);
         session.saveOrUpdate(basicMeasurementData);
+        
+        addVersionTableData(basicMeasurementData, basicMeasurementData.getId());
         
         
         this.saveIolRefValues();
@@ -577,6 +583,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             importedEvent.setIsMerged(false);
         }
         session.saveOrUpdate(importedEvent);
+
         return importedEvent;
     }
     
