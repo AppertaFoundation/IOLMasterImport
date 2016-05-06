@@ -516,6 +516,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         Criteria currentEvent = session.createCriteria(OphinbiometryImportedEvents.class);
         currentEvent.add(Restrictions.eq("studyId", eventStudy.getStudyInstanceID()));
         currentEvent.add(Restrictions.eq("seriesId", eventStudy.getSeriesInstanceID()));
+        currentEvent.add(Restrictions.eq("surgeonName", eventStudy.getSurgeonName()));
         
         // we should check if event is deleted, and we should create a new one if yes
         currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+eventStudy.getStudyInstanceID()+"' AND series_id='"+eventStudy.getSeriesInstanceID()+"')"));        
