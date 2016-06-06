@@ -250,8 +250,23 @@ public class DICOMParser {
     }
     
     private void collectStudyData(Attributes Attrs){
+        String studyDate;
+	String studyTime;
+
+	studyDate = Attrs.getString(getTagInteger("00080021"));
+
+        if (studyDate == null) {
+		studyDate = Attrs.getString(getTagInteger("00080020"));
+	}
+
+	studyTime = Attrs.getString(getTagInteger("00080031"));
+
+	if (studyTime == null) {
+		studyTime = Attrs.getString(getTagInteger("00080030"));
+	}
+
         Study.setComments(Attrs.getString(getTagInteger("00104000")));
-        Study.setStudyDateTime(Attrs.getString(getTagInteger("00080021")) + Attrs.getString(getTagInteger("00080031")));
+        Study.setStudyDateTime(studyDate + studyTime);
         Study.setContentTime(Attrs.getString(getTagInteger("00080033")));
         Study.setContentDate(Attrs.getString(getTagInteger("00080023")));
         Study.setPhysicianName(Attrs.getString(getTagInteger("00080090")));
