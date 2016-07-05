@@ -90,8 +90,7 @@ public class OE_IOLMasterImport  {
                 //String fname = "test/data/vfa_test.dcm";      // visual fields dicom file
             }
 
-            //SystemLogger.getLogger().setDicomFileId(DicomParser.searchDicomFile(inputFile));
-            SystemLogger.getLogger().setDicomFileId(new DicomFiles());
+            SystemLogger.getLogger().setDicomFileId(DicomParser.searchDicomFile(inputFile));
             DicomParser.parseDicomFile(inputFile);
             DicomParser.processParsedData();
             
