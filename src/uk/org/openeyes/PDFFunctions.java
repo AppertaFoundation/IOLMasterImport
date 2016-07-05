@@ -126,7 +126,7 @@ public class PDFFunctions extends PDFTextStripper{
     }
     
     public String getMultiLensFormulaNamesIOLM700(PDPage page, String side, int position) throws IOException{
-        return getTextArea(page, getRectangleMultiLensFormulaNamesIOLM700(side, position));
+        return getTextArea(page, getRectangleMultiLensFormulaNamesIOLM700(side, position)).trim();
     }
     
     private Rectangle getRectangleMultiLensFormulaNamesIOLM700(String side, int position){
