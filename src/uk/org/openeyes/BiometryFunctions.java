@@ -5,6 +5,8 @@
  */
 package uk.org.openeyes;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -16,6 +18,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.plaf.metal.MetalIconFactory;
 import org.json.simple.parser.JSONParser;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -439,6 +442,12 @@ public class BiometryFunctions extends DatabaseFunctions{
                 formulaType = null;
                 lensType = null;
             }
+            session.saveOrUpdate(iolRefValues);
+
+            addVersionTableData(iolRefValues, iolRefValues.getId());
+
+            formulaType = null;
+            lensType = null;
         }
     }
 
@@ -483,8 +492,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         session.saveOrUpdate(basicMeasurementData);
         
         addVersionTableData(basicMeasurementData, basicMeasurementData.getId());
-        
-        
+
         this.saveIolRefValues();
         
         // we save the log entry for the import
@@ -589,4 +597,216 @@ public class BiometryFunctions extends DatabaseFunctions{
         return importedEvent;
     }
     
+    protected String getCalculatedValues(String formulaName, BiometryLensData lens, BiometrySide sideData){
+        double IOLPower;
+        Method calculateMethod = null;
+        
+        try {
+            if(formulaName.equals("Haigis suite")){
+                // will call Haigis calculation Here
+                calculateMethod = this.getClass().getMethod("calculateHaigis", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+            }else if(formulaName.equals("SRK/T")){
+                calculateMethod = this.getClass().getMethod("calculateSRKT", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+            }else if(formulaName.equals("HofferQ")){
+                calculateMethod = this.getClass().getMethod("calculateHofferQ", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+            }
+            IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
+
+        } catch (NoSuchMethodException ex) {
+                Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+                Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return "";
+    }
+    
+    /**
+     *
+     * @param axialLength   -- Axial length
+     * @param r1            -- Radius of curvature 1
+     * @param r2            -- Radius of curvature 2
+     * @param acd           -- Optical anterior chamber depth
+     * @param lens          -- lens object containing IOL data
+     * @param dioptresRefraction  -- Target refraction or power of IOL
+     * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
+     * @return              -- Refractive power in Dioptres
+     */
+    protected double calculateSRKT(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
+        // Constants
+    	double n =  1.3375;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
+	double nc = 1.333;			// Refractive index of the cornea
+	double na = 1.336;			// Refractive index of aqueous and vitreous
+	double vd = 12.0;			// Vertex distance
+        String calculationComments = "SRK/T formula calculation has been called\n";        // comments for debug
+        double returnPower;                     // the return value
+        
+        // Calculate average radius of curvature and corneal power in dioptres
+	double averageRadius = (r1 + r2) / 2;
+	double dioptresCornea = (n - 1) * 1000 / averageRadius;
+    
+        // Difference in refractive indices (NB uses different value of n here)
+        double diffRI = nc - 1;
+
+        double retinalThickness = 0.65696 - 0.02029 * axialLength;
+        double opticalAxialLength = axialLength + retinalThickness;
+
+        // 'A' constant correction
+        double aconstant;
+        if (lens.aConst > 100)
+        {
+            aconstant = lens.aConst * 0.62467 - 68 - 0.74709;
+            calculationComments += "A-constant correction applied\n";
+        }
+        else
+        {
+            aconstant = lens.aConst;
+        }
+
+        // Difference between natural lens and IOL to cornea
+        double diff = aconstant - 3.3357;
+
+        // Axial length correction for high myopes
+        double correctedAxialLength;
+        if (axialLength > 24.2)
+        {
+            // Value of 1.716 (as in original SRK/T paper) gives identical results to IOLMaster. Using 1.715 as in erratum gives slightly different results
+            correctedAxialLength = -3.446 + 1.716 * axialLength - 0.0237 * axialLength * axialLength;
+            //axialLength = -3.446 + 1.715 * _axialLength - 0.0237 * _axialLength * _axialLength;
+            calculationComments += "Axial length correction applied\n";
+        }
+        else
+        {
+            correctedAxialLength = axialLength;
+        }        
+                
+        // Corneal width
+        double cornealWidth = -5.40948 + 0.58412 * correctedAxialLength + 0.098 * dioptresCornea;
+
+        // Corneal dome height (check for negative result here before taking square root)
+        double cornealDomeHeight;
+        if (averageRadius * averageRadius - cornealWidth * cornealWidth / 4 > 0) {
+            cornealDomeHeight = averageRadius - Math.sqrt(averageRadius * averageRadius - cornealWidth * cornealWidth / 4);
+        }
+        else {
+            calculationComments += "Negative square root for corneal dome height\n";
+            cornealDomeHeight = averageRadius;
+        }
+        if (cornealDomeHeight > 5.5) {
+            cornealDomeHeight = 5.5;
+            calculationComments += "Corneal dome height capped at 5.5\n";
+        }
+        
+        // Post-op anterior chamber depth
+        double postopACDepth = cornealDomeHeight + diff;
+        double numerator, denominator;
+        
+        // IOL power - we use this to determine the start value of IOL power
+        if (resultType.equals("IOL")) {
+            numerator = 1000 * na * (na * averageRadius - diffRI * opticalAxialLength - 0.001 * dioptresRefraction * (vd * (na * averageRadius - diffRI * opticalAxialLength) + opticalAxialLength * averageRadius));
+            denominator = (opticalAxialLength - postopACDepth) * (na * averageRadius - diffRI * postopACDepth - 0.001 * dioptresRefraction * (vd * (na * averageRadius - diffRI * postopACDepth) + postopACDepth * averageRadius));
+            returnPower = numerator/denominator;
+        }
+        // Predicted refraction
+        else {
+            numerator = 1000 * na * (na * averageRadius - diffRI * opticalAxialLength) - dioptresRefraction * (opticalAxialLength - postopACDepth) * (na * averageRadius - diffRI * postopACDepth);
+            denominator = (na * (vd * (na * averageRadius - diffRI * opticalAxialLength) + opticalAxialLength * averageRadius) - 0.001 * dioptresRefraction * (opticalAxialLength - postopACDepth) * (vd * (na * averageRadius - diffRI * postopACDepth) + postopACDepth * averageRadius));
+            returnPower = numerator/denominator;				
+        }
+        
+        dicomLogger.addToRawOutput(calculationComments);
+        return returnPower;
+    }
+
+    /**
+     *
+     * @param axialLength   -- Axial length
+     * @param r1            -- Radius of curvature 1
+     * @param r2            -- Radius of curvature 2
+     * @param acd           -- Optical anterior chamber depth
+     * @param lens          -- lens object containing IOL data
+     * @param dioptresRefraction  -- Target refraction or power of IOL
+     * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
+     * @return              -- Refractive power in Dioptres
+     */    
+    protected double calculateHofferQ(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
+        // Constants
+        double n = 1.3375;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
+        double vd =12.0;			// Vertex distance
+        String calculationComments = "HofferQ formula calculation has been called\n";        // comments for debug
+        double returnPower;                     // the return value
+        
+        // Calculate average radius of curvature and corneal power in dioptres
+        double averageRadius = (r1 + r2) / 2;
+        double dioptresCornea = (n - 1) * 1000 / averageRadius;
+
+        // Calculate refractive error at corneal plane
+        double R = dioptresRefraction / (1 - vd * dioptresRefraction/1000);
+        
+        // Hoffer's factors
+        double M, G;
+        if (axialLength <= 23 ) {
+            M = +1;
+            G = +28;
+            calculationComments += "Hoffer factors for AL <= 23 applied\n";
+        }
+        else {
+            M = -1;
+            G = +23.5;
+            calculationComments += "Hoffer factors for AL > 23 applied</br>";
+        }
+                
+        // Constrain axial length (NB used ONLY for ACD calculation and replaces ACD constraint as described in erratum)
+        double AL = axialLength;
+        if (AL > 31) {
+            AL = 31;
+            calculationComments += "Axial length constrained down to 31</br>";
+        }
+        if (AL < 18.5) {
+            AL = 18.5;
+            calculationComments += "Axial length constrained up to 18.5</br>";
+        }
+        
+        // Predicted ACD 
+        double ACD = lens.pACDConst
+                + 0.3 * (AL - 23.5)
+                + Math.tan(dioptresCornea * Math.PI/180) * Math.tan(dioptresCornea * Math.PI/180)
+                + 0.1 * M * (23.5 - AL) * (23.5 - AL) * Math.tan(Math.PI * (0.1 * (G - AL) * (G - AL))/180)
+                - 0.99166;
+	
+        // IOL power
+        // TODO: need to check if we need to use the original Axial Lenght here or the constrained AL?
+        if (resultType.equals("IOL")) {				
+            returnPower = 1336/(axialLength - ACD - 0.05) - 1.336/((1.336/(dioptresCornea + R)) - (ACD + 0.05)/1000);
+        }
+        // Predicted refraction
+        else {
+            R = (1.336/(1.336/(1336/(axialLength - ACD - 0.05) - dioptresRefraction)+ (ACD + 0.05)/1000)) - dioptresCornea;
+            returnPower = R/(1 + vd * R/1000);
+        }
+        
+        return returnPower;
+    }
+    
+     /**
+     *
+     * @param axialLength   -- Axial length
+     * @param r1            -- Radius of curvature 1
+     * @param r2            -- Radius of curvature 2
+     * @param acd           -- Optical anterior chamber depth
+     * @param lens          -- lens object containing IOL data
+     * @param dioptresRefraction  -- Target refraction or power of IOL
+     * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
+     * @return              -- Refractive power in Dioptres
+     */
+    protected double calculateHaigis(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
+        // TODO: implement this! :)
+        return 0.00;
+    }    
 }
