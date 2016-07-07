@@ -234,17 +234,19 @@ public class DICOMParser extends DICOMCommonFunctions{
     
     private void collectStudyData(Attributes Attrs){
         String studyDate;
-        String studyTime;
-  
-        studyDate = Attrs.getString(getTagInteger("00080021"));
+	String studyTime;
+
+	studyDate = Attrs.getString(getTagInteger("00080021"));
+
         if (studyDate == null) {
-            studyDate = Attrs.getString(getTagInteger("00080020"));
-        }
- 
-        studyTime = Attrs.getString(getTagInteger("00080031"));
-        if (studyTime == null) {
-           studyTime = Attrs.getString(getTagInteger("00080030"));
-        }
+		studyDate = Attrs.getString(getTagInteger("00080020"));
+	}
+
+	studyTime = Attrs.getString(getTagInteger("00080031"));
+
+	if (studyTime == null) {
+		studyTime = Attrs.getString(getTagInteger("00080030"));
+	}
 
         Study.setComments(Attrs.getString(getTagInteger("00104000")));
         Study.setStudyDateTime(studyDate + studyTime);
