@@ -442,12 +442,6 @@ public class BiometryFunctions extends DatabaseFunctions{
                 formulaType = null;
                 lensType = null;
             }
-            session.saveOrUpdate(iolRefValues);
-
-            addVersionTableData(iolRefValues, iolRefValues.getId());
-
-            formulaType = null;
-            lensType = null;
         }
     }
 
