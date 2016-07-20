@@ -123,10 +123,6 @@ abstract class IOLMasterAbstract {
     
     public abstract void collectMeasuredValuesFromCalculation(Attributes Attrs);
     
-    public abstract void collectCalculationValuesFromSeq(Attributes Attrs, String side, String inFormulaName, String inLensName);
-    
-    public abstract void collectCalculationValuesSequenceSide(Attributes Attrs, String side, String sequenceTag);
-
     public abstract void collectCalculationValues(Attributes Attrs);
     
 }
