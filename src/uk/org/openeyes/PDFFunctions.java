@@ -125,6 +125,11 @@ public class PDFFunctions extends PDFTextStripper{
         return getTextArea(page, new Rectangle(50,180,250,10)).trim();
     }
     
+    public String getTargetRefractionIOLM700(PDPage page, String side) throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("TargetRefractionIOLM700", side, 1).x, getDataCoordinates("TargetRefractionIOLM700", side, 1).y, 110, 10);
+        return getTextArea(page, area).trim();
+    }
+    
     public String getMultiLensFormulaNamesIOLM700(PDPage page, String side, int position) throws IOException{
         return getTextArea(page, getRectangleMultiLensFormulaNamesIOLM700(side, position)).trim();
     }
@@ -214,6 +219,9 @@ public class PDFFunctions extends PDFTextStripper{
         CoordMap.put("MultiLensREFStartIOLM700_R_2", new Coordinates(235, 532));
         CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(100, 660));
         CoordMap.put("MultiLensREFStartIOLM700_R_4", new Coordinates(235, 660));
+        
+        CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 410));
+        CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(30, 410));
     }
     
     

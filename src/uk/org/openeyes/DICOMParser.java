@@ -164,7 +164,7 @@ public class DICOMParser extends DICOMCommonFunctions{
             logger.systemExitWithLog(3, "Failed to read DICOM file, not a valid file or file not exists!", database);
         }
         
-        dumpDCMStructure(attrs);
+        //dumpDCMStructure(attrs);
 
         collectPatientData(attrs);
         collectStudyData(attrs);
@@ -173,7 +173,7 @@ public class DICOMParser extends DICOMCommonFunctions{
         
         String TypeTag = attrs.getString(getTagInteger("00080016"));
         
-        System.out.println("+++++++++++++++++++++++++++++++++++++++"+TypeTag+"++++"+DicomTool.getDICOMType(TypeTag));
+        //System.out.println("+++++++++++++++++++++++++++++++++++++++"+TypeTag+"++++"+DicomTool.getDICOMType(TypeTag));
         
         Class importerClass = DicomTool.getDICOMType(TypeTag);
         

@@ -93,50 +93,6 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             }
         }
     }
-        
-    public void collectCalculationValuesFromSeq(Attributes Attrs, String side, String inFormulaName, String inLensName){
-        String FormulaName;
-        String LensName;
-        BiometrySide sideData;
-        if(side.equals("L")){
-            sideData = parser.BiometryLeft;
-        }else{
-            sideData = parser.BiometryRight;
-        }
-        //parser.debugMessage(":: "+side+"::"+inFormulaName+"::"+inLensName);
-        parser.CurrentSide = parser.getSideFromAttributes(Attrs);
-        if(side.equals(parser.CurrentSide)){
-            Sequence CalcSeq = Attrs.getSequence(parser.getTagInteger("771B1003"));
-            if(CalcSeq != null && !CalcSeq.isEmpty()){
-                for(int cs=0; cs<CalcSeq.size(); cs++){
-                    Attributes CalcAttrs = CalcSeq.get(cs);
-                    if(inFormulaName.equals("")){
-                        FormulaName = VR.PN.toStrings(CalcAttrs.getValue(parser.getTagInteger("771B1006")), true, parser.CharacterSet).toString();
-                        LensName=inLensName;
-                    }else{
-                        LensName = VR.PN.toStrings(CalcAttrs.getValue(parser.getTagInteger("771B1006")), true, parser.CharacterSet).toString();
-                        FormulaName = inFormulaName;
-                    }
-                    // we add new data set
-                    sideData.addCalculations();
-                    //parser.debugMessage("Index: "+sideData.getMeasurementsIndex());
-                    sideData.setFormulaName(FormulaName, sideData.getMeasurementsIndex());
-                    sideData.setLensName(LensName, sideData.getMeasurementsIndex());
-                    sideData.setLensEmmetropia(VR.FD.toDouble(CalcAttrs.getValue(parser.getTagInteger("771B102B")), false, 0, 0), sideData.getMeasurementsIndex());
-                    sideData.setLensAConst(VR.FD.toDouble(CalcAttrs.getValue(parser.getTagInteger("771B1007")), false, 0, 0), sideData.getMeasurementsIndex());
-                    Sequence IOLCalcSeq = CalcAttrs.getSequence(parser.getTagInteger("771B1005"));
-                    if(IOLCalcSeq != null && !IOLCalcSeq.isEmpty()){
-                        for(int iols=0; iols<IOLCalcSeq.size(); iols++){
-                            Attributes IOLCalcAttrs = IOLCalcSeq.get(iols);
-                            sideData.setLensIOL(VR.FD.toDouble(IOLCalcAttrs.getValue(parser.getTagInteger("771B102A")), false, 0, 0), sideData.getMeasurementsIndex());
-                            sideData.setLensREF(VR.FD.toDouble(IOLCalcAttrs.getValue(parser.getTagInteger("771B1028")), false, 0, 0), sideData.getMeasurementsIndex());
-                        }
-                    }
-                }
-            }
-        }
-        
-    }
     
     private String getFormulaLensName(String fullText, String FormulaLens){
         Pattern p;
@@ -188,6 +144,17 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         }
     }
     
+    private Double getTargetRefraction(PDPage page, String side) throws IOException{
+        Pattern p;
+        String targetRef = PDFHelper.getTargetRefractionIOLM700(page, side);
+        p = Pattern.compile("Target ref.: (.*) D",Pattern.MULTILINE);
+        Matcher m = p.matcher( targetRef );
+        while( m.find() ){ // should be always 1 match!
+            return Double.parseDouble(m.group(1));
+        }
+        return 0.0; // plano
+    }
+    
     public void collectCalculationValuesPDFSide(PDPage page, String side) throws IOException{
         String mainFormulaName = "";
         String mainLensName = "";
@@ -217,6 +184,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         
         if(isPageCalculation){
             System.out.println("Page is calculation");
+            sideData.setTargetRef(getTargetRefraction(page, side));
             for(int pos=1; pos< 5; pos++){
                 String FormulaLens = PDFHelper.getMultiLensFormulaNamesIOLM700(page, side, pos);
                 if(FormulaLens.length() > 2){
@@ -243,41 +211,6 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         
     }
     
-    public void collectCalculationValuesSequenceSide(Attributes Attrs, String side, String sequenceTag){
-        String LensName = "";
-        String FormulaName = "";
-
-        if(!sequenceTag.equals("771B1001")){
-            // single formula, multi lense
-            // TODO similar solution required as for the side!!!
-            parser.Study.setSurgeonName(parser.getStringValueFromSequence(sequenceTag,"771B102C","",Attrs));
-            Sequence innerSeq = Attrs.getSequence(parser.getTagInteger(sequenceTag));
-            if(innerSeq != null && !innerSeq.isEmpty()){
-                for(int is=0; is<innerSeq.size();is++){
-                    Attributes innerAttrs = innerSeq.get(is);
-                    //dumpDCMStructure(innerAttrs);
-                    FormulaName = VR.PN.toStrings(innerAttrs.getValue(parser.getTagInteger("771B1009")), true, parser.CharacterSet).toString();
-                    Sequence CalcSeq = innerAttrs.getSequence(parser.getTagInteger("771B1001"));
-                    if(CalcSeq != null && !CalcSeq.isEmpty()){
-                        for(int cs=0; cs<CalcSeq.size(); cs++){
-                            //dumpDCMStructure(CalcSeq.get(cs));
-                            collectCalculationValuesFromSeq(CalcSeq.get(cs), side, FormulaName, LensName);
-                        }
-                    }   
-                }
-            }
-        }else{
-            // single lens multi formula
-            LensName = VR.PN.toStrings(Attrs.getValue(parser.getTagInteger("771B100A")), true, parser.CharacterSet).toString();
-            Sequence CalcSeq = Attrs.getSequence(parser.getTagInteger("771B1001"));
-            if(CalcSeq != null && !CalcSeq.isEmpty()){
-                for(int cs=0; cs<CalcSeq.size(); cs++){
-                    //dumpDCMStructure(CalcSeq.get(cs));
-                    collectCalculationValuesFromSeq(CalcSeq.get(cs), side, FormulaName, LensName);
-                }
-            }
-        }
-    }
 
     public void collectCalculationValues(Attributes Attrs){
         // we can extract the calculation values from the encapsulated PDF file if that's exist
