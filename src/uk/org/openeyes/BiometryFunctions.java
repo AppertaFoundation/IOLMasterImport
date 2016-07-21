@@ -601,6 +601,8 @@ public class BiometryFunctions extends DatabaseFunctions{
     
     protected String getCalculatedValues(String formulaName, BiometryLensData lens, BiometrySide sideData){
         double IOLPower;
+        double closestIOLPower;
+        double refraction;
         Method calculateMethod = null;
         
         try {
@@ -613,6 +615,31 @@ public class BiometryFunctions extends DatabaseFunctions{
                 calculateMethod = this.getClass().getMethod("calculateHofferQ", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
             }
             IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
+            
+            // Select IOL that gives power nearest to target refraction
+            
+            double roundDownIOLPower = Math.floor(IOLPower * 2)/2;
+            double nextUpIOLPower = roundDownIOLPower + 0.5;
+            double roundDownRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, roundDownIOLPower, "REF");
+            double nextUpRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, nextUpIOLPower, "REF");
+            if (Math.abs(sideData.getTargetRef() - roundDownRefraction) < Math.abs(sideData.getTargetRef() - nextUpRefraction)) {
+                    closestIOLPower = roundDownIOLPower;
+            }
+            else {
+                    closestIOLPower = nextUpIOLPower;
+            }
+
+            // Produce results for a range of refraction around this one, starting two 0.5D less powerful
+            double startPower = closestIOLPower - 1.0;
+            for (int i = 0; i < 5; i++)
+            {
+                    refraction = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, startPower, "REF");
+
+                    // need to add values to the check object here!
+                    
+                    startPower = startPower + 0.5;
+            }
+            
 
         } catch (NoSuchMethodException ex) {
                 Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
@@ -809,6 +836,33 @@ public class BiometryFunctions extends DatabaseFunctions{
      */
     protected double calculateHaigis(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
         // TODO: implement this! :)
-        return 0.00;
+        double n = 1.3315;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
+        double na =1.336;			// Refractive index of aqueous and vitreous
+        double vd =12.0;			// Vertex distance
+        double returnPower;                     // the return value
+
+        // Calculate average radius of curvature and corneal power in dioptres
+        double averageRadius = (r1 + r2) / 2;
+        double dioptresCornea = (n - 1) * 1000 / averageRadius;
+
+        // Additional Haigis constants
+        double a0 = lens.A0;
+        double a1 = lens.A1;
+        double a2 = lens.A2;
+
+        // Optical ACD
+        double opticalACD = (a0 + a1 * acd + a2 * axialLength);
+
+        // IOL power
+        if (resultType.equals("IOL")) {	    				
+                double z = dioptresCornea + dioptresRefraction/(1 - dioptresRefraction * vd/1000);
+                returnPower = na/(axialLength/1000 - opticalACD/1000) - na/(na/z - opticalACD/1000);
+        }
+        // Predicted refraction
+        else {
+                double z = 1000 * na/((1/(1/(axialLength - opticalACD) - dioptresRefraction/(1000 * na))) + opticalACD);
+                returnPower = (z - dioptresCornea)/(1 + vd * (z - dioptresCornea)/1000);	    				
+        }
+        return returnPower;
     }    
 }

@@ -231,7 +231,11 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                 pdfBytes = Attrs.getBytes(parser.getTagInteger("00420011"));
                 fileType = Attrs.getString(parser.getTagInteger("00420012"));
                 fileName = parser.inputFileName.substring(0, parser.inputFileName.length()-4);
-                parser.saveBinaryDataToFile(pdfBytes, fileType, fileName);
+                
+                //TODO: to be able to set in configuration where to save PDF files and also to save PDF file or not
+                // removed until we can configure it
+                
+                // parser.saveBinaryDataToFile(pdfBytes, fileType, fileName);
                 
                 // loop through pages and extract calculation from each page
                 PDFHelper.setPDFDoc(pdfBytes);
@@ -242,10 +246,6 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                     collectCalculationValuesPDFSide(currentPage, "L");
                     collectCalculationValuesPDFSide(currentPage, "R");
                 }
-                
-                // single formula multi lens format
-                // search for formula name
-                
                 
             } catch (IOException ex) {
                 Logger.getLogger(DICOMIOLMaster700.class.getName()).log(Level.SEVERE, null, ex);
