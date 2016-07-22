@@ -246,6 +246,10 @@ public class BiometrySide {
         }
     }
     
+    public boolean compareIOLREFvalues(BiometryMeasurementData controlData, int index){
+        return this.Measurements.get(index).compareMeasurementData(controlData);
+    }
+    
     public String printBiometrySide(String sideName){
        String output;
        output = sideName+" K1: "+this.K1+"\n";

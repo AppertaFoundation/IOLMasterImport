@@ -155,6 +155,12 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         return 0.0; // plano
     }
     
+    private boolean checkCalculationResults(String FormulaName, String AconstTxt, BiometrySide sideData, int index){
+        BiometryLensData lensData = new BiometryLensData();
+        lensData.setAconstants(AconstTxt);
+        return sideData.compareIOLREFvalues( parser.biometryHelper.getCalculatedValues(FormulaName, lensData, sideData), index );
+    }
+    
     public void collectCalculationValuesPDFSide(PDPage page, String side) throws IOException{
         String mainFormulaName = "";
         String mainLensName = "";
@@ -204,6 +210,14 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                         sideData.setLensIOL(PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "IOL", calc), sideData.getMeasurementsIndex());
                         sideData.setLensREF(PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "REF", calc), sideData.getMeasurementsIndex());
                     }
+                    
+                    // we need to check the values by calculating using our methods
+                    if(checkCalculationResults(FormulaName, AconstTxt, sideData, sideData.getMeasurementsIndex())){
+                        System.out.println("Formula calculation check OK for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                    }else{
+                        System.out.println("Formula calculation check FAILED for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                    }
+                    
                 }
             }
         }

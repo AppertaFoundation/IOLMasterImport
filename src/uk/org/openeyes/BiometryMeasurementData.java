@@ -86,6 +86,17 @@ public class BiometryMeasurementData {
         return exportJSON.toJSONString();
     }
     
+    public boolean compareMeasurementData(BiometryMeasurementData toCompare){
+        // TODO: it can be done more sophisticated way here!
+        System.out.println("ORIG: "+this.getIOLREFJSON());
+        System.out.println("COMP: "+toCompare.getIOLREFJSON());
+        if(toCompare.getIOLREFJSON().equals(this.getIOLREFJSON())){
+            return true;
+        }else{
+            return false;
+        }        
+    }
+    
     public String printLensData(){
         String output;
         output = "Lens name: "+this.LensName+"\n";

@@ -60,7 +60,7 @@ public class DICOMParser extends DICOMCommonFunctions{
     protected String CurrentSide = "R";
     protected SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
     
-    protected BiometryFunctions database;
+    protected BiometryFunctions biometryHelper;
    
     
     /**
@@ -74,10 +74,10 @@ public class DICOMParser extends DICOMCommonFunctions{
         this.logger = SystemLogger;
         this.debug = debugState;
         this.APIconfigFile = APIconfigFile;
-        database = new BiometryFunctions(logger);            
+        biometryHelper = new BiometryFunctions(logger);            
         
-        database.initSessionFactory(configFile, SystemLogger);
-        debugMessage("Connection status: "+database.checkConnection());    
+        biometryHelper.initSessionFactory(configFile, SystemLogger);
+        debugMessage("Connection status: "+biometryHelper.checkConnection());    
     }
     
     /**
@@ -118,7 +118,7 @@ public class DICOMParser extends DICOMCommonFunctions{
      */
     public DicomFiles searchDicomFile(String inputFile){
         File file = new File(inputFile);
-        Criteria crit = database.session.createCriteria(DicomFiles.class);
+        Criteria crit = biometryHelper.session.createCriteria(DicomFiles.class);
         crit.add(Restrictions.eq("filename", inputFile));
         crit.add(Restrictions.eq("filesize", file.length()));
         crit.add(Restrictions.eq("filedate", new Date(file.lastModified())));
@@ -133,7 +133,7 @@ public class DICOMParser extends DICOMCommonFunctions{
             newFile.setEntryDateTime(new Date());
             newFile.setProcessorId("JAVA_OE_IOLMaster");
             newFile.setFiledate(new Date(file.lastModified()));
-            database.session.save(newFile);
+            biometryHelper.session.save(newFile);
             return newFile;
         }
         
@@ -153,7 +153,7 @@ public class DICOMParser extends DICOMCommonFunctions{
         try {
             dis = new DicomInputStream(new File(inputFile));
         } catch (IOException ex) {
-            logger.systemExitWithLog(2, "Failed to open DICOM file, not a valid file or file not exists!", database);
+            logger.systemExitWithLog(2, "Failed to open DICOM file, not a valid file or file not exists!", biometryHelper);
             //System.exit(2);
         }
         
@@ -161,7 +161,7 @@ public class DICOMParser extends DICOMCommonFunctions{
         try {
             attrs = dis.readDataset(-1, -1);
         } catch (IOException ex) {
-            logger.systemExitWithLog(3, "Failed to read DICOM file, not a valid file or file not exists!", database);
+            logger.systemExitWithLog(3, "Failed to read DICOM file, not a valid file or file not exists!", biometryHelper);
         }
         
         //dumpDCMStructure(attrs);
@@ -314,10 +314,10 @@ public class DICOMParser extends DICOMCommonFunctions{
             debugMessage(Biometry.printBiometryData());
         }
         
-        database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+        biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
         
-        if(database.getSelectedPatient() != null){
-            database.processBiometryEvent(Study,  Biometry);
+        if(biometryHelper.getSelectedPatient() != null){
+            biometryHelper.processBiometryEvent(Study,  Biometry);
         }else{
             // we try to search through the API, and if that one is successfull then try to search again
             // the reason of this is to check if the patient is already exists in the PAS and 
@@ -327,7 +327,7 @@ public class DICOMParser extends DICOMCommonFunctions{
                 logger.addToRawOutput("No API config file specified, skipping API search...");
                 // search for patient data has been failed - need to print and log!!
                 logger.getLogger().setPatientNumber(Patient.getPatientID());
-                logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
+                logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), biometryHelper);
                 return false;
             }else{
                 APIUtils API = new APIUtils(APIconfigFile);
@@ -348,19 +348,19 @@ public class DICOMParser extends DICOMCommonFunctions{
                         } catch(InterruptedException ex) {
                             Thread.currentThread().interrupt();
                         }
-                        database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+                        biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
                     }
                 } catch (ConnectException ex) {
                     Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                if(database.getSelectedPatient() != null){
+                if(biometryHelper.getSelectedPatient() != null){
                     // we try to search again
-                    database.processBiometryEvent(Study,  Biometry);
+                    biometryHelper.processBiometryEvent(Study,  Biometry);
                 }else{
                     // search for patient data has been failed - need to print and log!!
                     logger.getLogger().setPatientNumber(Patient.getPatientID());
-                    logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
+                    logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), biometryHelper);
                     return false;
                 }
             }
@@ -369,12 +369,12 @@ public class DICOMParser extends DICOMCommonFunctions{
 
         
         logger.getLogger().setStatus("success");
-        logger.saveLogEntry(database.session);
-        database.session.flush();
-        database.transaction.commit();
-        database.session.close();
+        logger.saveLogEntry(biometryHelper.session);
+        biometryHelper.session.flush();
+        biometryHelper.transaction.commit();
+        biometryHelper.session.close();
         
-        database.closeSessionFactory();
+        biometryHelper.closeSessionFactory();
         return true;
     }
 }

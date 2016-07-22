@@ -8,7 +8,9 @@ package uk.org.openeyes;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -599,10 +601,20 @@ public class BiometryFunctions extends DatabaseFunctions{
         return importedEvent;
     }
     
-    protected String getCalculatedValues(String formulaName, BiometryLensData lens, BiometrySide sideData){
+    protected double convertDioptricPowerToRadius(double K){
+        return 337.5/K;
+    }
+    
+    public double round2Decimals(BigDecimal number){
+        number = number.setScale(2, RoundingMode.HALF_UP);
+        return number.doubleValue();
+    }
+    
+    protected BiometryMeasurementData getCalculatedValues(String formulaName, BiometryLensData lens, BiometrySide sideData){
         double IOLPower;
         double closestIOLPower;
         double refraction;
+        BiometryMeasurementData controlMeasure = new BiometryMeasurementData();
         Method calculateMethod = null;
         
         try {
@@ -611,17 +623,19 @@ public class BiometryFunctions extends DatabaseFunctions{
                 calculateMethod = this.getClass().getMethod("calculateHaigis", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
             }else if(formulaName.equals("SRK/T")){
                 calculateMethod = this.getClass().getMethod("calculateSRKT", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
-            }else if(formulaName.equals("HofferQ")){
+            }else if(formulaName.equals("Hoffer® Q")){
                 calculateMethod = this.getClass().getMethod("calculateHofferQ", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
             }
-            IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
+            double K1 = convertDioptricPowerToRadius(sideData.getK1());
+            double K2 = convertDioptricPowerToRadius(sideData.getK2());
+            IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
             
             // Select IOL that gives power nearest to target refraction
             
             double roundDownIOLPower = Math.floor(IOLPower * 2)/2;
             double nextUpIOLPower = roundDownIOLPower + 0.5;
-            double roundDownRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, roundDownIOLPower, "REF");
-            double nextUpRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, nextUpIOLPower, "REF");
+            double roundDownRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, roundDownIOLPower, "REF");
+            double nextUpRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, nextUpIOLPower, "REF");
             if (Math.abs(sideData.getTargetRef() - roundDownRefraction) < Math.abs(sideData.getTargetRef() - nextUpRefraction)) {
                     closestIOLPower = roundDownIOLPower;
             }
@@ -630,16 +644,21 @@ public class BiometryFunctions extends DatabaseFunctions{
             }
 
             // Produce results for a range of refraction around this one, starting two 0.5D less powerful
-            double startPower = closestIOLPower - 1.0;
+            double startPower = closestIOLPower + 1.0;
+            
             for (int i = 0; i < 5; i++)
             {
-                    refraction = (double) calculateMethod.invoke(this, sideData.getAL(), sideData.getK1(), sideData.getK2(), sideData.getACD(), lens, startPower, "REF");
+                    refraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, startPower, "REF");
+                        
+                    refraction = round2Decimals(BigDecimal.valueOf(refraction));
 
                     // need to add values to the check object here!
+                    controlMeasure.setIOL(startPower);
+                    controlMeasure.setREF(refraction);
+                    startPower = startPower - 0.5;
                     
-                    startPower = startPower + 0.5;
             }
-            
+          
 
         } catch (NoSuchMethodException ex) {
                 Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
@@ -652,8 +671,8 @@ public class BiometryFunctions extends DatabaseFunctions{
         } catch (InvocationTargetException ex) {
             Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        return "";
+                    
+        return controlMeasure;
     }
     
     /**
@@ -667,7 +686,7 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
      * @return              -- Refractive power in Dioptres
      */
-    protected double calculateSRKT(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
+    public double calculateSRKT(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
         // Constants
     	double n =  1.3375;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
 	double nc = 1.333;			// Refractive index of the cornea
@@ -764,7 +783,7 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
      * @return              -- Refractive power in Dioptres
      */    
-    protected double calculateHofferQ(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
+    public double calculateHofferQ(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
         // Constants
         double n = 1.3375;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
         double vd =12.0;			// Vertex distance
@@ -834,7 +853,7 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
      * @return              -- Refractive power in Dioptres
      */
-    protected double calculateHaigis(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
+    public double calculateHaigis(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
         // TODO: implement this! :)
         double n = 1.3315;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
         double na =1.336;			// Refractive index of aqueous and vitreous
