@@ -36,11 +36,19 @@ public class DICOMHFAVF {
     
     private DICOMParser parser;
     
+    /**
+     *
+     * @param mainParser
+     */
     public DICOMHFAVF(DICOMParser mainParser){
         this.parser = mainParser;
     }
 
-
+    /**
+     *
+     * @param Attrs
+     * @throws IOException
+     */
     public void collectData(Attributes Attrs) throws IOException{
         
         if(Attrs.contains(parser.getTagInteger("00420011"))){
@@ -211,6 +219,10 @@ public class DICOMHFAVF {
         fos.close();
     }
     
+    /**
+     *
+     * @param message
+     */
     protected void debugMessage(String message){
         System.out.println(message);
     }

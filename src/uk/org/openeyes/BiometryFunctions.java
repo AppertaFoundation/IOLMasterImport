@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.plaf.metal.MetalIconFactory;
 import org.json.simple.parser.JSONParser;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -40,16 +38,21 @@ import uk.org.openeyes.models.OphinbiometrySurgeon;
 import uk.org.openeyes.models.User;
 
 /**
- *
- * @author VEDELEKT
+ * A class for generic Biometry related methods
+ * 
+ * @author vetusko
  */
 public class BiometryFunctions extends DatabaseFunctions{
 
     private DICOMLogger dicomLogger;
     
+    /**
+     * Constructor - sets the logger class to the logger instance from the main 
+     * 
+     * @param SystemLogger
+     */
     public BiometryFunctions(DICOMLogger SystemLogger){
-        this.dicomLogger = SystemLogger;
-        
+        this.dicomLogger = SystemLogger;    
     }
     
     /**
@@ -86,7 +89,11 @@ public class BiometryFunctions extends DatabaseFunctions{
         }
         return lensType;
     }
-
+    
+  /*  private OphinbiometryLenstypeLens createNewLens(){
+        
+    }
+*/
     /**
      *
      * @param formulaName the value of formulaName
@@ -328,10 +335,15 @@ public class BiometryFunctions extends DatabaseFunctions{
     }
     
     private OphinbiometrySurgeon searchSurgeon(String surgeonName){
-        OphinbiometrySurgeon surgeonData = null;
+        OphinbiometrySurgeon surgeonData;
+        if(surgeonName == null){
+            surgeonName = "IOLM700 Import";
+        }
+        
         Criteria crit = getSession().createCriteria(OphinbiometrySurgeon.class); 
         crit.add(Restrictions.eq("name", surgeonName));
         List surgeons = crit.list();
+
         dicomLogger.addToRawOutput("Searching for surgeon "+surgeonName+"...");
 
         if(surgeons.isEmpty()){
@@ -360,8 +372,8 @@ public class BiometryFunctions extends DatabaseFunctions{
      */
     private void saveIolRefValues() {
         
-        ArrayList<BiometryMeasurementData> storedBiometryMeasurementDataLeft = eventBiometry.getBiometryValue("L").getMeasurements();
-        ArrayList<BiometryMeasurementData> storedBiometryMeasurementDataRight = eventBiometry.getBiometryValue("R").getMeasurements();
+        ArrayList<BiometryCalculationData> storedBiometryMeasurementDataLeft = eventBiometry.getBiometryValue("L").getMeasurements();
+        ArrayList<BiometryCalculationData> storedBiometryMeasurementDataRight = eventBiometry.getBiometryValue("R").getMeasurements();
         Integer ArrayListSize;
         String ReferenceSide;
         
@@ -376,7 +388,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         OphinbiometryLenstypeLens lensType = null;
         OphinbiometryCalculationFormula formulaType = null;
         for (Integer i = 0; i < ArrayListSize; i++) {
-            BiometryMeasurementData rowData;
+            BiometryCalculationData rowData;
             if (ReferenceSide.equals("L")) {
                 rowData = storedBiometryMeasurementDataLeft.get(i);
             } else {
@@ -468,6 +480,7 @@ public class BiometryFunctions extends DatabaseFunctions{
      *
      * @param IOLStudy the value of IOLStudy
      * @param IOLBiometry the value of IOLBiometry
+     * @throws java.text.ParseException
      */
     public void processBiometryEvent(StudyData IOLStudy, BiometryData IOLBiometry) throws ParseException {
 
@@ -569,67 +582,66 @@ public class BiometryFunctions extends DatabaseFunctions{
 
         if(isNewEvent){
             Event newEvent = createNewEvent();
-            importedEvent = new OphinbiometryImportedEvents();
-            importedEvent.setDeviceName(eventStudy.getInstituionName());
-            importedEvent.setDeviceId(eventStudy.getStationName());
-            importedEvent.setDeviceManufacturer(eventStudy.getDeviceManufacturer());
-            importedEvent.setDeviceModel(eventStudy.getDeviceModel());
-            importedEvent.setDeviceSoftwareVersion(eventStudy.getDeviceSoftwareVersion());
-            importedEvent.setStudyId(eventStudy.getStudyInstanceID());
-            importedEvent.setSeriesId(eventStudy.getSeriesInstanceID());
-            importedEvent.setPatientId(getSelectedPatient());
-            importedEvent.setSurgeonName(eventStudy.getSurgeonName());
-            try {
-                importedEvent.setContentDateTime(df.parse(getSQLFormattedDate(eventStudy.getContentDateTime().getTime())));
-            } catch (ParseException ex) {
-                ex.printStackTrace();
-            }
-            
-            importedEvent.setEventId(newEvent);
-            importedEvent.setCreatedDate(new Date());
-            importedEvent.setLastModifiedDate(new Date());
-            importedEvent.setCreatedUserId(selectedUser);
-            importedEvent.setLastModifiedUserId(selectedUser);
-            boolean isLinked = false;
-            if (getSelectedEpisode() != null) {
-                isLinked = true;
-            }
-            importedEvent.setIsLinked(isLinked);
-            importedEvent.setIsMerged(false);
+            importedEvent = createNewImportedEvent(newEvent);
         }
-        session.saveOrUpdate(importedEvent);
+        
         return importedEvent;
     }
     
+    /**
+     *
+     * @param K
+     * @return
+     */
     protected double convertDioptricPowerToRadius(double K){
         return 337.5/K;
     }
     
+    /**
+     *
+     * @param number
+     * @return
+     */
     public double round2Decimals(BigDecimal number){
         number = number.setScale(2, RoundingMode.HALF_UP);
         return number.doubleValue();
     }
     
-    protected BiometryMeasurementData getCalculatedValues(String formulaName, BiometryLensData lens, BiometrySide sideData){
+    /**
+     *
+     * @param formulaName
+     * @param lens
+     * @param sideData
+     * @return
+     */
+    protected BiometryCalculationData getCalculatedValues(String formulaName, BiometryLensData lens, BiometrySide sideData){
         double IOLPower;
         double closestIOLPower;
         double refraction;
-        BiometryMeasurementData controlMeasure = new BiometryMeasurementData();
+        BiometryCalculationData controlMeasure = new BiometryCalculationData();
         Method calculateMethod = null;
         
         try {
-            if(formulaName.equals("Haigis suite")){
-                // will call Haigis calculation Here
-                calculateMethod = this.getClass().getMethod("calculateHaigis", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
-            }else if(formulaName.equals("SRK/T")){
-                calculateMethod = this.getClass().getMethod("calculateSRKT", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
-            }else if(formulaName.equals("Hoffer® Q")){
-                calculateMethod = this.getClass().getMethod("calculateHofferQ", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+            switch (formulaName) {
+                case "Haigis suite":
+                    // will call Haigis calculation Here
+                    calculateMethod = this.getClass().getMethod("calculateHaigis", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+                    break;
+                case "SRK/T":
+                    calculateMethod = this.getClass().getMethod("calculateSRKT", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+                    break;
+                case "Hoffer® Q":
+                    calculateMethod = this.getClass().getMethod("calculateHofferQ", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+                    break;
+                default:
+                    break;
             }
             double K1 = convertDioptricPowerToRadius(sideData.getK1());
             double K2 = convertDioptricPowerToRadius(sideData.getK2());
             IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
             
+            // TODO: need to make sure that we can use the calculated value here!
+            sideData.setLensEmmetropia(IOLPower, sideData.getMeasurementsIndex());
             // Select IOL that gives power nearest to target refraction
             
             double roundDownIOLPower = Math.floor(IOLPower * 2)/2;

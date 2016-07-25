@@ -44,17 +44,62 @@ import uk.org.openeyes.models.User;
  */
 public class DatabaseFunctions {
     private SessionFactory sessionFactory;
+
+    /**
+     *
+     */
     protected Patient selectedPatient;
+
+    /**
+     *
+     */
     protected Episode selectedEpisode;
+
+    /**
+     *
+     */
     protected Session session;
+
+    /**
+     *
+     */
     protected Transaction transaction;
+
+    /**
+     *
+     */
     protected User selectedUser;
+
+    /**
+     *
+     */
     protected StudyData eventStudy;
+
+    /**
+     *
+     */
     protected BiometryData eventBiometry;
+
+    /**
+     *
+     */
     public OphinbiometryImportedEvents importedBiometryEvent;
+
+    /**
+     *
+     */
     protected boolean isNewEvent = true;
+
+    /**
+     *
+     */
     protected DICOMLogger dicomLogger;
     
+    /**
+     *
+     * @param userName
+     * @return
+     */
     protected User searchStudyUser(String userName){
 
         Criteria crit = session.createCriteria(User.class);
@@ -170,6 +215,11 @@ public class DatabaseFunctions {
         
     }
     
+    /**
+     *
+     * @param configFile
+     * @param SystemLogger
+     */
     public void initSessionFactory(String configFile, DICOMLogger SystemLogger){
         // A SessionFactory is set up once for an application!
         // if no config specified we should use the default one
@@ -207,8 +257,6 @@ public class DatabaseFunctions {
             catch (Exception e) {
                 // The registry would be destroyed by the SessionFactory, but we had trouble building the SessionFactory
                 // so destroy it manually.
-                //System.out.println("Failed to connect to the database, please check your hibernate configuration file!");
-                dicomLogger.addToRawOutput("Failed to connect to the database, please check your hibernate configuration file!");
 
                 // TODO: need to add debug config here!
                 e.printStackTrace();
@@ -219,12 +267,22 @@ public class DatabaseFunctions {
         }else{
             // try to open /etc/ database config
             
-            sessionFactory = configureHibernate(configFile).buildSessionFactory();
-            setSession();
-            setTransaction();
+            try {
+                sessionFactory = configureHibernate(configFile).buildSessionFactory();
+                setSession();
+                setTransaction();
+            }catch(Exception e){
+                dicomLogger.systemExitWithLog(5, "Failed to connect to the database, please check your hibernate configuration file!", this);
+            }
         }
     }
     
+    /**
+     *
+     * @param originalTable
+     * @param originalID
+     * @return
+     */
     public int addVersionTableData(Object originalTable, Integer originalID){
           // http://www.tutorialspoint.com/hibernate/hibernate_native_sql.htm
           AbstractEntityPersister aep=((AbstractEntityPersister)session.getSessionFactory().getClassMetadata(originalTable.getClass()));  
@@ -247,21 +305,38 @@ public class DatabaseFunctions {
           return query.executeUpdate();
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean checkConnection(){
         //Session session = sessionFactory.openSession();
         return session.isConnected();
     }
     
+    /**
+     *
+     */
     public void closeSessionFactory(){
         if ( sessionFactory != null ) {
             sessionFactory.close();
 	}
     }
     
+    /**
+     *
+     * @return
+     */
     public Patient getSelectedPatient(){
         return this.selectedPatient;
     }
     
+    /**
+     *
+     * @param hosNum
+     * @param gender
+     * @param birthDate
+     */
     public void searchPatient(String hosNum, char gender, Calendar birthDate){
         Session session = sessionFactory.openSession();
         Criteria crit = session.createCriteria(Patient.class);
@@ -304,6 +379,9 @@ public class DatabaseFunctions {
         session.close();
     }
     
+    /**
+     *
+     */
     public void selectActiveEpisode(){
         selectedEpisode = null;
         /*
@@ -340,6 +418,10 @@ public class DatabaseFunctions {
         */
     }
     
+    /**
+     *
+     * @return
+     */
     public Episode getSelectedEpisode(){
         return this.selectedEpisode;        
     }
@@ -347,6 +429,9 @@ public class DatabaseFunctions {
     /**
     *
     * 
+     * @param studyDate
+     * @param studyDate
+     * @return 
     **/
     public String getStudyYMD(Calendar studyDate) {
         
@@ -361,11 +446,60 @@ public class DatabaseFunctions {
         return formattedStudyDate;
     }
     
+    /**
+     *
+     * @param inputDate
+     * @return
+     */
     public String getSQLFormattedDate(Date inputDate){
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
         return df.format(inputDate);
     }
     
+    /**
+     *
+     * @param newEvent
+     * @return
+     */
+    protected OphinbiometryImportedEvents createNewImportedEvent(Event newEvent){
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        OphinbiometryImportedEvents importedEvent = new OphinbiometryImportedEvents();
+
+        importedEvent.setDeviceName(eventStudy.getInstituionName());
+        importedEvent.setDeviceId(eventStudy.getStationName());
+        importedEvent.setDeviceManufacturer(eventStudy.getDeviceManufacturer());
+        importedEvent.setDeviceModel(eventStudy.getDeviceModel());
+        importedEvent.setDeviceSoftwareVersion(eventStudy.getDeviceSoftwareVersion());
+        importedEvent.setStudyId(eventStudy.getStudyInstanceID());
+        importedEvent.setSeriesId(eventStudy.getSeriesInstanceID());
+        importedEvent.setPatientId(getSelectedPatient());
+        importedEvent.setSurgeonName(eventStudy.getSurgeonName());
+        try {
+            importedEvent.setContentDateTime(df.parse(getSQLFormattedDate(eventStudy.getContentDateTime().getTime())));
+        } catch (ParseException ex) {
+            ex.printStackTrace();
+        }
+
+        importedEvent.setEventId(newEvent);
+        importedEvent.setCreatedDate(new Date());
+        importedEvent.setLastModifiedDate(new Date());
+        importedEvent.setCreatedUserId(selectedUser);
+        importedEvent.setLastModifiedUserId(selectedUser);
+        boolean isLinked = false;
+        if (getSelectedEpisode() != null) {
+            isLinked = true;
+        }
+        importedEvent.setIsLinked(isLinked);
+        importedEvent.setIsMerged(false);
+        session.saveOrUpdate(importedEvent);
+
+        return importedEvent;
+    }
+    
+    /**
+     *
+     * @return
+     */
     protected Event createNewEvent(){
         Event newBiometryEvent = new Event();
         
@@ -402,22 +536,35 @@ public class DatabaseFunctions {
         return newBiometryEvent;
     }
     
-
-    // for unit testing it need to be public
+    /**
+     *
+     */
     public void setSession(){
         if(this.session == null || !(this.session.isConnected()) ){
-            this.session = sessionFactory.openSession();
+            try{
+                this.session = sessionFactory.openSession();
+            }catch(Exception e){
+                System.exit(5);
+            }
             session.setFlushMode(FlushMode.MANUAL);
             ManagedSessionContext.bind(session);
         }
     }
     
+    /**
+     *
+     * @return
+     */
     public Session getSession(){
         setSession();
         return this.session;
     }
     
     // for unit testing it need to be public
+
+    /**
+     *
+     */
     public void setTransaction(){
         //if(this.session == null){
         //    this.setSession();
@@ -425,11 +572,20 @@ public class DatabaseFunctions {
         this.transaction = this.session.beginTransaction();
     }
     
+    /**
+     *
+     * @return
+     */
     public Transaction getTransaction(){
         return this.transaction;
     }
     
     // for unit testing it need to be public
+
+    /**
+     *
+     * @param inputStudy
+     */
     public void setEventStudy(StudyData inputStudy){
         this.eventStudy = inputStudy;
     }
@@ -439,6 +595,11 @@ public class DatabaseFunctions {
     }
     
     // for unit testing it need to be public
+
+    /**
+     *
+     * @param inputBiometry
+     */
     public void setEventBiometry(BiometryData inputBiometry){
         this.eventBiometry = inputBiometry;
     }
@@ -448,6 +609,10 @@ public class DatabaseFunctions {
     }
     
     // for unit testing it need to be public
+
+    /**
+     *
+     */
     public void setSelectedUser(){
         if(eventStudy != null){
             String SurgeonName="";

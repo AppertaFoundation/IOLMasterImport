@@ -23,20 +23,26 @@ import org.apache.http.util.EntityUtils;
 import org.ini4j.Wini;
 
 /**
- *
- * @author VEDELEKT
+ * Methods to connect to REST WS using for search for patient data 
+ * 
+ * @author vetusko
  */
 public class APIUtils {
     
-        // default values match with the default localhost settings (admin need API access rights!)
-        private String host = "localhost";
-        private Integer port = 8888;
-        private String authUserName = "admin";
-        private String authUserPassword = "admin";
-        
-        private String response;
+    // default values match with the default localhost settings (admin need API access rights!)
+    private String host = "localhost";
+    private Integer port = 8888;
+    private String authUserName = "admin";
+    private String authUserPassword = "admin";
+
+    private String response;
     
-        public APIUtils(String configFile){
+    /**
+     * Constructor - load and parse a config file (Windows ini format) and set the variable values
+     * 
+     * @param configFile can create a new instance using an external config file
+     */
+    public APIUtils(String configFile){
             File APIConfig = new File(configFile);
             if(APIConfig.exists() && !APIConfig.isDirectory()){
                 Wini ini = null;
@@ -52,76 +58,108 @@ public class APIUtils {
             }
         }
         
-        public void setHost(String host){
+    /**
+     * Set the host variable
+     * 
+     * @param host the name of the host to use for the connection (String)
+     */
+    public void setHost(String host){
             this.host = host;
         }
         
-        public void setPort(Integer port){
+    /**
+     * Set the port variable
+     * 
+     * @param port the port number to use for the connection (Integer)
+     */
+    public void setPort(Integer port){
             this.port=port;
         }
         
-        public void setAuthUserName(String authUserName){
+    /**
+     * Set the value of the authUserName variable
+     * 
+     * @param authUserName the user to use for the connection 
+     */
+    public void setAuthUserName(String authUserName){
             this.authUserName = authUserName;
         }
         
-        public void setAuthUserPassword(String authUserPassword){
+    /**
+     * Set the value of the authUserPassword variable
+     * 
+     * @param authUserPassword the password to be used for the connection
+     */
+    public void setAuthUserPassword(String authUserPassword){
             this.authUserPassword = authUserPassword;
         }
 
-        public int searchPatient(String hospitalNumber) throws ConnectException{
-            return this.read("Patient", "pat", "identifier="+hospitalNumber);
+    /**
+     * Trigger a search for patient WS call
+     * 
+     * @param hospitalNumber the hospital number of the patient to search for
+     * @return The status code of the HTTP response
+     * @throws ConnectException
+     */
+    public int searchPatient(String hospitalNumber) throws ConnectException{
+            return this.read("Patient", "identifier="+hospitalNumber);
         }
         
-        public String getResponse(){
-            return this.response;
-        }
+    /**
+     * Return the response data
+     * 
+     * @return the response of the HTTP call
+     */
+    public String getResponse(){
+        return this.response;
+    }
         
-    	/**
-	 * 
-	 * @param resourceType
-	 * @param jsonType
-	 * @param requestParams
-	 * @return
-	 * @throws ConnectException 
-	 */
-	public int read(String resourceType, String jsonType, String requestParams)
-			throws ConnectException {
-            
-		DefaultHttpClient http = new DefaultHttpClient();
+    /**
+     * Trigger a WS call through HTTP for patient search
+     * 
+     * @param resourceType The REST resource name (only "Patient" supported now)
+     * @param requestParams The arguments for the HTTP call 
+     * @return The status code from the HTTP answer
+     * @throws ConnectException 
+     */
+    public int read(String resourceType, String requestParams)
+                    throws ConnectException {
 
-		int result = -1;
-		String strURL = "http://" + host + ":" + port + "/api/"
-				+ resourceType + "?resource_type=Patient&_format=xml";
-		if (requestParams != null) {
-			strURL += "&" + requestParams;
-		}
-		HttpGet get = new HttpGet(strURL);
-		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(
-				authUserName, authUserPassword);
-		
-                get.addHeader(BasicScheme.authenticate(creds, "US-ASCII", false));
+        DefaultHttpClient http = new DefaultHttpClient();
 
-		try {
-			get.addHeader("Content-type", "text/xml");
-			HttpClientBuilder builder = HttpClientBuilder.create();
-			CloseableHttpClient httpclient = builder.build();
+        int result = -1;
+        String strURL = "http://" + host + ":" + port + "/api/"
+                        + resourceType + "?resource_type=Patient&_format=xml";
+        if (requestParams != null) {
+                strURL += "&" + requestParams;
+        }
+        HttpGet get = new HttpGet(strURL);
+        UsernamePasswordCredentials creds = new UsernamePasswordCredentials(
+                        authUserName, authUserPassword);
 
-			CloseableHttpResponse httpResponse = httpclient.execute(get);
-			result = httpResponse.getStatusLine().getStatusCode();
-			HttpEntity entity2 = httpResponse.getEntity();
-			StringWriter writer = new StringWriter();
-			//IOUtils.copy(entity2.getContent(), writer);
-			this.response = entity2.getContent().toString();
-			EntityUtils.consume(entity2);
-		} catch (ConnectException e) {
-			// this happens when there's no server to connect to
-                    e.printStackTrace();
-			throw e;
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			get.releaseConnection();
-		}
-		return result;
-	}
+        get.addHeader(BasicScheme.authenticate(creds, "US-ASCII", false));
+
+        try {
+                get.addHeader("Content-type", "text/xml");
+                HttpClientBuilder builder = HttpClientBuilder.create();
+                CloseableHttpClient httpclient = builder.build();
+
+                CloseableHttpResponse httpResponse = httpclient.execute(get);
+                result = httpResponse.getStatusLine().getStatusCode();
+                HttpEntity entity2 = httpResponse.getEntity();
+                StringWriter writer = new StringWriter();
+                //IOUtils.copy(entity2.getContent(), writer);
+                this.response = entity2.getContent().toString();
+                EntityUtils.consume(entity2);
+        } catch (ConnectException e) {
+                // this happens when there's no server to connect to
+            e.printStackTrace();
+                throw e;
+        } catch (IOException e) {
+                e.printStackTrace();
+        } finally {
+                get.releaseConnection();
+        }
+        return result;
+    }
 }

@@ -44,6 +44,10 @@ public class PDFFunctions extends PDFTextStripper{
         addDataCoordinates();
     }   
     
+    /**
+     *
+     * @param pdfBin
+     */
     public void setPDFDoc(byte[] pdfBin){
         RandomAccessRead pdfData = new RandomAccessBuffer(pdfBin);
         PDFParser myPDFparser;
@@ -61,6 +65,10 @@ public class PDFFunctions extends PDFTextStripper{
 
     }
     
+    /**
+     *
+     * @return
+     */
     public int getMaxPageNum(){
         if(! this.PDFDoc.equals(null)){
             return PDFDoc.getNumberOfPages();
@@ -69,6 +77,11 @@ public class PDFFunctions extends PDFTextStripper{
         }
     }
     
+    /**
+     *
+     * @param PDFDoc
+     * @throws IOException
+     */
     public void dumpPDFStructure(PDDocument PDFDoc) throws IOException{
         PDFTextStripper stripper = new PDFFunctions();
 	stripper.setSortByPosition( true );
@@ -79,6 +92,11 @@ public class PDFFunctions extends PDFTextStripper{
         
     }
     
+    /**
+     *
+     * @param pageNum
+     * @return
+     */
     public PDPage getPDFPage(int pageNum){
         PDPage outPage = new PDPage();
         PDPageTree allPages;
@@ -90,6 +108,11 @@ public class PDFFunctions extends PDFTextStripper{
         return outPage;
     }
     
+    /**
+     *
+     * @param PDFDoc
+     * @throws IOException
+     */
     public void dumpPDFContent(PDDocument PDFDoc) throws IOException{
         PDPageTree allPages;
         allPages = PDFDoc.getDocumentCatalog().getPages();
@@ -117,19 +140,46 @@ public class PDFFunctions extends PDFTextStripper{
         }        
     }
        
+    /**
+     *
+     * @param page
+     * @return
+     * @throws IOException
+     */
     public String getPageTitleIOLM700(PDPage page) throws IOException{
         return getTextArea(page, new Rectangle(200,270,250,10)).trim();
     }
     
+    /**
+     *
+     * @param page
+     * @return
+     * @throws IOException
+     */
     public String getTopLensFormulaNameIOLM700(PDPage page)throws IOException{
         return getTextArea(page, new Rectangle(50,180,250,10)).trim();
     }
     
+    /**
+     *
+     * @param page
+     * @param side
+     * @return
+     * @throws IOException
+     */
     public String getTargetRefractionIOLM700(PDPage page, String side) throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("TargetRefractionIOLM700", side, 1).x, getDataCoordinates("TargetRefractionIOLM700", side, 1).y, 110, 10);
         return getTextArea(page, area).trim();
     }
     
+    /**
+     *
+     * @param page
+     * @param side
+     * @param position
+     * @return
+     * @throws IOException
+     */
     public String getMultiLensFormulaNamesIOLM700(PDPage page, String side, int position) throws IOException{
         return getTextArea(page, getRectangleMultiLensFormulaNamesIOLM700(side, position)).trim();
     }
@@ -139,13 +189,21 @@ public class PDFFunctions extends PDFTextStripper{
          return new Rectangle(coord.x, coord.y, 110, 20);
     }
     
+    /**
+     *
+     * @param page
+     * @param side
+     * @param position
+     * @return
+     * @throws IOException
+     */
     public String getMultiLensAValuesIOLM700(PDPage page, String side, int position) throws IOException{
         return getTextArea(page, getRectangleMultiLensAValuesIOLM700(side, position));
     }
     
     private Rectangle getRectangleMultiLensAValuesIOLM700(String side, int position){
         Coordinates coord = getDataCoordinates("MultiLensAValuesIOLM700", side, position);
-         return new Rectangle(coord.x, coord.y, 110, 20);
+         return new Rectangle(coord.x, coord.y, 120, 20);
     }
     
     /***
@@ -170,6 +228,14 @@ public class PDFFunctions extends PDFTextStripper{
         return Double.parseDouble(getTextArea(page, new Rectangle(coords.x, coords.y + (row * 9), 50, 9)));
     }
     
+    /**
+     *
+     * @param page
+     * @param side
+     * @param position
+     * @return
+     * @throws IOException
+     */
     public String dumpIOLREFValuesIOLM700(PDPage page, String side, int position) throws IOException{
         // IOL values
         Coordinates startIOLCoords = getDataCoordinates("MultiLensIOLStartIOLM700", side, position);
@@ -209,15 +275,15 @@ public class PDFFunctions extends PDFTextStripper{
         CoordMap.put("MultiLensIOLStartIOLM700_R_1", new Coordinates(50, 532));
         CoordMap.put("MultiLensIOLStartIOLM700_R_2", new Coordinates(185, 532));
         CoordMap.put("MultiLensIOLStartIOLM700_R_3", new Coordinates(50, 660));
-        CoordMap.put("MultiLensIOLStartIOLM700_R_4", new Coordinates(441, 660));
+        CoordMap.put("MultiLensIOLStartIOLM700_R_4", new Coordinates(185, 660));
         
         CoordMap.put("MultiLensREFStartIOLM700_L_1", new Coordinates(367, 532));
         CoordMap.put("MultiLensREFStartIOLM700_L_2", new Coordinates(491, 532));
         CoordMap.put("MultiLensREFStartIOLM700_L_3", new Coordinates(367, 660));
         CoordMap.put("MultiLensREFStartIOLM700_L_4", new Coordinates(491, 660));
-        CoordMap.put("MultiLensREFStartIOLM700_R_1", new Coordinates(100, 532));
+        CoordMap.put("MultiLensREFStartIOLM700_R_1", new Coordinates(105, 532));
         CoordMap.put("MultiLensREFStartIOLM700_R_2", new Coordinates(235, 532));
-        CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(100, 660));
+        CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(105, 660));
         CoordMap.put("MultiLensREFStartIOLM700_R_4", new Coordinates(235, 660));
         
         CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 410));
@@ -240,6 +306,9 @@ public class PDFFunctions extends PDFTextStripper{
     
     /**
      * Override the default functionality of PDFTextStripper.
+     * @param string
+     * @param textPositions
+     * @throws java.io.IOException
     */
     @Override
     protected void writeString(String string, List<TextPosition> textPositions) throws IOException

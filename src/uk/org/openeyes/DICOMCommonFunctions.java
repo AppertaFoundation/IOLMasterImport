@@ -35,12 +35,31 @@ public class DICOMCommonFunctions {
      */
     public boolean debug = true;
     
+    /**
+     *
+     */
     protected SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
+
+    /**
+     *
+     */
     protected String CurrentSide = "R";
+
+    /**
+     *
+     */
     protected DICOMLogger logger;
     
+    /**
+     *
+     */
     protected String inputFileName;
     
+    /**
+     *
+     * @param tag
+     * @return
+     */
     public Integer getTagInteger(String tag){
         return Integer.decode("0x"+tag);
     }
@@ -55,6 +74,11 @@ public class DICOMCommonFunctions {
         return "";
     }
     
+    /**
+     *
+     * @param inputAttrs
+     * @return
+     */
     protected String getSideFromAttributes(Attributes inputAttrs){
         int[] sequenceTags;
         sequenceTags = inputAttrs.tags();
@@ -66,6 +90,14 @@ public class DICOMCommonFunctions {
         return "";
     }
     
+    /**
+     *
+     * @param hexTagSequence
+     * @param hexTagValue
+     * @param side
+     * @param Attrs
+     * @return
+     */
     protected Double getDoubleValueFromSequence(String hexTagSequence, String hexTagValue, String side, Attributes Attrs){
         if(Attrs.contains(getTagInteger(hexTagSequence))){
             Sequence Seq = Attrs.getSequence(getTagInteger(hexTagSequence));
@@ -83,6 +115,14 @@ public class DICOMCommonFunctions {
         return 0.0;
     }
     
+    /**
+     *
+     * @param hexTagSequence
+     * @param hexTagValue
+     * @param side
+     * @param Attrs
+     * @return
+     */
     protected String getStringValueFromSequence(String hexTagSequence, String hexTagValue, String side, Attributes Attrs){
         Sequence Seq = Attrs.getSequence(getTagInteger(hexTagSequence));
         for(int ks=0; ks<Seq.size();ks++){
@@ -102,6 +142,10 @@ public class DICOMCommonFunctions {
         return "";
     }    
     
+    /**
+     *
+     * @param message
+     */
     protected void debugMessage(String message){
         if(this.debug){
             logger.addToRawOutput(message);
@@ -109,7 +153,11 @@ public class DICOMCommonFunctions {
         }
     } 
     
-    
+    /**
+     *
+     * @param fileType
+     * @return
+     */
     protected String getFileExtension(String fileType){
        
         if(fileType.equals("application/pdf")){
@@ -121,6 +169,13 @@ public class DICOMCommonFunctions {
         }
     }
     
+    /**
+     *
+     * @param binaryData
+     * @param fileType
+     * @param fileName
+     * @return
+     */
     protected boolean saveBinaryDataToFile(byte[] binaryData, String fileType, String fileName){
        
         try {
@@ -136,6 +191,11 @@ public class DICOMCommonFunctions {
         return false;
     }
     
+    /**
+     *
+     * @param binData
+     * @return
+     */
     protected String parsePDFData(byte[] binData){
             
         PDFParser parser = null;
@@ -176,6 +236,11 @@ public class DICOMCommonFunctions {
         return parsedText;
     }
     
+    /**
+     *
+     * @param fileName
+     * @return
+     */
     protected String parsePDFDataFromFile(String fileName){
               
         Path path = Paths.get(fileName);

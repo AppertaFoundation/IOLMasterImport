@@ -28,10 +28,18 @@ import org.dcm4che3.data.VR;
 public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private PDFFunctions PDFHelper = null;
      
+    /**
+     *
+     * @param mainParser
+     */
     public DICOMIOLMaster700(DICOMParser mainParser){
         this.parser = mainParser;
     }
 
+    /**
+     *
+     * @param Attrs
+     */
     public void collectData(Attributes Attrs){
         
         /* ---- IOLMaster 700 SQ tags ---
@@ -72,6 +80,10 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
 
     }
     
+    /**
+     *
+     * @param Attrs
+     */
     public void collectMeasuredValuesFromCalculation(Attributes Attrs){
         // the sequence structure is different, with different TAG numbers!!!
         String sequenceTag = selectSequenceTag(Attrs);
@@ -161,6 +173,12 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         return sideData.compareIOLREFvalues( parser.biometryHelper.getCalculatedValues(FormulaName, lensData, sideData), index );
     }
     
+    /**
+     *
+     * @param page
+     * @param side
+     * @throws IOException
+     */
     public void collectCalculationValuesPDFSide(PDPage page, String side) throws IOException{
         String mainFormulaName = "";
         String mainLensName = "";
@@ -225,7 +243,10 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         
     }
     
-
+    /**
+     *
+     * @param Attrs
+     */
     public void collectCalculationValues(Attributes Attrs){
         // we can extract the calculation values from the encapsulated PDF file if that's exist
         

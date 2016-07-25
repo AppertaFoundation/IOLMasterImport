@@ -32,115 +32,223 @@ public class BiometrySide {
     private boolean isALModified = false;
     private boolean isKModified = false;
     private boolean isACDModified = false;
-    private ArrayList<BiometryMeasurementData> Measurements = new ArrayList<>();
+    private ArrayList<BiometryCalculationData> Measurements = new ArrayList<>();
 
+    /**
+     *
+     * @param BK1
+     */
     public void setK1(Double BK1){
         this.K1 = BK1;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getK1(){
         return this.K1;
     }
     
+    /**
+     *
+     * @param BK2
+     */
     public void setK2(Double BK2){
         this.K2 = BK2;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getK2(){
         return this.K2;
     }
 
+    /**
+     *
+     * @param BAxisK1
+     */
     public void setAxisK1(Double BAxisK1){
         this.AxisK1 = BAxisK1;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getAxisK1(){
         return this.AxisK1;
     }
     
+    /**
+     *
+     * @param BAxisK2
+     */
     public void setAxisK2(Double BAxisK2){
         this.AxisK2 = BAxisK2;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getAxisK2(){
         return this.AxisK2;
     }
     
+    /**
+     *
+     * @param DeltaK
+     */
     public void setDeltaK(Double DeltaK){
         this.DeltaK = DeltaK;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getDeltaK(){
         BigDecimal bd = new BigDecimal(Math.abs(this.K2-this.K1));
         bd = bd.setScale(2, RoundingMode.HALF_UP);
         return bd.doubleValue();
     }
     
+    /**
+     *
+     * @param TargetRef
+     */
     public void setTargetRef(Double TargetRef){
         this.TargetRef = TargetRef;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getTargetRef(){
         return this.TargetRef;
     }
     
+    /**
+     *
+     * @param DeltaKAxis
+     */
     public void setDeltaKAxis(Double DeltaKAxis){
         this.DeltaKAxis = DeltaKAxis;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getDeltaKAxis(){
         double returnvalue = (this.K1 < this.K2) ? this.AxisK1 : this.AxisK2;
         return returnvalue;
     }
 
+    /**
+     *
+     * @param RefractionSphere
+     */
     public void setRefractionSphere(Double RefractionSphere){
         this.RefractionSphere = RefractionSphere;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getRefractionSphere(){
         return this.RefractionSphere;
     }
     
+    /**
+     *
+     * @param RefractionDelta
+     */
     public void setRefractionDelta(Double RefractionDelta){
         this.RefractionDelta = RefractionDelta;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getRefractionDelta(){
         return this.RefractionDelta;
     }
 
+    /**
+     *
+     * @param RefractionAxis
+     */
     public void setRefractionAxis(Double RefractionAxis){
         this.RefractionAxis = RefractionAxis;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getRefractionAxis(){
         return this.RefractionAxis;
     }    
 
+    /**
+     *
+     * @param EyeStatus
+     */
     public void setEyeStatus(String EyeStatus){
         this.EyeStatus = Integer.parseInt(EyeStatus);
     }
     
+    /**
+     *
+     * @return
+     */
     public Integer getEyeStatus(){
         return this.EyeStatus;
     }
 
+    /**
+     *
+     * @param BACD
+     */
     public void setACD(Double BACD){
         this.ACD = BACD;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getACD(){
         return this.ACD;
     }
     
+    /**
+     *
+     * @param BAL
+     */
     public void setAL(Double BAL){
         this.AL = BAL;
     }
     
+    /**
+     *
+     * @return
+     */
     public double getAL(){
         return this.AL;
     }
 
+    /**
+     *
+     * @param BSNRMin
+     */
     public void setSNRMin(Double BSNRMin){
         if(this.SNRMin == null || this.SNRMin.equals(BigDecimal.ZERO) || BigDecimal.valueOf(BSNRMin).compareTo(this.SNRMin) == -1 ){
             if(BSNRMin != 0.0){
@@ -149,59 +257,121 @@ public class BiometrySide {
         }
     }
     
+    /**
+     *
+     * @return
+     */
     public BigDecimal getSNRMin(){
         return this.SNRMin;
     }
     
+    /**
+     *
+     * @param BSNR
+     */
     public void setSNR(Double BSNR){
         this.SNR = BigDecimal.valueOf(BSNR);
     }
     
+    /**
+     *
+     * @return
+     */
     public BigDecimal getSNR(){
         return this.SNR;
     }
     
     // add new lens to the selected side
+
+    /**
+     *
+     */
     public void addCalculations(){
-        Measurements.add(new BiometryMeasurementData());
+        Measurements.add(new BiometryCalculationData());
     }
     
+    /**
+     *
+     * @return
+     */
     public Integer getMeasurementsIndex(){
         return Measurements.size()-1;
     }
     
+    /**
+     *
+     * @param LName
+     * @param LNum
+     */
     public void setLensName(String LName, Integer LNum){
         Measurements.get(LNum).setLensName(LName);
     }
     
+    /**
+     *
+     * @param LName
+     * @param LNum
+     */
     public void setFormulaName(String LName, Integer LNum){
         Measurements.get(LNum).setFormulaName(LName);
     }
     
+    /**
+     *
+     * @param LAConst
+     * @param LNum
+     */
     public void setLensAConst(Double LAConst, Integer LNum){
         Measurements.get(LNum).setAConst(LAConst);
     }
     
+    /**
+     *
+     * @param LEmmetropia
+     * @param LNum
+     */
     public void setLensEmmetropia(Double LEmmetropia, Integer LNum){
         Measurements.get(LNum).setEmmetropia(LEmmetropia);
     }
     
+    /**
+     *
+     * @param LIOL
+     * @param LNum
+     */
     public void setLensIOL(Double LIOL, Integer LNum){
         Measurements.get(LNum).setIOL(LIOL);
     }
     
+    /**
+     *
+     * @param LREF
+     * @param LNum
+     */
     public void setLensREF(Double LREF, Integer LNum){
         Measurements.get(LNum).setREF(LREF);
     }
     
-    public ArrayList<BiometryMeasurementData> getMeasurements(){
+    /**
+     *
+     * @return
+     */
+    public ArrayList<BiometryCalculationData> getMeasurements(){
         return this.Measurements;
     }
     
-    public void setMeasurements(ArrayList<BiometryMeasurementData> LMeasurements){
+    /**
+     *
+     * @param LMeasurements
+     */
+    public void setMeasurements(ArrayList<BiometryCalculationData> LMeasurements){
         this.Measurements = LMeasurements;
     }
     
+    /**
+     *
+     * @param isALModified
+     */
     public void setisALModified(String isALModified){
         // this value is stored in the DICOM file as string 'YES'
         if(isALModified.equals("YES")){
@@ -209,10 +379,18 @@ public class BiometrySide {
         }
     }
     
+    /**
+     *
+     * @return
+     */
     public boolean getisALModified(){
         return this.isALModified;
     }
 
+    /**
+     *
+     * @param isKModified
+     */
     public void setisKModified(String isKModified){
         // this value is stored in the DICOM file as string 'YES'
         if(isKModified.equals("YES")){
@@ -220,10 +398,18 @@ public class BiometrySide {
         }
     }
     
+    /**
+     *
+     * @return
+     */
     public boolean getisKModified(){
         return this.isKModified;
     }
     
+    /**
+     *
+     * @param isACDModified
+     */
     public void setisACDModified(String isACDModified){
         // this value is stored in the DICOM file as string 'YES'
         if(isACDModified.equals("YES")){
@@ -231,6 +417,10 @@ public class BiometrySide {
         }
     }
     
+    /**
+     *
+     * @return
+     */
     public boolean getisACDModified(){
         return this.isACDModified;
     }
@@ -238,6 +428,11 @@ public class BiometrySide {
     
     // check if this side have any particular data
     // if all values are in default than we return false
+
+    /**
+     *
+     * @return
+     */
     public boolean isSideHaveData(){
         if( this.K1 == 0.0 && this.K2 == 0.0 && this.AxisK1 == 0.0 && this.AL == 0.0 && this.Measurements.isEmpty()){
             return false;
@@ -246,10 +441,21 @@ public class BiometrySide {
         }
     }
     
-    public boolean compareIOLREFvalues(BiometryMeasurementData controlData, int index){
+    /**
+     *
+     * @param controlData
+     * @param index
+     * @return
+     */
+    public boolean compareIOLREFvalues(BiometryCalculationData controlData, int index){
         return this.Measurements.get(index).compareMeasurementData(controlData);
     }
     
+    /**
+     *
+     * @param sideName
+     * @return
+     */
     public String printBiometrySide(String sideName){
        String output;
        output = sideName+" K1: "+this.K1+"\n";
@@ -271,7 +477,7 @@ public class BiometrySide {
        output += sideName+" K modified: "+this.isKModified+"\n";
        output += sideName+" ACD modified: "+this.isACDModified+"\n";
        output += "\n";
-       for(BiometryMeasurementData LensData: Measurements){
+       for(BiometryCalculationData LensData: Measurements){
            output += LensData.printLensData();
        }
        //System.out.println("Predicted refraction: "+this.PredictedREF);

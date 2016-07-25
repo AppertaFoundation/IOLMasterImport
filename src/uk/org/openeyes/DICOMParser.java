@@ -48,18 +48,42 @@ import uk.org.openeyes.models.DicomFiles;
 public class DICOMParser extends DICOMCommonFunctions{
     private PatientData Patient = new PatientData();
     
+    /**
+     *
+     */
     protected StudyData Study = new StudyData();
     
+    /**
+     *
+     */
     protected final BiometryData Biometry = new BiometryData();
+
+    /**
+     *
+     */
     protected final BiometrySide BiometryLeft = new BiometrySide();
+
+    /**
+     *
+     */
     protected final BiometrySide BiometryRight = new BiometrySide();
 
 
     private String APIconfigFile = "";
     
+    /**
+     *
+     */
     protected String CurrentSide = "R";
+
+    /**
+     *
+     */
     protected SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
     
+    /**
+     *
+     */
     protected BiometryFunctions biometryHelper;
    
     
@@ -104,6 +128,10 @@ public class DICOMParser extends DICOMCommonFunctions{
         return this.Biometry;
     }
     
+    /**
+     *
+     * @param message
+     */
     protected void debugMessage(String message){
         if(this.debug){
             logger.addToRawOutput(message);
@@ -264,6 +292,11 @@ public class DICOMParser extends DICOMCommonFunctions{
         }
     }
     
+    /**
+     *
+     * @param s
+     * @return
+     */
     public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];

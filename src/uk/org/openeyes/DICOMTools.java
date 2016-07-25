@@ -15,6 +15,9 @@ public class DICOMTools {
  
     HashMap<String, Class> DICOMTypes = new HashMap<String, Class>();
     
+    /**
+     *
+     */
     public DICOMTools(){
         // based on http://dicom.nema.org/dicom/2013/output/chtml/part04/sect_B.5.html
         // might be useful to use the implementation class UID + version here 
@@ -26,6 +29,11 @@ public class DICOMTools {
         DICOMTypes.put("1.2.840.10008.5.1.4.1.1.77.1.5.1", DICOMKOWA.class);
     }
     
+    /**
+     *
+     * @param TypeTag
+     * @return
+     */
     public Class getDICOMType(String TypeTag){
         return DICOMTypes.get(TypeTag);
     }
