@@ -17,10 +17,19 @@ public class DICOMKOWA extends DICOMParser{
     
     private DICOMParser parser;
     
+    /**
+     *
+     * @param mainParser
+     */
     public DICOMKOWA(DICOMParser mainParser){
         this.parser = mainParser;
     }
 
+    /**
+     *
+     * @param Attrs
+     * @throws IOException
+     */
     public void collectData(Attributes Attrs) throws IOException{
         System.out.println("File type is KOWA");
         byte[] imagebytes;

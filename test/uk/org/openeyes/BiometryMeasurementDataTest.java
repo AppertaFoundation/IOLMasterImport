@@ -35,7 +35,7 @@ public class BiometryMeasurementDataTest {
     public void testSetLenseName() {
         System.out.println("setLenseName");
         String LName = "";
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         instance.setLenseName(LName);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -47,7 +47,7 @@ public class BiometryMeasurementDataTest {
     @Test
     public void testGetLenseName() {
         System.out.println("getLenseName");
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         String expResult = "";
         String result = instance.getLenseName();
         assertEquals(expResult, result);
@@ -62,7 +62,7 @@ public class BiometryMeasurementDataTest {
     public void testSetFormulaName() {
         System.out.println("setFormulaName");
         String LName = "";
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         instance.setFormulaName(LName);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -74,7 +74,7 @@ public class BiometryMeasurementDataTest {
     @Test
     public void testGetFormulaName() {
         System.out.println("getFormulaName");
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         String expResult = "";
         String result = instance.getFormulaName();
         assertEquals(expResult, result);
@@ -89,7 +89,7 @@ public class BiometryMeasurementDataTest {
     public void testSetAConst() {
         System.out.println("setAConst");
         String LAConst = "";
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         instance.setAConst(LAConst);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -101,7 +101,7 @@ public class BiometryMeasurementDataTest {
     @Test
     public void testGetAConst() {
         System.out.println("getAConst");
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         Double expResult = null;
         Double result = instance.getAConst();
         assertEquals(expResult, result);
@@ -116,7 +116,7 @@ public class BiometryMeasurementDataTest {
     public void testSetEmmetropia() {
         System.out.println("setEmmetropia");
         String LEmmetropia = "";
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         instance.setEmmetropia(LEmmetropia);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -128,7 +128,7 @@ public class BiometryMeasurementDataTest {
     @Test
     public void testGetEmmetropia() {
         System.out.println("getEmmetropia");
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         Double expResult = null;
         Double result = instance.getEmmetropia();
         assertEquals(expResult, result);
@@ -143,7 +143,7 @@ public class BiometryMeasurementDataTest {
     public void testSetIOL() {
         System.out.println("setIOL");
         String LIOL = "";
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         instance.setIOL(LIOL);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -155,7 +155,7 @@ public class BiometryMeasurementDataTest {
     @Test
     public void testGetIOL() {
         System.out.println("getIOL");
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         List<Double> expResult = null;
         List<Double> result = instance.getIOL();
         assertEquals(expResult, result);
@@ -170,7 +170,7 @@ public class BiometryMeasurementDataTest {
     public void testSetREF() {
         System.out.println("setREF");
         String LREF = "";
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         instance.setREF(LREF);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -182,7 +182,7 @@ public class BiometryMeasurementDataTest {
     @Test
     public void testGetREF() {
         System.out.println("getREF");
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         List<Double> expResult = null;
         List<Double> result = instance.getREF();
         assertEquals(expResult, result);
@@ -196,7 +196,7 @@ public class BiometryMeasurementDataTest {
     @Test
     public void testGetIOLREFJSON() {
         System.out.println("getIOLREFJSON");
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         String expResult = "";
         String result = instance.getIOLREFJSON();
         assertEquals(expResult, result);
@@ -210,7 +210,7 @@ public class BiometryMeasurementDataTest {
     @Test
     public void testPrintLenses() {
         System.out.println("printLenses");
-        BiometryMeasurementData instance = new BiometryMeasurementData();
+        BiometryCalculationData instance = new BiometryCalculationData();
         instance.printLenses();
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

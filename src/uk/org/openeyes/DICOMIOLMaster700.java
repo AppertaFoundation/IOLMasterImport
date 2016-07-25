@@ -28,10 +28,18 @@ import org.dcm4che3.data.VR;
 public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private PDFFunctions PDFHelper = null;
      
+    /**
+     *
+     * @param mainParser
+     */
     public DICOMIOLMaster700(DICOMParser mainParser){
         this.parser = mainParser;
     }
 
+    /**
+     *
+     * @param Attrs
+     */
     public void collectData(Attributes Attrs){
         
         /* ---- IOLMaster 700 SQ tags ---
@@ -72,6 +80,10 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
 
     }
     
+    /**
+     *
+     * @param Attrs
+     */
     public void collectMeasuredValuesFromCalculation(Attributes Attrs){
         // the sequence structure is different, with different TAG numbers!!!
         String sequenceTag = selectSequenceTag(Attrs);
@@ -155,6 +167,18 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         return 0.0; // plano
     }
     
+    private boolean checkCalculationResults(String FormulaName, String AconstTxt, BiometrySide sideData, int index){
+        BiometryLensData lensData = new BiometryLensData();
+        lensData.setAconstants(AconstTxt);
+        return sideData.compareIOLREFvalues( parser.biometryHelper.getCalculatedValues(FormulaName, lensData, sideData), index );
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @throws IOException
+     */
     public void collectCalculationValuesPDFSide(PDPage page, String side) throws IOException{
         String mainFormulaName = "";
         String mainLensName = "";
@@ -204,6 +228,14 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                         sideData.setLensIOL(PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "IOL", calc), sideData.getMeasurementsIndex());
                         sideData.setLensREF(PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "REF", calc), sideData.getMeasurementsIndex());
                     }
+                    
+                    // we need to check the values by calculating using our methods
+                    if(checkCalculationResults(FormulaName, AconstTxt, sideData, sideData.getMeasurementsIndex())){
+                        System.out.println("Formula calculation check OK for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                    }else{
+                        System.out.println("Formula calculation check FAILED for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                    }
+                    
                 }
             }
         }
@@ -211,7 +243,10 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         
     }
     
-
+    /**
+     *
+     * @param Attrs
+     */
     public void collectCalculationValues(Attributes Attrs){
         // we can extract the calculation values from the encapsulated PDF file if that's exist
         
@@ -231,7 +266,11 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                 pdfBytes = Attrs.getBytes(parser.getTagInteger("00420011"));
                 fileType = Attrs.getString(parser.getTagInteger("00420012"));
                 fileName = parser.inputFileName.substring(0, parser.inputFileName.length()-4);
-                parser.saveBinaryDataToFile(pdfBytes, fileType, fileName);
+                
+                //TODO: to be able to set in configuration where to save PDF files and also to save PDF file or not
+                // removed until we can configure it
+                
+                // parser.saveBinaryDataToFile(pdfBytes, fileType, fileName);
                 
                 // loop through pages and extract calculation from each page
                 PDFHelper.setPDFDoc(pdfBytes);
@@ -242,10 +281,6 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                     collectCalculationValuesPDFSide(currentPage, "L");
                     collectCalculationValuesPDFSide(currentPage, "R");
                 }
-                
-                // single formula multi lens format
-                // search for formula name
-                
                 
             } catch (IOException ex) {
                 Logger.getLogger(DICOMIOLMaster700.class.getName()).log(Level.SEVERE, null, ex);

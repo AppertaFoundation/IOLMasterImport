@@ -15,10 +15,18 @@ import org.dcm4che3.data.VR;
  */
 public class DICOMIOLMaster500 extends IOLMasterAbstract{
     
+    /**
+     *
+     * @param mainParser
+     */
     public DICOMIOLMaster500(DICOMParser mainParser){
         this.parser = mainParser;
     }
 
+    /**
+     *
+     * @param Attrs
+     */
     public void collectData(Attributes Attrs){
         
         /* ---- IOLMaster 500 SQ tags ---
@@ -62,6 +70,10 @@ public class DICOMIOLMaster500 extends IOLMasterAbstract{
 
     }
     
+    /**
+     *
+     * @param Attrs
+     */
     public void collectMeasuredValuesFromCalculation(Attributes Attrs){
         // the sequence structure is different, with different TAG numbers!!!
         String sequenceTag = selectSequenceTag(Attrs);
@@ -84,6 +96,13 @@ public class DICOMIOLMaster500 extends IOLMasterAbstract{
         }
     }
         
+    /**
+     *
+     * @param Attrs
+     * @param side
+     * @param inFormulaName
+     * @param inLensName
+     */
     public void collectCalculationValuesFromSeq(Attributes Attrs, String side, String inFormulaName, String inLensName){
         String FormulaName;
         String LensName;
@@ -128,6 +147,12 @@ public class DICOMIOLMaster500 extends IOLMasterAbstract{
         
     }
     
+    /**
+     *
+     * @param Attrs
+     * @param side
+     * @param sequenceTag
+     */
     public void collectCalculationValuesSequenceSide(Attributes Attrs, String side, String sequenceTag){
         String LensName = "";
         String FormulaName = "";
@@ -166,6 +191,10 @@ public class DICOMIOLMaster500 extends IOLMasterAbstract{
 
     }
 
+    /**
+     *
+     * @param Attrs
+     */
     public void collectCalculationValues(Attributes Attrs){
         
         if(Attrs.contains(parser.getTagInteger("771B1036"))){
