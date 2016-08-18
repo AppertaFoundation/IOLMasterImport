@@ -24,9 +24,12 @@ public class StudyData {
     private String DeviceManufacturer;
     private String DeviceModel;             // human readable machine model (eg. IOL Master 700)
     private String DeviceSoftwareVersion;
+    private String DeviceType;
     private String Comments;
     private String ContentTime;
     private String ContentDate;
+    private String AcquisitionDateTime;
+    private String DeviceSerial;
     
     /**
      *
@@ -229,6 +232,22 @@ public class StudyData {
         this.ContentDate = PContentDate;
     }
     
+    public void setAcquisitionDateTime(String AcDateTime){
+        this.AcquisitionDateTime = AcDateTime;
+    }
+    
+    public String getAcquisitionDateTime(){
+        return this.AcquisitionDateTime;
+    }
+    
+    public void setDeviceSerial(String DevSer){
+        this.DeviceSerial = DevSer;
+    }
+    
+    public String getDeviceSerial(){
+        return this.DeviceSerial;
+    }
+    
     /**
      *
      * @return
@@ -239,6 +258,14 @@ public class StudyData {
         return contentDateTime;
     }
 
+    public void setDeviceType(String DeviceType){
+        this.DeviceType = DeviceType;
+    }
+    
+    public String getDeviceType(){
+        return this.DeviceType;
+    }
+    
     /**
      *
      * @return

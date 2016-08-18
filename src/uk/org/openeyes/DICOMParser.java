@@ -5,29 +5,13 @@
  */
 package uk.org.openeyes;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.io.RandomAccessBuffer;
-import org.apache.pdfbox.io.RandomAccessRead;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.SpecificCharacterSet;
@@ -36,9 +20,6 @@ import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.util.TagUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import uk.org.openeyes.models.DicomFiles;
 
 /**
@@ -289,6 +270,8 @@ public class DICOMParser extends DICOMCommonFunctions{
         Study.setStudyInstanceID(Attrs.getString(getTagInteger("0020000D")));
         Study.setSeriesInstanceID(Attrs.getString(getTagInteger("0020000E")));
         Study.setStudyID(Attrs.getString(getTagInteger("00200010")));
+        Study.setAcquisitionDateTime(Attrs.getString(getTagInteger("0008002A")));
+        Study.setDeviceSerial(Attrs.getString(getTagInteger("00181000")));
         if(Attrs.contains(getTagInteger("771B102C"))){
             Study.setSurgeonName(VR.PN.toStrings(Attrs.getValue(getTagInteger("771B102C")), true, CharacterSet).toString());
         }

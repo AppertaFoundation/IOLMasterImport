@@ -61,6 +61,10 @@ public class OphinbiometryImportedEvents implements Serializable {
     private String deviceManufacturer;
     @Column(name = "device_software_version")
     private String deviceSoftwareVersion;
+    @Column(name = "device_serial_number")
+    private String deviceSerialNumber;
+    @Column(name = "acquisition_datetime")
+    private String acquisitionDatetime;
     @Column(name = "is_linked")
     private Boolean isLinked;
     @Column(name = "is_merged")
@@ -162,6 +166,22 @@ public class OphinbiometryImportedEvents implements Serializable {
         this.deviceSoftwareVersion = deviceSoftwareVersion;
     }
 
+    public String getDeviceSerialNumber(){
+        return this.deviceSerialNumber;
+    }
+    
+    public void setDeviceSerialNumber(String devSerialNumber){
+        this.deviceSerialNumber = devSerialNumber;
+    }
+    
+    public String getAcquisitionDatetime(){
+        return this.acquisitionDatetime;
+    }
+    
+    public void setAcquisitionDatetime(String acDatetime){
+        this.acquisitionDatetime = acDatetime;
+    }
+    
     public Boolean getIsLinked() {
         return isLinked;
     }

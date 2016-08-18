@@ -540,9 +540,15 @@ public class BiometryFunctions extends DatabaseFunctions{
         OphinbiometryImportedEvents importedEvent = null;
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
         Criteria currentEvent = session.createCriteria(OphinbiometryImportedEvents.class);
-        currentEvent.add(Restrictions.eq("studyId", eventStudy.getStudyInstanceID()));
-        currentEvent.add(Restrictions.eq("seriesId", eventStudy.getSeriesInstanceID()));
-        currentEvent.add(Restrictions.eq("surgeonName", eventStudy.getSurgeonName()));
+        // For IOL Master 700 we can use the Device Serial Number and Acquisition Datetime fields to check if it's the same study
+        if(eventStudy.getDeviceType().equals("IOLM700")){
+            currentEvent.add(Restrictions.eq("deviceSerialNumber", eventStudy.getDeviceSerial()));
+            currentEvent.add(Restrictions.eq("acquisitionDatetime", eventStudy.getAcquisitionDateTime()));
+        }else if(eventStudy.getDeviceType().equals("IOLM500")){
+            currentEvent.add(Restrictions.eq("studyId", eventStudy.getStudyInstanceID()));
+            currentEvent.add(Restrictions.eq("seriesId", eventStudy.getSeriesInstanceID()));
+            currentEvent.add(Restrictions.eq("surgeonName", eventStudy.getSurgeonName()));
+        }
         
         // we should check if event is deleted, and we should create a new one if yes
         currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+eventStudy.getStudyInstanceID()+"' AND series_id='"+eventStudy.getSeriesInstanceID()+"')"));        

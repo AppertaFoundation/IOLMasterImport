@@ -474,6 +474,8 @@ public class DatabaseFunctions {
         importedEvent.setSeriesId(eventStudy.getSeriesInstanceID());
         importedEvent.setPatientId(getSelectedPatient());
         importedEvent.setSurgeonName(eventStudy.getSurgeonName());
+        importedEvent.setAcquisitionDatetime(eventStudy.getAcquisitionDateTime());
+        importedEvent.setDeviceSerialNumber(eventStudy.getDeviceSerial());
         try {
             importedEvent.setContentDateTime(df.parse(getSQLFormattedDate(eventStudy.getContentDateTime().getTime())));
         } catch (ParseException ex) {

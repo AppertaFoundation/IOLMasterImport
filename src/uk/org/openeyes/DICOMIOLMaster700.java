@@ -34,6 +34,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
      */
     public DICOMIOLMaster700(DICOMParser mainParser){
         this.parser = mainParser;
+        parser.Study.setDeviceType("IOLM700");
     }
 
     /**
