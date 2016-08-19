@@ -26,42 +26,63 @@ import uk.org.openeyes.models.DicomFiles;
  *
  * @author VEDELEKT
  */
-public class DICOMParser {
+public class DICOMParser extends DICOMCommonFunctions{
     private PatientData Patient = new PatientData();
     
-    private StudyData Study = new StudyData();
+    /**
+     *
+     */
+    protected StudyData Study = new StudyData();
     
-    private final BiometryData Biometry = new BiometryData();
-    private final BiometrySide BiometryLeft = new BiometrySide();
-    private final BiometrySide BiometryRight = new BiometrySide();
+    /**
+     *
+     */
+    protected final BiometryData Biometry = new BiometryData();
 
     /**
-     * Debug: based on command line argument -d, if it's passed to the JAVA it will run in debug mode
+     *
      */
-    public boolean debug = true;
+    protected final BiometrySide BiometryLeft = new BiometrySide();
+
+    /**
+     *
+     */
+    protected final BiometrySide BiometryRight = new BiometrySide();
+
+
     private String APIconfigFile = "";
     
-    private String CurrentSide = "R";
-    private SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
-    
-    private BiometryFunctions database;
-    private DICOMLogger logger;
- 
     /**
-     *  Constructor for the parser
+     *
+     */
+    protected String CurrentSide = "R";
+
+    /**
+     *
+     */
+    protected SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
+    
+    /**
+     *
+     */
+    protected BiometryFunctions biometryHelper;
+   
+    
+    /**
+     *  Initiate the parser
      * @param debugState
      * @param configFile
      * @param SystemLogger
      * @param APIconfigFile
      */
-    public DICOMParser(boolean debugState, String configFile, DICOMLogger SystemLogger, String APIconfigFile){
+    public void initParser(boolean debugState, String configFile, DICOMLogger SystemLogger, String APIconfigFile){
         this.logger = SystemLogger;
         this.debug = debugState;
         this.APIconfigFile = APIconfigFile;
-        database = new BiometryFunctions(logger);            
+        biometryHelper = new BiometryFunctions(logger);            
         
-        database.initSessionFactory(configFile, SystemLogger);
-        debugMessage("Connection status: "+database.checkConnection());
+        biometryHelper.initSessionFactory(configFile, SystemLogger);
+        debugMessage("Connection status: "+biometryHelper.checkConnection());    
     }
     
     /**
@@ -88,7 +109,11 @@ public class DICOMParser {
         return this.Biometry;
     }
     
-    private void debugMessage(String message){
+    /**
+     *
+     * @param message
+     */
+    protected void debugMessage(String message){
         if(this.debug){
             logger.addToRawOutput(message);
             //System.out.println(message);
@@ -102,7 +127,7 @@ public class DICOMParser {
      */
     public DicomFiles searchDicomFile(String inputFile){
         File file = new File(inputFile);
-        Criteria crit = database.session.createCriteria(DicomFiles.class);
+        Criteria crit = biometryHelper.session.createCriteria(DicomFiles.class);
         crit.add(Restrictions.eq("filename", inputFile));
         crit.add(Restrictions.eq("filesize", file.length()));
         crit.add(Restrictions.eq("filedate", new Date(file.lastModified())));
@@ -117,7 +142,7 @@ public class DICOMParser {
             newFile.setEntryDateTime(new Date());
             newFile.setProcessorId("JAVA_OE_IOLMaster");
             newFile.setFiledate(new Date(file.lastModified()));
-            database.session.save(newFile);
+            biometryHelper.session.save(newFile);
             return newFile;
         }
         
@@ -129,13 +154,15 @@ public class DICOMParser {
      */
     public void parseDicomFile(String inputFile)  {
         
+        this.inputFileName = inputFile;
+        
         Attributes attrs = new Attributes();
         
         DicomInputStream dis = null;        
         try {
             dis = new DicomInputStream(new File(inputFile));
         } catch (IOException ex) {
-            logger.systemExitWithLog(2, "Failed to open DICOM file, not a valid file or file not exists!", database);
+            logger.systemExitWithLog(2, "Failed to open DICOM file, not a valid file or file not exists!", biometryHelper);
             //System.exit(2);
         }
         
@@ -143,115 +170,95 @@ public class DICOMParser {
         try {
             attrs = dis.readDataset(-1, -1);
         } catch (IOException ex) {
-            logger.systemExitWithLog(3, "Failed to read DICOM file, not a valid file or file not exists!", database);
+            logger.systemExitWithLog(3, "Failed to read DICOM file, not a valid file or file not exists!", biometryHelper);
         }
         
+        //dumpDCMStructure(attrs);
+
         collectPatientData(attrs);
         collectStudyData(attrs);
-        
-        collectBiometryData(attrs);
-        
-        //readAttributes(attrs, "");
-    }
-    
    
-    private Integer getTagInteger(String tag){
-        return Integer.decode("0x"+tag);
-    }
-    
-    private String getSideFromSequence(Sequence inputSequence){
-        if(!inputSequence.isEmpty()){
-            for(int i = 0; i<inputSequence.size(); i++){
-                Attributes memberAttr = (Attributes) inputSequence.get(i);
-                return getSideFromAttributes(memberAttr);
+        DICOMTools DicomTool = new DICOMTools();
+        
+        String TypeTag = attrs.getString(getTagInteger("00080016"));
+        
+        //System.out.println("+++++++++++++++++++++++++++++++++++++++"+TypeTag+"++++"+DicomTool.getDICOMType(TypeTag));
+        
+        Class importerClass = DicomTool.getDICOMType(TypeTag);
+        
+        if(importerClass.equals(DICOMIOLMaster500.class)){
+            debugMessage("Importing IOLMaster 500");
+            DICOMIOLMaster500 importer = new DICOMIOLMaster500(this);
+            importer.collectData(attrs);
+        }else if(importerClass.equals(DICOMIOLMaster700.class)){
+            debugMessage("Importing IOLMaster 700");
+            DICOMIOLMaster700 importer = new DICOMIOLMaster700(this);
+            importer.collectData(attrs);
+        }else if(importerClass.equals(DICOMHFAVF.class)){
+            try {
+                debugMessage("Importing HFA Visual Fields");
+                DICOMHFAVF importer = new DICOMHFAVF(this);
+                importer.collectData(attrs);
+            } catch (IOException ex) {
+                Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else if(importerClass.equals(DICOMKOWA.class)){
+            try {
+                debugMessage("Importing KOWA");
+                DICOMKOWA importer = new DICOMKOWA(this);
+                importer.collectData(attrs);
+            } catch (IOException ex) {
+                Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return "";
-    }
-    
-    private String getSideFromAttributes(Attributes inputAttrs){
-        int[] sequenceTags;
-        sequenceTags = inputAttrs.tags();
-        for( int tag : sequenceTags){
-            if( TagUtils.toHexString(TagUtils.elementNumber(tag)).matches("(?i).*08")){
-                return VR.CS.toStrings(inputAttrs.getValue(tag), false, CharacterSet).toString();
+        /*
+        try {
+            Class importerClass = DicomTool.getDICOMType(TypeTag);
+            Object DataParser = importerClass.newInstance();
+            
+            try {
+                Method method = DataParser.getClass().getMethod("collectData", Attributes.class);
+                method.invoke(DataParser, attrs);
+            } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
+                Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-        return "";
-    }
-    
-    private Double getDoubleValueFromSequence(String hexTagSequence, String hexTagValue, String side, Attributes Attrs){
-        if(Attrs.contains(getTagInteger(hexTagSequence))){
-            Sequence Seq = Attrs.getSequence(getTagInteger(hexTagSequence));
-            for(int ks=0; ks<Seq.size();ks++){
-                Attributes AttrData = (Attributes) Seq.get(ks);
-                CurrentSide = getSideFromAttributes(AttrData);
-                if(CurrentSide == null || CurrentSide.equals("")){
-                    CurrentSide = getSideFromAttributes(Attrs);
-                }
-                if(CurrentSide.equals(side)){
-                    return VR.FD.toDouble(AttrData.getValue(getTagInteger(hexTagValue)), false, 0, 0);
-                }
-            }
-        }
-        return 0.0;
-    }
-    
-    private String getStringValueFromSequence(String hexTagSequence, String hexTagValue, String side, Attributes Attrs){
-        Sequence Seq = Attrs.getSequence(getTagInteger(hexTagSequence));
-        for(int ks=0; ks<Seq.size();ks++){
-            Attributes AttrData = (Attributes) Seq.get(ks);
-            if(!side.equals("")){
-                CurrentSide = getSideFromAttributes(AttrData);
-                if(CurrentSide == null || CurrentSide.equals("")){
-                    CurrentSide = getSideFromAttributes(Attrs);
-                }
-                if(CurrentSide.equals(side)){                
-                    return VR.PN.toStrings(AttrData.getValue(getTagInteger(hexTagValue)), true, CharacterSet).toString();
-                }
-            }else{
-                return VR.PN.toStrings(AttrData.getValue(getTagInteger(hexTagValue)), true, CharacterSet).toString();
-            }
-        }
-        return "";
-    }
 
-    
-    private void setMinSnrForSides(Attributes Attrs){
-        if(Attrs.contains(getTagInteger("771B1030"))){
-            Sequence basicMeasurement = Attrs.getSequence(getTagInteger("771B1030"));
-            for(int bm =0; bm<basicMeasurement.size(); bm++){
-                Attributes basicMeasurementData = (Attributes) basicMeasurement.get(bm);
-                // AL mean value: 771B1043
-                // SNR mean value: 771B1044
-                CurrentSide = getSideFromAttributes(basicMeasurementData);
-
-                // Sequence of single axial length measurements, we need to extract minSNR from here!
-                Sequence ALSeq = basicMeasurementData.getSequence(getTagInteger("771B1031"));
-                for(int as=0; as<ALSeq.size();as++){
-                    Attributes ALData = (Attributes) ALSeq.get(as);
-                    //debugMessage(CurrentSide+" Measured SNR (SNRMin): "+VR.FD.toDouble(ALData.getValue(getTagInteger("771B100C")), false, 0, 0));
-                    if(CurrentSide.equals("L")){
-                        BiometryLeft.setSNRMin(VR.FD.toDouble(ALData.getValue(getTagInteger("771B100C")), false, 0, 0));
-                    }else{
-                        BiometryRight.setSNRMin(VR.FD.toDouble(ALData.getValue(getTagInteger("771B100C")), false, 0, 0));
-                    }
-                }
-            }
-        }
+            //readAttributes(attrs, "");
+        } catch (InstantiationException | IllegalAccessException ex) {
+            Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
+        }*/
     }
     
     private void collectPatientData(Attributes Attrs){
-        CharacterSet = SpecificCharacterSet.valueOf(VR.CS.toStrings(Attrs.getValue(getTagInteger("00080005")), true, SpecificCharacterSet.DEFAULT).toString());
+        //CharacterSet = SpecificCharacterSet.valueOf(VR.CS.toStrings(Attrs.getValue(getTagInteger("00080005")), true, SpecificCharacterSet.DEFAULT).toString());
         Patient.setPatientName(Attrs.getString(getTagInteger("00100010")));
         Patient.setPatientID(Attrs.getString(getTagInteger("00100020")));
         Patient.setPatientBirth(Attrs.getString(getTagInteger("00100030")));
-        Patient.setPatientGender(Attrs.getString(getTagInteger("00100040")).charAt(0));
+        String gender = Attrs.getString(getTagInteger("00100040"));
+        if(gender != null){
+            Patient.setPatientGender(gender.charAt(0));
+        }
+        
     }
     
     private void collectStudyData(Attributes Attrs){
+        String studyDate;
+	String studyTime;
+
+	studyDate = Attrs.getString(getTagInteger("00080021"));
+
+        if (studyDate == null) {
+		studyDate = Attrs.getString(getTagInteger("00080020"));
+	}
+
+	studyTime = Attrs.getString(getTagInteger("00080031"));
+
+	if (studyTime == null) {
+		studyTime = Attrs.getString(getTagInteger("00080030"));
+	}
+
         Study.setComments(Attrs.getString(getTagInteger("00104000")));
-        Study.setStudyDateTime(Attrs.getString(getTagInteger("00080021")) + Attrs.getString(getTagInteger("00080031")));
+        Study.setStudyDateTime(studyDate + studyTime);
         Study.setContentTime(Attrs.getString(getTagInteger("00080033")));
         Study.setContentDate(Attrs.getString(getTagInteger("00080023")));
         Study.setPhysicianName(Attrs.getString(getTagInteger("00080090")));
@@ -263,211 +270,30 @@ public class DICOMParser {
         Study.setStudyInstanceID(Attrs.getString(getTagInteger("0020000D")));
         Study.setSeriesInstanceID(Attrs.getString(getTagInteger("0020000E")));
         Study.setStudyID(Attrs.getString(getTagInteger("00200010")));
+        Study.setAcquisitionDateTime(Attrs.getString(getTagInteger("0008002A")));
+        Study.setDeviceSerial(Attrs.getString(getTagInteger("00181000")));
         if(Attrs.contains(getTagInteger("771B102C"))){
             Study.setSurgeonName(VR.PN.toStrings(Attrs.getValue(getTagInteger("771B102C")), true, CharacterSet).toString());
         }
     }
     
-    private void collectMeasuredValues(Attributes Attrs, String side){
-        setMinSnrForSides(Attrs);
-        BiometrySide sideData;
-        
-        if(side.equals("L")){
-            sideData = BiometryLeft;
-        }else{
-            sideData = BiometryRight;
+    /**
+     *
+     * @param s
+     * @return
+     */
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                 + Character.digit(s.charAt(i+1), 16));
         }
-        sideData.setAL(getDoubleValueFromSequence("771B1030","771B1043",side,Attrs));
-        sideData.setK1(getDoubleValueFromSequence("771B1032","771B104A",side,Attrs));
-        sideData.setK2(getDoubleValueFromSequence("771B1032","771B104D",side,Attrs));
-        sideData.setAxisK2(getDoubleValueFromSequence("771B1032","771B104E",side,Attrs));
-        sideData.setACD(getDoubleValueFromSequence("771B1034","771B100E",side,Attrs));
-      
+        return data;
     }
     
-    private void collectCommonMeasuredValues(Attributes Attrs, String side){
-        BiometrySide sideData;
-        if(side.equals("L")){
-            sideData = BiometryLeft;
-        }else{
-            sideData = BiometryRight;
-        }
-        if(Attrs.contains(getTagInteger("771B1032"))){
-            sideData.setAxisK1(getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
-            //sideData.setDeltaKAxis(getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
-            //sideData.setDeltaK(getDoubleValueFromSequence("771B1032","771B104F",side,Attrs));
-        }
-        // check for SNR
-        if(Attrs.contains(getTagInteger("771B1030"))){
-            sideData.setSNR(getDoubleValueFromSequence("771B1030","771B1044",side,Attrs));
-        }
-    }
-    
-    private void collectMeasuredValuesFromFormulaSeq(Attributes Attrs, String side){
-        BiometrySide sideData;
-        if(side.equals("L")){
-            sideData = BiometryLeft;
-        }else{
-            sideData = BiometryRight;
-        }
-        sideData.setisALModified(getStringValueFromSequence("771B1002","771B1045",side,Attrs));
-        sideData.setisKModified(getStringValueFromSequence("771B1002","771B1046",side,Attrs));
-        sideData.setisACDModified(getStringValueFromSequence("771B1002","771B1048",side,Attrs));
-        
-        if(sideData.getisALModified()){
-            sideData.setAL(getDoubleValueFromSequence("771B1002","771B100B",side,Attrs));
-        }
-        if(sideData.getisACDModified()){
-            sideData.setACD(getDoubleValueFromSequence("771B1002","771B1026",side,Attrs));
-        }
-        if(sideData.getisKModified()){     
-            sideData.setK1(getDoubleValueFromSequence("771B1002","771B1020",side,Attrs));
-            sideData.setK2(getDoubleValueFromSequence("771B1002","771B1021",side,Attrs));
-            sideData.setAxisK1(getDoubleValueFromSequence("771B1002","771B1014",side,Attrs));
-            sideData.setAxisK2(getDoubleValueFromSequence("771B1002","771B1013",side,Attrs));
-        }
-        sideData.setRefractionSphere(getDoubleValueFromSequence("771B1002","771B1040",side,Attrs));
-        sideData.setRefractionDelta(getDoubleValueFromSequence("771B1002","771B1041",side,Attrs));
-        sideData.setRefractionAxis(getDoubleValueFromSequence("771B1002","771B1042",side,Attrs));
-        sideData.setTargetRef(getDoubleValueFromSequence("771B1002","771B1029",side,Attrs));
-        sideData.setEyeStatus(getStringValueFromSequence("771B1002","771B1025",side,Attrs));
-    }
-    
-    private String selectSequenceTag(Attributes Attrs){
-        String sequenceTag = "";
-        if(Attrs.contains(getTagInteger("771B1001"))){
-            sequenceTag = "771B1001";
-        }else if(Attrs.contains(getTagInteger("771B1036"))){
-            sequenceTag = "771B1036";
-        }else if(Attrs.contains(getTagInteger("771B1037"))){
-            sequenceTag = "771B1037";
-        }
-        return sequenceTag;
-    }
-    
-    private void collectMeasuredValuesFromCalculation(Attributes Attrs){
-        // the sequence structure is different, with different TAG numbers!!!
-        String sequenceTag = selectSequenceTag(Attrs);
-        
-        Sequence CalcSeq = Attrs.getSequence(getTagInteger(sequenceTag));
-        if(CalcSeq != null && !CalcSeq.isEmpty()){
-            if(sequenceTag.equals("771B1001")){
-                for(int cs = 0; cs < CalcSeq.size(); cs++ ){
-                    collectMeasuredValuesFromFormulaSeq(CalcSeq.get(cs), getSideFromAttributes(CalcSeq.get(cs)));
-                }
-            }else{
-                Attributes CalcAttrs = (Attributes) CalcSeq.get(0);
-                Sequence FormulaSeq = CalcAttrs.getSequence(getTagInteger("771B1001"));
-                if(FormulaSeq != null && !FormulaSeq.isEmpty()){
-                    for(int fs = 0; fs < FormulaSeq.size(); fs++ ){
-                        collectMeasuredValuesFromFormulaSeq(FormulaSeq.get(fs), getSideFromAttributes(FormulaSeq.get(fs)));
-                    }
-                }
-            }
-        }
-    }
-    
-    
-    private void collectCalculationValuesFromSeq(Attributes Attrs, String side, String inFormulaName, String inLensName){
-        String FormulaName;
-        String LensName;
-        BiometrySide sideData;
-        if(side.equals("L")){
-            sideData = BiometryLeft;
-        }else{
-            sideData = BiometryRight;
-        }
-        //debugMessage(":: "+side+"::"+inFormulaName+"::"+inLensName);
-        CurrentSide = getSideFromAttributes(Attrs);
-        if(side.equals(CurrentSide)){
-            Sequence CalcSeq = Attrs.getSequence(getTagInteger("771B1003"));
-            if(CalcSeq != null && !CalcSeq.isEmpty()){
-                for(int cs=0; cs<CalcSeq.size(); cs++){
-                    Attributes CalcAttrs = CalcSeq.get(cs);
-                    if(inFormulaName.equals("")){
-                        FormulaName = VR.PN.toStrings(CalcAttrs.getValue(getTagInteger("771B1006")), true, CharacterSet).toString();
-                        LensName=inLensName;
-                    }else{
-                        LensName = VR.PN.toStrings(CalcAttrs.getValue(getTagInteger("771B1006")), true, CharacterSet).toString();
-                        FormulaName = inFormulaName;
-                    }
-                    // we add new data set
-                    sideData.addCalculations();
-                    //debugMessage("Index: "+sideData.getMeasurementsIndex());
-                    sideData.setFormulaName(FormulaName, sideData.getMeasurementsIndex());
-                    sideData.setLensName(LensName, sideData.getMeasurementsIndex());
-                    sideData.setLensEmmetropia(VR.FD.toDouble(CalcAttrs.getValue(getTagInteger("771B102B")), false, 0, 0), sideData.getMeasurementsIndex());
-                    sideData.setLensAConst(VR.FD.toDouble(CalcAttrs.getValue(getTagInteger("771B1007")), false, 0, 0), sideData.getMeasurementsIndex());
-                    Sequence IOLCalcSeq = CalcAttrs.getSequence(getTagInteger("771B1005"));
-                    if(IOLCalcSeq != null && !IOLCalcSeq.isEmpty()){
-                        for(int iols=0; iols<IOLCalcSeq.size(); iols++){
-                            Attributes IOLCalcAttrs = IOLCalcSeq.get(iols);
-                            sideData.setLensIOL(VR.FD.toDouble(IOLCalcAttrs.getValue(getTagInteger("771B102A")), false, 0, 0), sideData.getMeasurementsIndex());
-                            sideData.setLensREF(VR.FD.toDouble(IOLCalcAttrs.getValue(getTagInteger("771B1028")), false, 0, 0), sideData.getMeasurementsIndex());
-                        }
-                    }
-                }
-            }
-        }
-        
-    }
-    
-    private void collectCalculationValuesSequenceSide(Attributes Attrs, String side, String sequenceTag){
-        String LensName = "";
-        String FormulaName = "";
 
-        if(!sequenceTag.equals("771B1001")){
-            // single formula, multi lense
-            // TODO similar solution required as for the side!!!
-            Study.setSurgeonName(getStringValueFromSequence(sequenceTag,"771B102C","",Attrs));
-            Sequence innerSeq = Attrs.getSequence(getTagInteger(sequenceTag));
-            if(innerSeq != null && !innerSeq.isEmpty()){
-                for(int is=0; is<innerSeq.size();is++){
-                    Attributes innerAttrs = innerSeq.get(is);
-                    //dumpDCMStructure(innerAttrs);
-                    FormulaName = VR.PN.toStrings(innerAttrs.getValue(getTagInteger("771B1009")), true, CharacterSet).toString();
-                    Sequence CalcSeq = innerAttrs.getSequence(getTagInteger("771B1001"));
-                    if(CalcSeq != null && !CalcSeq.isEmpty()){
-                        for(int cs=0; cs<CalcSeq.size(); cs++){
-                            //dumpDCMStructure(CalcSeq.get(cs));
-                            collectCalculationValuesFromSeq(CalcSeq.get(cs), side, FormulaName, LensName);
-                        }
-                    }   
-                }
-            }
-        }else{
-            // single lens multi formula
-            LensName = VR.PN.toStrings(Attrs.getValue(getTagInteger("771B100A")), true, CharacterSet).toString();
-            Sequence CalcSeq = Attrs.getSequence(getTagInteger("771B1001"));
-            if(CalcSeq != null && !CalcSeq.isEmpty()){
-                for(int cs=0; cs<CalcSeq.size(); cs++){
-                    //dumpDCMStructure(CalcSeq.get(cs));
-                    collectCalculationValuesFromSeq(CalcSeq.get(cs), side, FormulaName, LensName);
-                }
-            }
-        }
-
-
-    }
-
-    private void collectCalculationValues(Attributes Attrs){
-        
-        if(Attrs.contains(getTagInteger("771B1036"))){
-            debugMessage("Collecting data from 771B1036");
-            collectCalculationValuesSequenceSide(Attrs, "L", "771B1036");
-            collectCalculationValuesSequenceSide(Attrs, "R", "771B1036");
-        }
-        if(Attrs.contains(getTagInteger("771B1037"))){
-            debugMessage("Collecting data from 771B1037");
-            collectCalculationValuesSequenceSide(Attrs, "L", "771B1037");
-            collectCalculationValuesSequenceSide(Attrs, "R", "771B1037");            
-        }
-        if(Attrs.contains(getTagInteger("771B1001"))){
-            debugMessage("Collecting data from 771B1001");
-            collectCalculationValuesSequenceSide(Attrs, "L", "771B1001");
-            collectCalculationValuesSequenceSide(Attrs, "R", "771B1001");
-        }
-    }
+    
     
     private void dumpDCMStructure(Attributes Attrs){
         debugMessage("--==< DATA STRUCTURE DUMP START >==--");
@@ -491,48 +317,6 @@ public class DICOMParser {
         }
     }
     
-    private void collectBiometryData(Attributes Attrs){
-        
-        /* ---- IOLMaster 500 SQ tags ---
-        *  IOL_Measured_Values sequence: 771Bxx30 (first page)
-        *       >> Sequence of single axial length measurements: 771Bxx31
-        *  Sequence of keratometry values:  771Bxx32  >> Sequence of single keratometry measurements 771Bxx33
-        *  Sequence of anterior chamber depth values: 771Bxx34
-        *  Sequence of white-to-white values measured for one eye: 771Bxx35 >> Sequence of single white-to-white measurements: 771Bxx3B
-        *  Sequence of standard formula IOL calculations for 4 different IOL types with a sequence of 7 calculations each, may contain up to 6 items: 771Bxx36
-        *  Sequence of sandard formula IOL calculations for one eye: 771Bxx01 >> Container of measurement values used for calculation: 771Bxx02 
-        *                                                         + >> Sequence of standard formula calculation results for 4 different IOL types: 771Bxx03
-        *                                                                       >> Sequence of IOL calculation results for IOL as pair of lens power and residual refraction: 771Bxx05
-        */
-        
-        // data priority: if we have calculation data we should extract all values from there
-        //dumpDCMStructure(Attrs);
-        
-        if(Attrs.contains(getTagInteger("771B1032"))){
-            debugMessage("IOL_Measured_Values sequence exists, extracting values");            
-            // Axis K1, DeltaK and SNR values
-            collectCommonMeasuredValues(Attrs, "L");
-            collectCommonMeasuredValues(Attrs, "R");
-            // K1, K2, Axis, ACD, Delta K, etc.
-            collectMeasuredValues(Attrs, "L");
-            collectMeasuredValues(Attrs, "R");
-        }
-        
-        if(Attrs.contains(getTagInteger("771B1036")) || Attrs.contains(getTagInteger("771B1037")) || Attrs.contains(getTagInteger("771B1001"))){
-            debugMessage("Calculation sequence exists, extracting values");
-            if(Attrs.contains(getTagInteger("771B1030"))){
-                setMinSnrForSides(Attrs);
-            }
-            collectMeasuredValuesFromCalculation(Attrs);
-            collectCalculationValues(Attrs);
-        }else{
-            debugMessage("No basic measurement data found");
-        }
-
-        Biometry.setSideData("L", BiometryLeft);
-        Biometry.setSideData("R", BiometryRight);
-
-    }
     
     /**
      *
@@ -548,10 +332,10 @@ public class DICOMParser {
             debugMessage(Biometry.printBiometryData());
         }
         
-        database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+        biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
         
-        if(database.getSelectedPatient() != null){
-            database.processBiometryEvent(Study,  Biometry);
+        if(biometryHelper.getSelectedPatient() != null){
+            biometryHelper.processBiometryEvent(Study,  Biometry);
         }else{
             // we try to search through the API, and if that one is successfull then try to search again
             // the reason of this is to check if the patient is already exists in the PAS and 
@@ -561,7 +345,7 @@ public class DICOMParser {
                 logger.addToRawOutput("No API config file specified, skipping API search...");
                 // search for patient data has been failed - need to print and log!!
                 logger.getLogger().setPatientNumber(Patient.getPatientID());
-                logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
+                logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), biometryHelper);
                 return false;
             }else{
                 APIUtils API = new APIUtils(APIconfigFile);
@@ -582,19 +366,19 @@ public class DICOMParser {
                         } catch(InterruptedException ex) {
                             Thread.currentThread().interrupt();
                         }
-                        database.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+                        biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
                     }
                 } catch (ConnectException ex) {
                     Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                if(database.getSelectedPatient() != null){
+                if(biometryHelper.getSelectedPatient() != null){
                     // we try to search again
-                    database.processBiometryEvent(Study,  Biometry);
+                    biometryHelper.processBiometryEvent(Study,  Biometry);
                 }else{
                     // search for patient data has been failed - need to print and log!!
                     logger.getLogger().setPatientNumber(Patient.getPatientID());
-                    logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), database);
+                    logger.systemExitWithLog(4, "Cannot find patient data, file processing failed! \nSearched for: \n"+Patient.getDetails(), biometryHelper);
                     return false;
                 }
             }
@@ -603,12 +387,12 @@ public class DICOMParser {
 
         
         logger.getLogger().setStatus("success");
-        logger.saveLogEntry(database.session);
-        database.session.flush();
-        database.transaction.commit();
-        database.session.close();
+        logger.saveLogEntry(biometryHelper.session);
+        biometryHelper.session.flush();
+        biometryHelper.transaction.commit();
+        biometryHelper.session.close();
         
-        database.closeSessionFactory();
+        biometryHelper.closeSessionFactory();
         return true;
     }
 }

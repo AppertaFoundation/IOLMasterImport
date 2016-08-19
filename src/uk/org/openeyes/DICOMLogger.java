@@ -17,29 +17,54 @@ public class DICOMLogger {
     private DicomImportLog logger;
     private String rawOutput = "";
     
+    /**
+     *
+     */
     public DICOMLogger(){
         this.logger= new DicomImportLog();
     }
     
+    /**
+     *
+     * @return
+     */
     public DicomImportLog getLogger(){
         return this.logger;
     }
     
+    /**
+     *
+     * @param currentSession
+     * @return
+     */
     public boolean saveLogEntry(Session currentSession){
         this.saveRawOutput();
         currentSession.save(this.logger);
         return true;
     }
     
+    /**
+     *
+     * @param logMessage
+     */
     public void addToRawOutput(String logMessage){
         this.rawOutput += logMessage+"\n";
         System.out.println(logMessage);
     }
     
+    /**
+     *
+     */
     public void saveRawOutput(){
         this.logger.setRawImporterOutput(rawOutput);
     }
     
+    /**
+     *
+     * @param code
+     * @param Message
+     * @param database
+     */
     public void systemExitWithLog(Integer code, String Message, DatabaseFunctions database){
         this.logger.setComment(Message);
         this.logger.setStatus("failed");

@@ -18,30 +18,58 @@ public class PatientData {
     private char PatientGender;
     private Calendar PatientBirth = new GregorianCalendar();
     
+    /**
+     *
+     * @param PName
+     */
     public void setPatientName(String PName){
         this.PatientName = PName.replace("^^^", "").replace("^",", ");
     }
     
+    /**
+     *
+     * @param PID
+     */
     public void setPatientID(String PID){
         this.PatientID = PID;
     }
     
+    /**
+     *
+     * @param PGender
+     */
     public void setPatientGender(char PGender){
         this.PatientGender = PGender;
     }
 
+    /**
+     *
+     * @param PBirth
+     */
     public void setPatientBirth(String PBirth) {
         this.PatientBirth.set(Integer.parseInt(PBirth.substring(0,4)), Integer.parseInt(PBirth.substring(4,6)), Integer.parseInt(PBirth.substring(6,8)));
     }
 
+    /**
+     *
+     * @return
+     */
     public String getPatientID(){
         return this.PatientID;
     }
     
+    /**
+     *
+     * @return
+     */
     public char getPatientGender(){
         return this.PatientGender;
     }
     
+    /**
+     *
+     * @return
+     */
     public Calendar getPatientBirth(){
         //return this.PatientBirth.get(Calendar.YEAR)+"-"+this.PatientBirth.get(Calendar.MONTH)+"-"+this.PatientBirth.get(Calendar.DAY_OF_MONTH);
         return PatientBirth;
@@ -60,6 +88,10 @@ public class PatientData {
         return this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+dateMonth+"/"+dateYear;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getDetails(){
         String output = "";
         output += "Patient's hospital number: "+this.PatientID+"\n";
@@ -68,6 +100,10 @@ public class PatientData {
         return output;
     }
     
+    /**
+     *
+     * @return
+     */
     public String printPatientData(){
         String output;
         output = "--== Patient data ==--\n";

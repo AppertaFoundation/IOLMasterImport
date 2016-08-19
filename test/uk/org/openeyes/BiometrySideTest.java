@@ -267,8 +267,8 @@ public class BiometrySideTest {
     public void testGetMeasurements() {
         System.out.println("getMeasurements");
         BiometrySide instance = new BiometrySide();
-        ArrayList<BiometryMeasurementData> expResult = null;
-        ArrayList<BiometryMeasurementData> result = instance.getMeasurements();
+        ArrayList<BiometryCalculationData> expResult = null;
+        ArrayList<BiometryCalculationData> result = instance.getMeasurements();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -280,7 +280,7 @@ public class BiometrySideTest {
     @Test
     public void testSetMeasurements() {
         System.out.println("setMeasurements");
-        ArrayList<BiometryMeasurementData> LMeasurements = null;
+        ArrayList<BiometryCalculationData> LMeasurements = null;
         BiometrySide instance = new BiometrySide();
         instance.setMeasurements(LMeasurements);
         // TODO review the generated test code and remove the default call to fail.

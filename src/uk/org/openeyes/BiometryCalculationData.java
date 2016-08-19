@@ -11,10 +11,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 
 /**
- *
- * @author VEDELEKT
+ * A class for storing calculation values (IOL and Refraction values based on Lens and Formula)
+ * 
+ * @author vetusko
  */
-public class BiometryMeasurementData {
+public class BiometryCalculationData {
     private String LensName;
     private String FormulaName;
     private Double AConst;
@@ -22,69 +23,106 @@ public class BiometryMeasurementData {
     private List<Double> IOL = new ArrayList<Double>();
     private List<Double> REF = new ArrayList<Double>();
     
-   
+    /**
+     *
+     * @param LName
+     */
     public void setLensName(String LName){
         this.LensName = LName;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getLensName(){
         return this.LensName;
     }
     
+    /**
+     *
+     * @param LName
+     */
     public void setFormulaName(String LName){
         this.FormulaName = LName;
     }
     
+    /**
+     *
+     * @return
+     */
     public String getFormulaName(){
         return this.FormulaName;
     }
     
+    /**
+     *
+     * @param LAConst
+     */
     public void setAConst(Double LAConst){
         this.AConst = LAConst;
     }
     
+    /**
+     *
+     * @return
+     */
     public Double getAConst(){
         return this.AConst;
     }
     
+    /**
+     *
+     * @param LEmmetropia
+     */
     public void setEmmetropia(Double LEmmetropia){
         this.Emmetropia = LEmmetropia;
     }
     
+    /**
+     *
+     * @return
+     */
     public Double getEmmetropia(){
         return this.Emmetropia;
     }
     
+    /**
+     *
+     * @param LIOL
+     */
     public void setIOL(Double LIOL){
         this.IOL.add(LIOL);
     }
     
+    /**
+     *
+     * @return
+     */
     public List<Double> getIOL(){
         return this.IOL;
     }
     
+    /**
+     *
+     * @param LREF
+     */
     public void setREF(Double LREF){
         this.REF.add(LREF);
     }
     
+    /**
+     *
+     * @return
+     */
     public List<Double> getREF(){
         return this.REF;
     }
     
-    public boolean isIOLREFEmpty(){
-        for( Double valueIOL : IOL){
-            if(valueIOL != 0.0){
-                return false;
-            }
-        }
-        for( Double valueREF : REF){
-            if(valueREF != 0.0){
-                return false;
-            }
-        }
-        return true;
-    }
-    
+    /**
+     *
+     * @return
+     */
     public String getIOLREFJSON(){
         JSONObject exportJSON = new JSONObject();
         JSONArray dataIOL = new JSONArray();
@@ -100,22 +138,47 @@ public class BiometryMeasurementData {
         return exportJSON.toJSONString();
     }
     
-    public String printLensData(){
-        if(!isIOLREFEmpty()){
-            String output;
-            output = "Lens name: "+this.LensName+"\n";
-            output += "Formula name: "+this.FormulaName+"\n";
-            output += "A constant: "+this.AConst+"\n";
-            output += "Emmetropia: "+this.Emmetropia+"\n";
-            int n = 0;
-            for (Double iolValue : this.IOL) {
-                output += n+". REF "+this.REF.get(n) + " - IOL "+n+": "+iolValue+"\n";
-                n++;
+    /**
+     *
+     * @param toCompare
+     * @return
+     */
+    public boolean compareMeasurementData(BiometryCalculationData toCompare){
+
+        double tolerance = 0.02;
+        //System.out.println("CALC:"+toCompare.getIOLREFJSON());
+        //System.out.println("EXTR:"+this.getIOLREFJSON());
+        List<Double> compareIOL = new ArrayList<Double>();
+        List<Double> compareREF = new ArrayList<Double>();
+        compareIOL = toCompare.getIOL();
+        compareREF = toCompare.getREF();
+        for(int k=0; k<this.IOL.size(); k++){
+            if(Math.abs(this.IOL.get(k) - compareIOL.get(k)) > tolerance){
+                return false;
             }
-            output += "\n";
-            return output;
-        }
-        return "";
+            if(Math.abs(this.REF.get(k) - compareREF.get(k)) > tolerance){
+                return false;
+            }
+        } 
+        return true;      
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public String printLensData(){
+        String output;
+        output = "Lens name: "+this.LensName+"\n";
+        output += "Formula name: "+this.FormulaName+"\n";
+        output += "A constant: "+this.AConst+"\n";
+        output += "Emmetropia: "+this.Emmetropia+"\n";
+        int n = 0;
+        for (Double iolValue : this.IOL) {
+            output += n+". REF "+this.REF.get(n) + " - IOL "+n+": "+iolValue+"\n";
+            n++;
+	}
+        return output;
     }
     
 }

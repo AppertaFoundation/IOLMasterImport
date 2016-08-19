@@ -7,6 +7,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.cli.HelpFormatter;
+import uk.org.openeyes.models.DicomFiles;
 
 /**
  * @author Tamas Vedelek <vetusko@gmail.com>
@@ -25,6 +26,11 @@ public class OE_IOLMasterImport  {
     } 
 
     // main
+
+    /**
+     *
+     * @param args
+     */
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         	
@@ -78,7 +84,9 @@ public class OE_IOLMasterImport  {
                 debug = true;
             }
             
-            DICOMParser DicomParser = new DICOMParser(debug, configFile, SystemLogger, APIconfigFile);
+            DICOMParser DicomParser = new DICOMParser();
+            
+            DicomParser.initParser(debug, configFile, SystemLogger, APIconfigFile);
             
             if(inputFile.equals("")){
                 inputFile = "test/data/input_test.dcm";    // original IOLMaster file with multi lense
