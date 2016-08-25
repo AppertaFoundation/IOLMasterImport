@@ -544,14 +544,15 @@ public class BiometryFunctions extends DatabaseFunctions{
         if(eventStudy.getDeviceType().equals("IOLM700")){
             currentEvent.add(Restrictions.eq("deviceSerialNumber", eventStudy.getDeviceSerial()));
             currentEvent.add(Restrictions.eq("acquisitionDatetime", eventStudy.getAcquisitionDateTime()));
+            currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE device_serial_number='"+eventStudy.getDeviceSerial()+"' AND acquisition_datetime='"+eventStudy.getAcquisitionDateTime()+"')"));
         }else if(eventStudy.getDeviceType().equals("IOLM500")){
             currentEvent.add(Restrictions.eq("studyId", eventStudy.getStudyInstanceID()));
             currentEvent.add(Restrictions.eq("seriesId", eventStudy.getSeriesInstanceID()));
             currentEvent.add(Restrictions.eq("surgeonName", eventStudy.getSurgeonName()));
+            currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+eventStudy.getStudyInstanceID()+"' AND series_id='"+eventStudy.getSeriesInstanceID()+"'  AND surgeon_name='"+eventStudy.getSurgeonName()+"')"));
         }
         
         // we should check if event is deleted, and we should create a new one if yes
-        currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+eventStudy.getStudyInstanceID()+"' AND series_id='"+eventStudy.getSeriesInstanceID()+"')"));        
         if (!currentEvent.list().isEmpty()) {
             importedEvent = (OphinbiometryImportedEvents) currentEvent.list().get(0);
             // if the event is in deleted state we cerate a new record
