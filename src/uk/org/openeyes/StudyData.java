@@ -37,7 +37,7 @@ public class StudyData {
      */
     public void setStudyDateTime(String SDateTime){
         //System.out.println(SDateTime);
-        //this.StudyDateTime.set(Integer.parseInt(SDateTime.substring(0,4)), Integer.parseInt(SDateTime.substring(4,6)), Integer.parseInt(SDateTime.substring(6,8)), Integer.parseInt(SDateTime.substring(8,10)), Integer.parseInt(SDateTime.substring(10,12)));
+        this.StudyDateTime.set(Integer.parseInt(SDateTime.substring(0,4)), Integer.parseInt(SDateTime.substring(4,6)), Integer.parseInt(SDateTime.substring(6,8)), Integer.parseInt(SDateTime.substring(8,10)), Integer.parseInt(SDateTime.substring(10,12)));
     }
     
     /**
