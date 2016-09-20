@@ -226,7 +226,7 @@ public class PDFFunctions extends PDFTextStripper{
             coords = getDataCoordinates("MultiLensREFStartIOLM700", side, position);
         }
 
-        String textArea = getTextArea(page, new Rectangle(coords.x, coords.y + (row * 9), 50, 9));
+        String textArea = getTextArea(page, new Rectangle(coords.x, coords.y + (row * 9), 50, 9)).trim();
 
         Double result = null;
 
