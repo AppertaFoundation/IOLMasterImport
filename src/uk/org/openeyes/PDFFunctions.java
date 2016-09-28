@@ -157,7 +157,7 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getTopLensFormulaNameIOLM700(PDPage page)throws IOException{
-        return getTextArea(page, new Rectangle(50,180,250,10)).trim();
+        return normaliseLensName(getTextArea(page, new Rectangle(50,180,250,10)));
     }
     
     /**
@@ -181,7 +181,7 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getMultiLensFormulaNamesIOLM700(PDPage page, String side, int position) throws IOException{
-        return getTextArea(page, getRectangleMultiLensFormulaNamesIOLM700(side, position)).trim();
+        return normaliseLensName(getTextArea(page, getRectangleMultiLensFormulaNamesIOLM700(side, position)));
     }
     
     private Rectangle getRectangleMultiLensFormulaNamesIOLM700(String side, int position){
@@ -225,7 +225,16 @@ public class PDFFunctions extends PDFTextStripper{
         }else{
             coords = getDataCoordinates("MultiLensREFStartIOLM700", side, position);
         }
-        return Double.parseDouble(getTextArea(page, new Rectangle(coords.x, coords.y + (row * 9), 50, 9)));
+
+        String textArea = getTextArea(page, new Rectangle(coords.x, coords.y + (row * 9), 50, 9)).trim();
+
+        Double result = null;
+
+        if (!"---".equals(textArea)) {
+            result = Double.parseDouble(textArea);
+        }
+
+        return result;
     }
     
     /**
@@ -238,12 +247,10 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String dumpIOLREFValuesIOLM700(PDPage page, String side, int position) throws IOException{
         // IOL values
-        Coordinates startIOLCoords = getDataCoordinates("MultiLensIOLStartIOLM700", side, position);
-        Coordinates startREFCoords = getDataCoordinates("MultiLensREFStartIOLM700", side, position);
         String output = "";
         for(int k=0;k<5;k++){
-            output += "IOL: "+Double.parseDouble(getTextArea(page, new Rectangle(startIOLCoords.x, startIOLCoords.y + (k * 9), 50, 9)))+" - ";
-            output += "REF: "+Double.parseDouble(getTextArea(page, new Rectangle(startREFCoords.x, startREFCoords.y + (k * 9), 50, 9)))+"\n";
+            output += "IOL: "+getIOLREFValueRowIOLM700(page, side, position, "IOL", k)+" - ";
+            output += "REF: "+getIOLREFValueRowIOLM700(page, side, position, "REF", k)+"\n";
         }
         return output;
     }
@@ -302,6 +309,12 @@ public class PDFFunctions extends PDFTextStripper{
         stripper.addRegion( "area", titleArea );
         stripper.extractRegions( page );
         return stripper.getTextForRegion( "area" );
+    }
+
+    private String normaliseLensName(String lensName) {
+        String result = lensName.replaceAll("(\\r|\\n)", " ");  // Replace any LF/CR characters with space
+        result = result.replaceAll(" +", " ");  // Replace any consecutive spaces with a single space
+        return result.trim();
     }
     
     /**

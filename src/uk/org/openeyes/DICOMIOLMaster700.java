@@ -226,8 +226,13 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                     String AconstTxt = PDFHelper.getMultiLensAValuesIOLM700(page, side, pos);
                     sideData.setLensAConst( getAconstValue(AconstTxt), sideData.getMeasurementsIndex());
                     for(int calc=0; calc<5; calc++){
-                        sideData.setLensIOL(PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "IOL", calc), sideData.getMeasurementsIndex());
-                        sideData.setLensREF(PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "REF", calc), sideData.getMeasurementsIndex());
+                        Double iolValue = PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "IOL", calc);
+                        Double refValue = PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "REF", calc);
+
+                        if (iolValue != null && refValue != null) {
+                            sideData.setLensIOL(iolValue, sideData.getMeasurementsIndex());
+                            sideData.setLensREF(refValue, sideData.getMeasurementsIndex());
+                        }
                     }
                     
                     // we need to check the values by calculating using our methods
