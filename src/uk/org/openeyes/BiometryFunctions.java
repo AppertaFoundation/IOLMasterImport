@@ -367,34 +367,16 @@ public class BiometryFunctions extends DatabaseFunctions{
                eventBiometry.getBiometryValue("R").getisKModified();
     }
     
-    /**
-     *
-     */
-    private void saveIolRefValues() {
-        
-        ArrayList<BiometryCalculationData> storedBiometryMeasurementDataLeft = eventBiometry.getBiometryValue("L").getMeasurements();
-        ArrayList<BiometryCalculationData> storedBiometryMeasurementDataRight = eventBiometry.getBiometryValue("R").getMeasurements();
-        Integer ArrayListSize;
-        String ReferenceSide;
-        
-        // we need to find which side contains more data
-        if (storedBiometryMeasurementDataLeft.size() > storedBiometryMeasurementDataRight.size()) {
-            ArrayListSize = storedBiometryMeasurementDataLeft.size();
-            ReferenceSide = "L";
-        } else {
-            ArrayListSize = storedBiometryMeasurementDataRight.size();
-            ReferenceSide = "R";
-        }
+    private void saveIolRefValuesForSide(String side, ArrayList<BiometryCalculationData> sideData)
+    {
+        Integer ArrayListSize = sideData.size();
         OphinbiometryLenstypeLens lensType = null;
         OphinbiometryCalculationFormula formulaType = null;
+        
         for (Integer i = 0; i < ArrayListSize; i++) {
             BiometryCalculationData rowData;
-            if (ReferenceSide.equals("L")) {
-                rowData = storedBiometryMeasurementDataLeft.get(i);
-            } else {
-                rowData = storedBiometryMeasurementDataRight.get(i);
-            }
-            
+            rowData = sideData.get(i);
+                        
             // TODO: what is the A constant and emmetropia value here??
             lensType = searchForLensData(rowData.getLensName(), rowData.getAConst());
             formulaType = searchForFormulaData(rowData.getFormulaName());
@@ -428,21 +410,13 @@ public class BiometryFunctions extends DatabaseFunctions{
             iolRefValues.setLensId(lensType);
             iolRefValues.setConstant(BigDecimal.valueOf(rowData.getAConst()));
             iolRefValues.setSurgeonId(searchSurgeon(eventStudy.getSurgeonName()));
-            if (ReferenceSide.equals("L")) {
+            if (side.equals("L")) {
                 if(isNewIolRefValues){
                     iolRefValues.setIolRefValuesLeft(rowData.getIOLREFJSON());
                 }else{
                     iolRefValues.setIolRefValuesLeft(mergeIolRefValues(iolRefValues, rowData.getIOLREFJSON(), "L" ));
                 }
                 iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(rowData.getEmmetropia()));
-                if (storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()) {
-                    if(isNewIolRefValues){    
-                        iolRefValues.setIolRefValuesRight(storedBiometryMeasurementDataRight.get(i).getIOLREFJSON());
-                    }else{
-                        iolRefValues.setIolRefValuesRight(mergeIolRefValues(iolRefValues, storedBiometryMeasurementDataRight.get(i).getIOLREFJSON(),"R"));
-                    }
-                    iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(storedBiometryMeasurementDataRight.get(i).getEmmetropia()));
-                }
             } else {
                 if(isNewIolRefValues){
                     iolRefValues.setIolRefValuesRight(rowData.getIOLREFJSON());
@@ -450,14 +424,6 @@ public class BiometryFunctions extends DatabaseFunctions{
                     iolRefValues.setIolRefValuesRight(mergeIolRefValues(iolRefValues, rowData.getIOLREFJSON(), "R" ));
                 }
                 iolRefValues.setEmmetropiaRight(BigDecimal.valueOf(rowData.getEmmetropia()));
-                if (storedBiometryMeasurementDataLeft.size() == storedBiometryMeasurementDataRight.size()) {
-                    if(isNewIolRefValues){
-                        iolRefValues.setIolRefValuesLeft(storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON());
-                    }else{
-                        iolRefValues.setIolRefValuesLeft(mergeIolRefValues(iolRefValues, storedBiometryMeasurementDataLeft.get(i).getIOLREFJSON(),"L"));
-                    }
-                    iolRefValues.setEmmetropiaLeft(BigDecimal.valueOf(storedBiometryMeasurementDataLeft.get(i).getEmmetropia()));
-                }
             }
             session.saveOrUpdate(iolRefValues);
 
@@ -466,6 +432,16 @@ public class BiometryFunctions extends DatabaseFunctions{
             formulaType = null;
             lensType = null;
         }
+    }
+    
+    /**
+     *
+     */
+    private void saveIolRefValues() 
+    {    
+        saveIolRefValuesForSide("L", eventBiometry.getBiometryValue("L").getMeasurements());
+        saveIolRefValuesForSide("R", eventBiometry.getBiometryValue("R").getMeasurements());
+
     }
 
     private EtOphinbiometryMeasurement getMeasurementId(){
