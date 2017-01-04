@@ -346,7 +346,8 @@ public class DatabaseFunctions {
             hosNum = ("0000000" + hosNum).substring(hosNum.length());
         }
         
-        crit.add(Restrictions.eq("hosNum",hosNum));
+        //crit.add(Restrictions.eq("hosNum",hosNum));
+        crit.add(Restrictions.sqlRestriction("lower(hos_num) = '"+hosNum.toLowerCase()+"'"));
         // we should search for M or F only
         if( Character.toString(gender).equals("F") || Character.toString(gender).equals("M")){
             crit.add(Restrictions.eq("gender", Character.toString(gender)));
