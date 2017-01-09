@@ -764,7 +764,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         }
         
         dicomLogger.addToRawOutput(calculationComments);
-        return returnPower;
+        return Double.isNaN(returnPower) ? 0.0 : returnPower;
     }
 
     /**
