@@ -107,7 +107,7 @@ public class DICOMCommonFunctions {
                 if(CurrentSide == null || CurrentSide.equals("")){
                     CurrentSide = getSideFromAttributes(Attrs);
                 }
-                if(CurrentSide.equals(side)){
+                if(CurrentSide.equals(side) && AttrData.getValue(getTagInteger(hexTagValue)) != null){
                     return VR.FD.toDouble(AttrData.getValue(getTagInteger(hexTagValue)), false, 0, 0);
                 }
             }
