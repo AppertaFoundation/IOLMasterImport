@@ -352,24 +352,18 @@ public class DatabaseFunctions {
         if( Character.toString(gender).equals("F") || Character.toString(gender).equals("M")){
             crit.add(Restrictions.eq("gender", Character.toString(gender)));
         }
-        int dateMonth;
-        int dateYear;
-        if(birthDate.get(Calendar.MONTH) == 0){
-            dateMonth = 12;
-            dateYear = birthDate.get(Calendar.YEAR)-1;
-        }else{
-            dateMonth = birthDate.get(Calendar.MONTH);
-            dateYear = birthDate.get(Calendar.YEAR);
-        }
-        crit.add(Restrictions.sqlRestriction("dob = '"+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+"'"));
+        int dateYear = birthDate.get(Calendar.YEAR);
+        int dateMonth = birthDate.get(Calendar.MONTH) + 1;
+        int dateDay = birthDate.get(Calendar.DAY_OF_MONTH);
+        crit.add(Restrictions.sqlRestriction("dob = '"+dateYear+"-"+dateMonth+"-"+dateDay+"'"));
         List patientList = crit.list();
         
         if(patientList.isEmpty()){
             // TODO: How to handle this case??
-            dicomLogger.addToRawOutput("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            dicomLogger.addToRawOutput("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+dateDay+")");
         }else if(patientList.size() > 1){
             // TODO: How to handle this case??
-            dicomLogger.addToRawOutput("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+birthDate.get(Calendar.DAY_OF_MONTH)+")");
+            dicomLogger.addToRawOutput("ERROR: More than 1 record found for patient (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+dateDay+")");
         }else{
             // TODO: is everything OK?
             selectedPatient = (Patient) patientList.get(0);
