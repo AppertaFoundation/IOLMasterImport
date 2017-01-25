@@ -68,6 +68,7 @@ abstract class IOLMasterAbstract {
         sideData.setTargetRef(parser.getDoubleValueFromSequence("771B1002","771B1029",side,Attrs));
         sideData.setEyeStatus(parser.getStringValueFromSequence("771B1002","771B1025",side,Attrs));
     }
+    
     public String selectSequenceTag(Attributes Attrs){
         String sequenceTag = "";
         if(Attrs.contains(parser.getTagInteger("771B1001"))){
