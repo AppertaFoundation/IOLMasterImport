@@ -199,7 +199,9 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             sideData.setAxisK2(Double.parseDouble(PDFHelper.getAxisK2Side(page, side)));
             sideData.setAL(Double.parseDouble(PDFHelper.getALSide(page, side)));
             sideData.setACD(Double.parseDouble(PDFHelper.getACDSide(page, side)));
-
+            sideData.setisALModified("YES");
+            sideData.setisACDModified("YES");
+            sideData.setisKModified("YES");
         }
     }
     
