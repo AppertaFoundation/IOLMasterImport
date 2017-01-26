@@ -27,7 +27,8 @@ import org.dcm4che3.data.VR;
  */
 public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private PDFFunctions PDFHelper = null;
-     
+    private boolean collectMeasurementFromPdf = false; 
+    
     /**
      *
      * @param mainParser
@@ -63,6 +64,9 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             // K1, K2, Axis, ACD, Delta K, etc.
             collectMeasuredValues(Attrs, "L");
             collectMeasuredValues(Attrs, "R");
+        }else
+        {
+            collectMeasurementFromPdf = true;
         }
         
         if(Attrs.contains(parser.getTagInteger("00420011"))){
@@ -180,7 +184,32 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
      * @param side
      * @throws IOException
      */
-    public void collectCalculationValuesPDFSide(PDPage page, String side) throws IOException{
+    private void collectMeasurementValuesPdfSide(PDPage page, String side) throws IOException{
+        BiometrySide sideData;
+        if(side.equals("L")){
+            sideData = parser.BiometryLeft;
+        }else{
+            sideData = parser.BiometryRight;
+        }
+        if(PDFHelper.getPageTitleIOLM700(page).equals("IOL calculation") || PDFHelper.getPageTitleIOLM700(page).equals("IOL calculation (Multiformula)"))
+        {
+            sideData.setK1(Double.parseDouble(PDFHelper.getK1Side(page, side)));
+            sideData.setAxisK1(Double.parseDouble(PDFHelper.getAxisK1Side(page, side)));
+            sideData.setK2(Double.parseDouble(PDFHelper.getK2Side(page, side)));
+            sideData.setAxisK2(Double.parseDouble(PDFHelper.getAxisK2Side(page, side)));
+            sideData.setAL(Double.parseDouble(PDFHelper.getALSide(page, side)));
+            sideData.setACD(Double.parseDouble(PDFHelper.getACDSide(page, side)));
+
+        }
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @throws IOException
+     */
+    private void collectCalculationValuesPDFSide(PDPage page, String side) throws IOException{
         String mainFormulaName = "";
         String mainLensName = "";
         String FormulaName = "";
@@ -286,6 +315,11 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                     currentPage = PDFHelper.getPDFPage(p);
                     collectCalculationValuesPDFSide(currentPage, "L");
                     collectCalculationValuesPDFSide(currentPage, "R");
+                    if(collectMeasurementFromPdf)
+                    {
+                        collectMeasurementValuesPdfSide(currentPage, "L");
+                        collectMeasurementValuesPdfSide(currentPage, "R");
+                    }
                 }
                 
             } catch (IOException ex) {
