@@ -37,7 +37,7 @@ public class StudyData {
      */
     public void setStudyDateTime(String SDateTime){
         //System.out.println(SDateTime);
-        this.StudyDateTime.set(Integer.parseInt(SDateTime.substring(0,4)), Integer.parseInt(SDateTime.substring(4,6)), Integer.parseInt(SDateTime.substring(6,8)), Integer.parseInt(SDateTime.substring(8,10)), Integer.parseInt(SDateTime.substring(10,12)));
+        this.StudyDateTime.set(Integer.parseInt(SDateTime.substring(0,4)), Integer.parseInt(SDateTime.substring(4,6))-1, Integer.parseInt(SDateTime.substring(6,8)), Integer.parseInt(SDateTime.substring(8,10)), Integer.parseInt(SDateTime.substring(10,12)));
     }
     
     /**
@@ -273,7 +273,7 @@ public class StudyData {
     public String printStudyData(){
         String output;
         output = "--== Study data ==--\n";
-        output += "Study date and time: "+this.StudyDateTime.get(Calendar.DAY_OF_MONTH)+"/"+this.StudyDateTime.get(Calendar.MONTH)+"/"+this.StudyDateTime.get(Calendar.YEAR)+" "+this.StudyDateTime.get(Calendar.HOUR_OF_DAY)+":"+this.StudyDateTime.get(Calendar.MINUTE)+"\n";
+        output += "Study date and time: "+this.StudyDateTime.get(Calendar.DAY_OF_MONTH)+"/"+(this.StudyDateTime.get(Calendar.MONTH)+1)+"/"+this.StudyDateTime.get(Calendar.YEAR)+" "+this.StudyDateTime.get(Calendar.HOUR_OF_DAY)+":"+this.StudyDateTime.get(Calendar.MINUTE)+"\n";
         output += "Study content date and time: "+this.ContentDate+" "+this.ContentTime+"\n";
         output += "Study physician: "+this.PhysicianName+"\n";
         output += "Study surgeon: "+this.SurgeonName+"\n";
