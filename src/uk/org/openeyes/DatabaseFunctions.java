@@ -432,7 +432,7 @@ public class DatabaseFunctions {
         
         String formattedStudyDate = String.format("%04d-%02d-%02d %02d:%02d:%02d",
                 studyDate.get(Calendar.YEAR),
-                studyDate.get(Calendar.MONTH),
+                studyDate.get(Calendar.MONTH) + 1,
                 studyDate.get(Calendar.DAY_OF_MONTH),
                 studyDate.get(Calendar.HOUR_OF_DAY),
                 studyDate.get(Calendar.MINUTE),
