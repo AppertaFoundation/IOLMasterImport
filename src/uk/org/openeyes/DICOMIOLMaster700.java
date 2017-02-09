@@ -12,16 +12,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.pdfbox.io.RandomAccessBuffer;
-import org.apache.pdfbox.io.RandomAccessRead;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageTree;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
 
 /**
  *
@@ -29,11 +22,8 @@ import org.dcm4che3.data.VR;
  */
 public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private PDFFunctions PDFHelper;
-    private boolean collectMeasurementFromPdf = false; 
     private List<PDPage> calculationPages = new ArrayList<PDPage>();
-
-
-    
+   
     /**
      *
      * @param mainParser
@@ -74,7 +64,12 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             collectMeasuredValues(Attrs, "R");
         }else
         {            
-            collectMeasurementFromPdf = true;
+            parser.debugMessage("Extracting IOL Measured Values from PDF");            
+            try {
+                collectMeasurementValuesPDF(Attrs);
+            } catch (IOException ex) {
+                Logger.getLogger(DICOMIOLMaster700.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         if(Attrs.contains(parser.getTagInteger("00420011"))){
@@ -438,10 +433,6 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                     currentPage = PDFHelper.getPDFPage(p);
                     collectCalculationValuesPDFSide(currentPage, "L");
                     collectCalculationValuesPDFSide(currentPage, "R");
-                    if(collectMeasurementFromPdf){
-                        parser.debugMessage("Extracting IOL Measured Values from PDF");            
-                        collectMeasurementValuesPDF(Attrs);
-                    }
                 }
                 
             } catch (IOException ex) {
