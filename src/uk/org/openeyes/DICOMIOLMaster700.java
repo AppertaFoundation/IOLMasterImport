@@ -203,44 +203,51 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             sideData = parser.BiometryRight;
         }
         
-        if(Attrs.contains(parser.getTagInteger("771B1043"))){
+        if(parser.getDoubleValueFromSequence("771B1030","771B1043",side,Attrs) != null){
             sideData.setAL(parser.getDoubleValueFromSequence("771B1030","771B1043",side,Attrs));
-        }
-        else
+        }else
         {
+            parser.debugMessage("Extracting manual AL value from PDF");            
             sideData.setAL(sideDataPDF.getAL());
             sideData.setisALModified("YES");
         }
+
         
-        if(Attrs.contains(parser.getTagInteger("771B104A"))){
+        
+        if(parser.getDoubleValueFromSequence("771B1032","771B104A",side,Attrs) != null){
             sideData.setK1(parser.getDoubleValueFromSequence("771B1032","771B104A",side,Attrs));
         }else{
+            parser.debugMessage("Extracting manual K1 value from PDF");            
             sideData.setK1(sideDataPDF.getK1());
             sideData.setisKModified("YES");
         }
         
-        if(Attrs.contains(parser.getTagInteger("771B104D"))){
+        if(parser.getDoubleValueFromSequence("771B1032","771B104D",side,Attrs) != null){
             sideData.setK2(parser.getDoubleValueFromSequence("771B1032","771B104D",side,Attrs));
         }else{
+            parser.debugMessage("Extracting manual K2 value from PDF"); 
             sideData.setK2(sideDataPDF.getK2());
             sideData.setisKModified("YES");
         }
         
-        if(Attrs.contains(parser.getTagInteger("771B104B"))){
+        if(parser.getDoubleValueFromSequence("771B1032","771B104B",side,Attrs) != null){
             sideData.setAxisK1(parser.getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
         }else{
+            parser.debugMessage("Extracting manual K1 axis value from PDF"); 
             sideData.setAxisK1(sideDataPDF.getAxisK1());
         }
         
-        if(Attrs.contains(parser.getTagInteger("771B104E"))){
+        if(parser.getDoubleValueFromSequence("771B1032","771B104E",side,Attrs) != null){
             sideData.setAxisK2(parser.getDoubleValueFromSequence("771B1032","771B104E",side,Attrs));
         }else{
+            parser.debugMessage("Extracting manual K2 axis value from PDF");
             sideData.setAxisK2(sideDataPDF.getAxisK2());
         }
         
-        if(Attrs.contains(parser.getTagInteger("771B100E"))){
+        if(parser.getDoubleValueFromSequence("771B1034","771B100E",side,Attrs) != null){
             sideData.setACD(parser.getDoubleValueFromSequence("771B1034","771B100E",side,Attrs));
         }else{
+            parser.debugMessage("Extracting manual ACD value from PDF");
             sideData.setACD(sideDataPDF.getACD());
             sideData.setisACDModified("YES");
         }
