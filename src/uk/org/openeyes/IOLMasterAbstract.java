@@ -28,14 +28,19 @@ abstract class IOLMasterAbstract {
         }else{
             sideData = parser.BiometryRight;
         }
-        if(Attrs.contains(parser.getTagInteger("771B1032"))){
+        if(parser.getDoubleValueFromSequence("771B1032","771B104B",side,Attrs) != null){
             sideData.setAxisK1(parser.getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
             //sideData.setDeltaKAxis(parser.getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
             //sideData.setDeltaK(parser.getDoubleValueFromSequence("771B1032","771B104F",side,Attrs));
+        }else{
+            sideData.setAxisK1(0.0);
         }
+        
         // check for SNR
-        if(Attrs.contains(parser.getTagInteger("771B1030"))){
+        if((parser.getDoubleValueFromSequence("771B1030","771B1044",side,Attrs) != null)){
             sideData.setSNR(parser.getDoubleValueFromSequence("771B1030","771B1044",side,Attrs));
+        }else{
+            sideData.setSNR(0.0);
         }
     }
     
@@ -68,6 +73,7 @@ abstract class IOLMasterAbstract {
         sideData.setTargetRef(parser.getDoubleValueFromSequence("771B1002","771B1029",side,Attrs));
         sideData.setEyeStatus(parser.getStringValueFromSequence("771B1002","771B1025",side,Attrs));
     }
+    
     public String selectSequenceTag(Attributes Attrs){
         String sequenceTag = "";
         if(Attrs.contains(parser.getTagInteger("771B1001"))){

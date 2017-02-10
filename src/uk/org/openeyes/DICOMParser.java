@@ -152,7 +152,7 @@ public class DICOMParser extends DICOMCommonFunctions{
      *
      * @param inputFile
      */
-    public void parseDicomFile(String inputFile)  {
+    public void parseDicomFile(String inputFile) throws IOException  {
         
         this.inputFileName = inputFile;
         

@@ -176,6 +176,77 @@ public class PDFFunctions extends PDFTextStripper{
      *
      * @param page
      * @param side
+     * @return
+     * @throws IOException
+     */
+    public String getK1Side(PDPage page, String side)throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("K1IOLM700", side, 1).x, getDataCoordinates("K1IOLM700", side, 1).y, 25, 10);
+        return getTextArea(page, area).trim().replace("---","0"); 
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @return
+     * @throws IOException
+     */
+    public String getAxisK1Side(PDPage page, String side)throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("AxisK1IOLM700", side, 1).x, getDataCoordinates("AxisK1IOLM700", side, 1).y, 19, 10);
+        return getTextArea(page, area).replace("º","").trim().replace("---","0"); 
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @return
+     * @throws IOException
+     */
+    public String getK2Side(PDPage page, String side)throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("K2IOLM700", side, 1).x, getDataCoordinates("K2IOLM700", side, 1).y, 25, 10);
+        return getTextArea(page, area).trim().replace("---","0"); 
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @return
+     * @throws IOException
+     */
+    public String getAxisK2Side(PDPage page, String side)throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("AxisK2IOLM700", side, 1).x, getDataCoordinates("AxisK2IOLM700", side, 1).y, 19, 10);
+        return getTextArea(page, area).replace("º","").trim().replace("---","0"); 
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @return
+     * @throws IOException
+     */
+    public String getALSide(PDPage page, String side)throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("ALIOLM700", side, 1).x, getDataCoordinates("ALIOLM700", side, 1).y, 25, 10);
+        return getTextArea(page, area).trim().replace("---","0"); 
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @return
+     * @throws IOException
+     */
+    public String getACDSide(PDPage page, String side)throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("ACDIOLM700", side, 1).x, getDataCoordinates("ACDIOLM700", side, 1).y, 25, 10);
+        return getTextArea(page, area).trim().replace("---","0"); 
+    }
+    /**
+     *
+     * @param page
+     * @param side
      * @param position
      * @return
      * @throws IOException
@@ -295,6 +366,22 @@ public class PDFFunctions extends PDFTextStripper{
         
         CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 410));
         CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(30, 410));
+        
+        CoordMap.put("ALIOLM700_L_1", new Coordinates(340,320));
+        CoordMap.put("ALIOLM700_R_1", new Coordinates(80,320));
+        
+        CoordMap.put("ACDIOLM700_L_1", new Coordinates(340,330));
+        CoordMap.put("ACDIOLM700_R_1", new Coordinates(80,330));
+        
+        CoordMap.put("K1IOLM700_L_1", new Coordinates(340,360));
+        CoordMap.put("K1IOLM700_R_1", new Coordinates(80,360));
+        CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(392,360));
+        CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(132,360));
+        
+        CoordMap.put("K2IOLM700_L_1", new Coordinates(340,370));
+        CoordMap.put("K2IOLM700_R_1", new Coordinates(80,370));
+        CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(392,370));
+        CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(132,370));
     }
     
     

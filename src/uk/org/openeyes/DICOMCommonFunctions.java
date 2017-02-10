@@ -100,19 +100,19 @@ public class DICOMCommonFunctions {
      */
     protected Double getDoubleValueFromSequence(String hexTagSequence, String hexTagValue, String side, Attributes Attrs){
         if(Attrs.contains(getTagInteger(hexTagSequence))){
-            Sequence Seq = Attrs.getSequence(getTagInteger(hexTagSequence));
+            Sequence Seq = Attrs.getSequence(getTagInteger(hexTagSequence));            
             for(int ks=0; ks<Seq.size();ks++){
                 Attributes AttrData = (Attributes) Seq.get(ks);
                 CurrentSide = getSideFromAttributes(AttrData);
                 if(CurrentSide == null || CurrentSide.equals("")){
                     CurrentSide = getSideFromAttributes(Attrs);
                 }
-                if(CurrentSide.equals(side)){
+                if(CurrentSide.equals(side) && AttrData.getValue(getTagInteger(hexTagValue)) != null){
                     return VR.FD.toDouble(AttrData.getValue(getTagInteger(hexTagValue)), false, 0, 0);
                 }
             }
         }
-        return 0.0;
+        return null;
     }
     
     /**

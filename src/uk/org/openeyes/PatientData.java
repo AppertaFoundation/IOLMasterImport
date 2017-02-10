@@ -16,7 +16,7 @@ public class PatientData {
     private String PatientName;
     private String PatientID;
     private char PatientGender;
-    private Calendar PatientBirth = new GregorianCalendar();
+    private Calendar PatientBirth;
     
     /**
      *
@@ -47,7 +47,7 @@ public class PatientData {
      * @param PBirth
      */
     public void setPatientBirth(String PBirth) {
-        this.PatientBirth.set(Integer.parseInt(PBirth.substring(0,4)), Integer.parseInt(PBirth.substring(4,6)), Integer.parseInt(PBirth.substring(6,8)));
+        this.PatientBirth = new GregorianCalendar(Integer.parseInt(PBirth.substring(0,4)), Integer.parseInt(PBirth.substring(4,6)) - 1, Integer.parseInt(PBirth.substring(6,8)));
     }
 
     /**
@@ -71,21 +71,11 @@ public class PatientData {
      * @return
      */
     public Calendar getPatientBirth(){
-        //return this.PatientBirth.get(Calendar.YEAR)+"-"+this.PatientBirth.get(Calendar.MONTH)+"-"+this.PatientBirth.get(Calendar.DAY_OF_MONTH);
         return PatientBirth;
     }
 
     private String displayDOB(){
-        int dateMonth;
-        int dateYear;
-        if(this.PatientBirth.get(Calendar.MONTH) == 0){
-            dateMonth = 12;
-            dateYear = this.PatientBirth.get(Calendar.YEAR)-1;
-        }else{
-            dateMonth = this.PatientBirth.get(Calendar.MONTH);
-            dateYear = this.PatientBirth.get(Calendar.YEAR);
-        }
-        return this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+dateMonth+"/"+dateYear;
+        return this.PatientBirth.get(Calendar.DAY_OF_MONTH)+"/"+(this.PatientBirth.get(Calendar.MONTH) + 1)+"/"+this.PatientBirth.get(Calendar.YEAR);
     }
     
     /**

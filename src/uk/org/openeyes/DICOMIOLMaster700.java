@@ -6,37 +6,36 @@
 package uk.org.openeyes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.pdfbox.io.RandomAccessBuffer;
-import org.apache.pdfbox.io.RandomAccessRead;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageTree;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
 
 /**
  *
  * @author veta
  */
 public class DICOMIOLMaster700 extends IOLMasterAbstract{
-    private PDFFunctions PDFHelper = null;
-     
+    private PDFFunctions PDFHelper;
+    private List<PDPage> calculationPages = new ArrayList<PDPage>();
+   
     /**
      *
      * @param mainParser
      */
-    public DICOMIOLMaster700(DICOMParser mainParser){
+    public DICOMIOLMaster700(DICOMParser mainParser) throws IOException
+    {
+        this.PDFHelper = new PDFFunctions();
         this.parser = mainParser;
         parser.Study.setDeviceType("IOLM700");
     }
 
+    
     /**
      *
      * @param Attrs
@@ -63,6 +62,14 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             // K1, K2, Axis, ACD, Delta K, etc.
             collectMeasuredValues(Attrs, "L");
             collectMeasuredValues(Attrs, "R");
+        }else
+        {            
+            parser.debugMessage("Extracting IOL Measured Values from PDF");            
+            try {
+                collectMeasurementValuesPDF(Attrs);
+            } catch (IOException ex) {
+                Logger.getLogger(DICOMIOLMaster700.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         if(Attrs.contains(parser.getTagInteger("00420011"))){
@@ -174,13 +181,124 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         return sideData.compareIOLREFvalues( parser.biometryHelper.getCalculatedValues(FormulaName, lensData, sideData), index );
     }
     
+    public void collectMeasuredValues(Attributes Attrs, String side){
+        setMinSnrForSides(Attrs);
+        BiometrySide sideData;
+        BiometrySide sideDataPDF = new BiometrySide();
+        
+        try {
+            sideDataPDF = getMeasurementValuesPdfSide(Attrs, side);
+        } catch (IOException ex) {
+            Logger.getLogger(DICOMIOLMaster700.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if(side.equals("L")){
+            sideData = parser.BiometryLeft;
+        }else{
+            sideData = parser.BiometryRight;
+        }
+        
+        if(parser.getDoubleValueFromSequence("771B1030","771B1043",side,Attrs) != null){
+            sideData.setAL(parser.getDoubleValueFromSequence("771B1030","771B1043",side,Attrs));
+        }else
+        {
+            parser.debugMessage("Extracting manual AL value from PDF");            
+            sideData.setAL(sideDataPDF.getAL());
+            sideData.setisALModified("YES");
+        }
+
+        
+        
+        if(parser.getDoubleValueFromSequence("771B1032","771B104A",side,Attrs) != null){
+            sideData.setK1(parser.getDoubleValueFromSequence("771B1032","771B104A",side,Attrs));
+        }else{
+            parser.debugMessage("Extracting manual K1 value from PDF");            
+            sideData.setK1(sideDataPDF.getK1());
+            sideData.setisKModified("YES");
+        }
+        
+        if(parser.getDoubleValueFromSequence("771B1032","771B104D",side,Attrs) != null){
+            sideData.setK2(parser.getDoubleValueFromSequence("771B1032","771B104D",side,Attrs));
+        }else{
+            parser.debugMessage("Extracting manual K2 value from PDF"); 
+            sideData.setK2(sideDataPDF.getK2());
+            sideData.setisKModified("YES");
+        }
+        
+        if(parser.getDoubleValueFromSequence("771B1032","771B104B",side,Attrs) != null){
+            sideData.setAxisK1(parser.getDoubleValueFromSequence("771B1032","771B104B",side,Attrs));
+        }else{
+            parser.debugMessage("Extracting manual K1 axis value from PDF"); 
+            sideData.setAxisK1(sideDataPDF.getAxisK1());
+        }
+        
+        if(parser.getDoubleValueFromSequence("771B1032","771B104E",side,Attrs) != null){
+            sideData.setAxisK2(parser.getDoubleValueFromSequence("771B1032","771B104E",side,Attrs));
+        }else{
+            parser.debugMessage("Extracting manual K2 axis value from PDF");
+            sideData.setAxisK2(sideDataPDF.getAxisK2());
+        }
+        
+        if(parser.getDoubleValueFromSequence("771B1034","771B100E",side,Attrs) != null){
+            sideData.setACD(parser.getDoubleValueFromSequence("771B1034","771B100E",side,Attrs));
+        }else{
+            parser.debugMessage("Extracting manual ACD value from PDF");
+            sideData.setACD(sideDataPDF.getACD());
+            sideData.setisACDModified("YES");
+        }
+    }   
+    
+    private BiometrySide getMeasurementValuesPdfSide(Attributes Attrs, String side) throws IOException{
+        BiometrySide sideData = new BiometrySide();
+        
+        if(calculationPages.isEmpty()){
+            getCalculationPages(Attrs);
+        }
+        for(PDPage page : calculationPages){
+            sideData.setK1(Double.parseDouble(PDFHelper.getK1Side(page, side)));
+            sideData.setAxisK1(Double.parseDouble(PDFHelper.getAxisK1Side(page, side)));
+            sideData.setK2(Double.parseDouble(PDFHelper.getK2Side(page, side)));
+            sideData.setAxisK2(Double.parseDouble(PDFHelper.getAxisK2Side(page, side)));
+            sideData.setAL(Double.parseDouble(PDFHelper.getALSide(page, side)));
+            sideData.setACD(Double.parseDouble(PDFHelper.getACDSide(page, side)));
+        }
+        return sideData;
+    }
+    
     /**
      *
      * @param page
      * @param side
      * @throws IOException
      */
-    public void collectCalculationValuesPDFSide(PDPage page, String side) throws IOException{
+    private void collectMeasurementValuesPdfSide(PDPage page, String side) throws IOException{
+        BiometrySide sideData;
+        if(side.equals("L")){
+            sideData = parser.BiometryLeft;
+        }else{
+            sideData = parser.BiometryRight;
+        }
+        if(PDFHelper.getPageTitleIOLM700(page).equals("IOL calculation") || PDFHelper.getPageTitleIOLM700(page).equals("IOL calculation (Multiformula)"))
+        {
+            sideData.setK1(Double.parseDouble(PDFHelper.getK1Side(page, side)));
+            sideData.setAxisK1(Double.parseDouble(PDFHelper.getAxisK1Side(page, side)));
+            sideData.setK2(Double.parseDouble(PDFHelper.getK2Side(page, side)));
+            sideData.setAxisK2(Double.parseDouble(PDFHelper.getAxisK2Side(page, side)));
+            sideData.setAL(Double.parseDouble(PDFHelper.getALSide(page, side)));
+            sideData.setACD(Double.parseDouble(PDFHelper.getACDSide(page, side)));
+            sideData.setisALModified("YES");
+            sideData.setisACDModified("YES");
+            sideData.setisKModified("YES");
+        }
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @throws IOException
+     */
+    private void collectCalculationValuesPDFSide(PDPage page, String side) throws IOException{
         String mainFormulaName = "";
         String mainLensName = "";
         String FormulaName = "";
@@ -249,6 +367,41 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         
     }
     
+    private byte[] getPDFBinary(Attributes Attrs) throws IOException
+    {
+        byte[] pdfBytes = null;
+        if(Attrs.contains(parser.getTagInteger("00420011"))){
+            pdfBytes = Attrs.getBytes(parser.getTagInteger("00420011"));
+        }
+        return pdfBytes;
+    }
+    
+    private void getCalculationPages(Attributes Attrs) throws IOException
+    {
+        PDPage currentPage;
+        
+        PDFHelper.setPDFDoc(this.getPDFBinary(Attrs));
+        int maxPageNum = PDFHelper.getMaxPageNum();
+                
+        for(int p=0; p<maxPageNum; p++){
+            currentPage = PDFHelper.getPDFPage(p);
+            if(PDFHelper.getPageTitleIOLM700(currentPage).equals("IOL calculation") || PDFHelper.getPageTitleIOLM700(currentPage).equals("IOL calculation (Multiformula)")){
+                calculationPages.add(currentPage);
+            }
+        }
+    }
+    
+    public void collectMeasurementValuesPDF(Attributes Attrs) throws IOException{
+        if(calculationPages.isEmpty()){
+            getCalculationPages(Attrs);
+        }
+        
+        for (PDPage currentPage : calculationPages) {
+            collectMeasurementValuesPdfSide(currentPage, "L");
+            collectMeasurementValuesPdfSide(currentPage, "R");
+        }
+    }
+    
     /**
      *
      * @param Attrs
@@ -261,13 +414,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             String fileType;
             String fileName;
             PDPage currentPage;
-            
-            try {
-                this.PDFHelper = new PDFFunctions();
-            } catch (IOException ex) {
-                Logger.getLogger(DICOMIOLMaster700.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
+                        
             try {
                 pdfBytes = Attrs.getBytes(parser.getTagInteger("00420011"));
                 fileType = Attrs.getString(parser.getTagInteger("00420012"));
