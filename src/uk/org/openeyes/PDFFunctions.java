@@ -257,7 +257,7 @@ public class PDFFunctions extends PDFTextStripper{
     
     private Rectangle getRectangleMultiLensFormulaNamesIOLM700(String side, int position){
         Coordinates coord = getDataCoordinates("MultiLensFormulaNamesIOLM700", side, position);
-         return new Rectangle(coord.x, coord.y, 110, 20);
+         return new Rectangle(coord.x, coord.y, 114, 20);
     }
     
     /**
