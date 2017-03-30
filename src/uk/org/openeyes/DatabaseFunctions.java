@@ -31,6 +31,7 @@ import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.ini4j.Wini;
+import uk.org.openeyes.models.DicomEyeStatus;
 import uk.org.openeyes.models.Episode;
 import uk.org.openeyes.models.Event;
 import uk.org.openeyes.models.EventType;
@@ -620,4 +621,24 @@ public class DatabaseFunctions {
         }
     }
     
+    /**
+     *  This method can be used with IOLM700 when we extract the string representation of the Eye Status
+     * @param EyeStatus
+     */
+    public Integer getEyeStatusFromSting(String eyeStatus)
+    {
+        DicomEyeStatus status;
+        Session session = sessionFactory.openSession();
+        Criteria crit = session.createCriteria(DicomEyeStatus.class);
+        crit.add(Restrictions.eq("name", eyeStatus));
+        List statusList = crit.list();
+        
+        if(statusList.isEmpty()){
+            return -1;
+        }else{
+            status = (DicomEyeStatus) statusList.get(0);
+        }
+        
+        return status.getId();
+    }
 }

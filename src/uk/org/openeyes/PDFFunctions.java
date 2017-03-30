@@ -179,6 +179,18 @@ public class PDFFunctions extends PDFTextStripper{
      * @return
      * @throws IOException
      */
+    public String getEyeStatusIOLM700(PDPage page, String side) throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("EyeStatusIOLM700", side, 1).x, getDataCoordinates("EyeStatusIOLM700", side, 1).y, 200, 10);
+        return getTextArea(page, area).trim();
+    }
+    
+    /**
+     *
+     * @param page
+     * @param side
+     * @return
+     * @throws IOException
+     */
     public String getK1Side(PDPage page, String side)throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("K1IOLM700", side, 1).x, getDataCoordinates("K1IOLM700", side, 1).y, 25, 10);
         return getTextArea(page, area).trim().replace("---","0"); 
@@ -366,6 +378,9 @@ public class PDFFunctions extends PDFTextStripper{
         
         CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 410));
         CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(30, 410));
+        
+        CoordMap.put("EyeStatusIOLM700_L_1", new Coordinates(300, 430));
+        CoordMap.put("EyeStatusIOLM700_R_1", new Coordinates(20, 430));
         
         CoordMap.put("ALIOLM700_L_1", new Coordinates(340,320));
         CoordMap.put("ALIOLM700_R_1", new Coordinates(80,320));
