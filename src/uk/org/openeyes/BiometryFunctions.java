@@ -85,7 +85,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             lensType.setDisplayOrder(0);
             lensType.setDeleted(false);
             lensType.setActive(true);
-            lensType.setComments("Imported values, please check! Remove this comment when confirmed!");
+            lensType.setComments("(Created by IOL Master input) Imported values, please check! Remove this comment when confirmed!");
             lensType.setPositionId(0);
             session.save(lensType);
         }
