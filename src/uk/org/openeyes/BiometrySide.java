@@ -204,7 +204,7 @@ public class BiometrySide {
     public void setEyeStatus(String EyeStatus){
         this.EyeStatus = Integer.parseInt(EyeStatus);
     }
-    
+
     /**
      *
      * @return

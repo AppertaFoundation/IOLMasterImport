@@ -164,6 +164,17 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         }
     }
     
+    private String getEyeStatus(PDPage page, String side) throws IOException{
+        Pattern p;
+        String eyeStatus = PDFHelper.getEyeStatusIOLM700(page, side);
+        p = Pattern.compile("LS: (.*); ",Pattern.MULTILINE);
+        Matcher m = p.matcher( eyeStatus );
+        while( m.find() ){ // should be always 1 match!
+            return m.group(1);
+        }
+        return "Unknown";
+    }
+    
     private Double getTargetRefraction(PDPage page, String side) throws IOException{
         Pattern p;
         String targetRef = PDFHelper.getTargetRefractionIOLM700(page, side);
@@ -328,6 +339,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         if(isPageCalculation){
             System.out.println("Page is calculation");
             sideData.setTargetRef(getTargetRefraction(page, side));
+            sideData.setEyeStatus(parser.biometryHelper.getEyeStatusFromSting(getEyeStatus(page, side)).toString());
             for(int pos=1; pos< 5; pos++){
                 String FormulaLens = PDFHelper.getMultiLensFormulaNamesIOLM700(page, side, pos);
                 if(FormulaLens.length() > 2){
