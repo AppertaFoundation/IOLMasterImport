@@ -73,13 +73,15 @@ public class BiometryFunctions extends DatabaseFunctions{
             
             lensType = new OphinbiometryLenstypeLens();
             lensType.setName(lensName);
+            lensType.setDisplayName(lensName);
             lensType.setAcon(BigDecimal.valueOf(aConst));
             User selectedUser = searchStudyUser("");
             lensType.setCreatedUserId(selectedUser);
             lensType.setLastModifiedUserId(selectedUser);
             lensType.setCreatedDate(new Date());
             lensType.setLastModifiedDate(new Date());
-            lensType.setDescription("(Created by IOL Master input)");
+            //lensType.setDescription("(Created by IOL Master input)");
+            lensType.setDescription("");
             lensType.setDisplayOrder(0);
             lensType.setDeleted(false);
             lensType.setActive(true);
