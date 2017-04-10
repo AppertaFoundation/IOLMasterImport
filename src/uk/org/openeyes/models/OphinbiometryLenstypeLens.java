@@ -109,6 +109,8 @@ public class OphinbiometryLenstypeLens implements Serializable {
     private User lastModifiedUserId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lensId")
     private Collection<EtOphinbiometryIolRefValues> etOphinbiometryIolRefValuesCollection;
+    @Column(name = "display_name")
+    private String display_name;
 
     public OphinbiometryLenstypeLens() {
     }
@@ -302,7 +304,15 @@ public class OphinbiometryLenstypeLens implements Serializable {
         }
         return true;
     }
+    
+    public String getDisplayName() {
+        return display_name;
+    }
 
+    public void setDisplayName(String displayName) {
+        this.display_name = displayName;
+    }
+    
     @Override
     public String toString() {
         return "uk.org.openeyes.models.OphinbiometryLenstypeLens[ id=" + id + " ]";
