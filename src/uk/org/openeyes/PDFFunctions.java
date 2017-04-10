@@ -205,7 +205,8 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String getAxisK1Side(PDPage page, String side)throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("AxisK1IOLM700", side, 1).x, getDataCoordinates("AxisK1IOLM700", side, 1).y, 19, 10);
-        return getTextArea(page, area).replace("º","").trim().replace("---","0"); 
+        String result = getTextArea(page, area).replace("º","").trim().replace("---","0");
+        return ("".equals(result) ? "0" : result);
     }
     
     /**
@@ -229,7 +230,8 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String getAxisK2Side(PDPage page, String side)throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("AxisK2IOLM700", side, 1).x, getDataCoordinates("AxisK2IOLM700", side, 1).y, 19, 10);
-        return getTextArea(page, area).replace("º","").trim().replace("---","0"); 
+        String result = getTextArea(page, area).replace("º","").trim().replace("---","0");
+        return ("".equals(result) ? "0" : result);
     }
     
     /**
