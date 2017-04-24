@@ -27,7 +27,9 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.context.internal.ManagedSessionContext;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.ini4j.Wini;
@@ -628,13 +630,27 @@ public class DatabaseFunctions {
     public Integer getEyeStatusFromSting(String eyeStatus)
     {
         DicomEyeStatus status;
-        Session session = sessionFactory.openSession();
         Criteria crit = session.createCriteria(DicomEyeStatus.class);
         crit.add(Restrictions.eq("name", eyeStatus));
         List statusList = crit.list();
         
+        System.out.println("Eye status: "+eyeStatus);
+        
         if(statusList.isEmpty()){
-            return -1;
+            DetachedCriteria criteria = DetachedCriteria.forClass(DicomEyeStatus.class).setProjection(Projections.max("id"));
+            Integer maxId =(Integer) criteria.getExecutableCriteria(session).list().get(0);
+            Integer newId = 0;
+            status = new DicomEyeStatus();
+            status.setName(eyeStatus);
+            
+            if(maxId < 1000){
+                newId = 1000;
+            }else{
+                newId = maxId+1;
+            }
+            status.setId(newId);
+            session.save(status);
+            session.flush();
         }else{
             status = (DicomEyeStatus) statusList.get(0);
         }
