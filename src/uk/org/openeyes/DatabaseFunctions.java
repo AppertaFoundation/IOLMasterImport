@@ -634,7 +634,9 @@ public class DatabaseFunctions {
         List statusList = crit.list();
         
         if(statusList.isEmpty()){
-            return -1;
+            status = new DicomEyeStatus();
+            status.setName(eyeStatus);
+            session.save(status);
         }else{
             status = (DicomEyeStatus) statusList.get(0);
         }
