@@ -42,6 +42,8 @@ public class OE_IOLMasterImport  {
         String inputFile = "";
         String configFile = "";
         String APIconfigFile = "";
+        String hosNumRegex = "";
+        String hosNumPad = "";
         
         boolean debug = false;
         DICOMLogger SystemLogger = new DICOMLogger();
@@ -57,12 +59,18 @@ public class OE_IOLMasterImport  {
                             "Specify an API ini config file. If no API config specified the program won't use API call.");
         Option optionDebug = new Option("d", "debug", false,
                             "If specified all the processes will run in debug mode, and display more output messages");
+        Option optionHosNumRegex = new Option("r", "hosnumregex", true,
+                            "Specify a regex for matching the hospital number, equivalent to the application hos_num_regex parameter");
+        Option optionHosNumPad = new Option("p", "hosnumpad", true,
+                            "Specify a format for padding the hospital number, equivalent to the application pad_hos_num parameter");
 
         options.addOption(optionHelp);
         options.addOption(optionFileName);
         options.addOption(optionConfigFile);
         options.addOption(optionAPIConfigFile);
         options.addOption(optionDebug);
+        options.addOption(optionHosNumRegex);
+        options.addOption(optionHosNumPad);
 
         CommandLineParser parser;
         parser = new PosixParser();
@@ -83,10 +91,16 @@ public class OE_IOLMasterImport  {
             if (cmd.hasOption("d") || cmd.hasOption("debug")) {
                 debug = true;
             }
+            if (cmd.hasOption(optionHosNumRegex.getOpt())) {
+                hosNumRegex = cmd.getOptionValue(optionHosNumRegex.getOpt());
+            }
+            if (cmd.hasOption(optionHosNumPad.getOpt())) {
+                hosNumPad = cmd.getOptionValue(optionHosNumPad.getOpt());
+            }
             
             DICOMParser DicomParser = new DICOMParser();
             
-            DicomParser.initParser(debug, configFile, SystemLogger, APIconfigFile);
+            DicomParser.initParser(debug, configFile, SystemLogger, APIconfigFile, hosNumRegex, hosNumPad);
             
             if(inputFile.equals("")){
                 inputFile = "test/data/input_test.dcm";    // original IOLMaster file with multi lense

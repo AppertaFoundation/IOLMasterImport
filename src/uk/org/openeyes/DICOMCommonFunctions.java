@@ -31,9 +31,19 @@ import org.dcm4che3.util.TagUtils;
  */
 public class DICOMCommonFunctions {
     /**
-     * Debug: based on command line argument -d, if it's passed to the JAVA it will run in debug mode
+     * debug: based on command line argument -d, if it's passed to the JAVA it will run in debug mode
      */
     public boolean debug = true;
+
+    /**
+     * hosNumRegex: based on command line argument -r
+     */
+    public String hosNumRegex = "";
+
+    /**
+     * hosNumPad: based on command line argument -p
+     */
+    public String hosNumPad = "";
     
     /**
      *
