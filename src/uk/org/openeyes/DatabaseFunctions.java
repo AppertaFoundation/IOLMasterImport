@@ -351,7 +351,7 @@ public class DatabaseFunctions {
             Matcher regexMatcher = regexPattern.matcher(hosNum);
 
             if (regexMatcher.find()) {
-                Integer hosNumInt = Integer.parseInt((regexMatcher.group(2) == null) ? regexMatcher.group(1) : regexMatcher.group(2));
+                Integer hosNumInt = Integer.parseInt((regexMatcher.groupCount() >= 2) ? regexMatcher.group(2) : regexMatcher.group(1));
                 hosNum = String.format(("".equals(hosNumPad)) ? "%07d" : hosNumPad, hosNumInt);
             }
 
