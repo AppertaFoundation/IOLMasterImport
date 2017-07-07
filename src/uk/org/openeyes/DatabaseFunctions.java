@@ -352,7 +352,7 @@ public class DatabaseFunctions {
 
             if (regexMatcher.find()) {
                 Integer hosNumInt = Integer.parseInt((regexMatcher.group(2) == null) ? regexMatcher.group(1) : regexMatcher.group(2));
-                hosNum = String.format(hosNumPad, hosNumInt);
+                hosNum = String.format(("".equals(hosNumPad)) ? "%07d" : hosNumPad, hosNumInt);
             }
 
         } else {
