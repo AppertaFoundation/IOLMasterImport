@@ -43,10 +43,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Patient.findByNhsNum", query = "SELECT p FROM Patient p WHERE p.nhsNum = :nhsNum"),
     @NamedQuery(name = "Patient.findByLastModifiedDate", query = "SELECT p FROM Patient p WHERE p.lastModifiedDate = :lastModifiedDate"),
     @NamedQuery(name = "Patient.findByCreatedDate", query = "SELECT p FROM Patient p WHERE p.createdDate = :createdDate"),
-    @NamedQuery(name = "Patient.findByDateOfDeath", query = "SELECT p FROM Patient p WHERE p.dateOfDeath = :dateOfDeath"),
-    @NamedQuery(name = "Patient.findByNoAllergiesDate", query = "SELECT p FROM Patient p WHERE p.noAllergiesDate = :noAllergiesDate"),
-    @NamedQuery(name = "Patient.findByNoFamilyHistoryDate", query = "SELECT p FROM Patient p WHERE p.noFamilyHistoryDate = :noFamilyHistoryDate"),
-    @NamedQuery(name = "Patient.findByNoRisksDate", query = "SELECT p FROM Patient p WHERE p.noRisksDate = :noRisksDate")})
+    @NamedQuery(name = "Patient.findByDateOfDeath", query = "SELECT p FROM Patient p WHERE p.dateOfDeath = :dateOfDeath")})
 public class Patient implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -76,15 +73,6 @@ public class Patient implements Serializable {
     @Column(name = "date_of_death")
     @Temporal(TemporalType.DATE)
     private Date dateOfDeath;
-    @Column(name = "no_allergies_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date noAllergiesDate;
-    @Column(name = "no_family_history_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date noFamilyHistoryDate;
-    @Column(name = "no_risks_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date noRisksDate;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "patientId")
     private Collection<Episode> episodeCollection;
     @JoinColumn(name = "contact_id", referencedColumnName = "id")
@@ -191,30 +179,6 @@ public class Patient implements Serializable {
 
     public void setDateOfDeath(Date dateOfDeath) {
         this.dateOfDeath = dateOfDeath;
-    }
-
-    public Date getNoAllergiesDate() {
-        return noAllergiesDate;
-    }
-
-    public void setNoAllergiesDate(Date noAllergiesDate) {
-        this.noAllergiesDate = noAllergiesDate;
-    }
-
-    public Date getNoFamilyHistoryDate() {
-        return noFamilyHistoryDate;
-    }
-
-    public void setNoFamilyHistoryDate(Date noFamilyHistoryDate) {
-        this.noFamilyHistoryDate = noFamilyHistoryDate;
-    }
-
-    public Date getNoRisksDate() {
-        return noRisksDate;
-    }
-
-    public void setNoRisksDate(Date noRisksDate) {
-        this.noRisksDate = noRisksDate;
     }
 
     @XmlTransient
