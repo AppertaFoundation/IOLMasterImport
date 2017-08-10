@@ -35,3 +35,6 @@ Secondly, specify `-p` or `--hosnumpad` with a format specification (Java String
 ```
 
 So using the above together, a file containing hospital number "abc123" would attempt to match the database for "ABC00000123".
+
+Note that specifying `-r EXACT` forces an exact match of hospital number, switching off the previous default padding as noted above.
+

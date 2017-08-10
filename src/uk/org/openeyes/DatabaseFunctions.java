@@ -347,12 +347,14 @@ public class DatabaseFunctions {
         Criteria crit = session.createCriteria(Patient.class);
 
         if (!"".equals(hosNumRegex)) {
-            Pattern regexPattern = Pattern.compile(hosNumRegex);
-            Matcher regexMatcher = regexPattern.matcher(hosNum);
+            if (!"EXACT".equals(hosNumRegex)) {
+                Pattern regexPattern = Pattern.compile(hosNumRegex);
+                Matcher regexMatcher = regexPattern.matcher(hosNum);
 
-            if (regexMatcher.find()) {
-                Integer hosNumInt = Integer.parseInt((regexMatcher.groupCount() >= 2) ? regexMatcher.group(2) : regexMatcher.group(1));
-                hosNum = String.format(("".equals(hosNumPad)) ? "%07d" : hosNumPad, hosNumInt);
+                if (regexMatcher.find()) {
+                    Integer hosNumInt = Integer.parseInt((regexMatcher.groupCount() >= 2) ? regexMatcher.group(2) : regexMatcher.group(1));
+                    hosNum = String.format(("".equals(hosNumPad)) ? "%07d" : hosNumPad, hosNumInt);
+                }
             }
 
         } else {
