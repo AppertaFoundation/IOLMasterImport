@@ -75,12 +75,14 @@ public class DICOMParser extends DICOMCommonFunctions{
      * @param SystemLogger
      * @param APIconfigFile
      */
-    public void initParser(boolean debugState, String configFile, DICOMLogger SystemLogger, String APIconfigFile){
+    public void initParser(boolean debugState, String configFile, DICOMLogger SystemLogger, String APIconfigFile, String hosNumRegex, String hosNumPad){
         this.logger = SystemLogger;
         this.debug = debugState;
         this.APIconfigFile = APIconfigFile;
+        this.hosNumRegex = hosNumRegex;
+        this.hosNumPad = hosNumPad;
+
         biometryHelper = new BiometryFunctions(logger);            
-        
         biometryHelper.initSessionFactory(configFile, SystemLogger);
         debugMessage("Connection status: "+biometryHelper.checkConnection());    
     }
@@ -332,7 +334,7 @@ public class DICOMParser extends DICOMCommonFunctions{
             debugMessage(Biometry.printBiometryData());
         }
         
-        biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+        biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth(), this.hosNumRegex, this.hosNumPad);
         
         if(biometryHelper.getSelectedPatient() != null){
             biometryHelper.processBiometryEvent(Study,  Biometry);
@@ -366,7 +368,7 @@ public class DICOMParser extends DICOMCommonFunctions{
                         } catch(InterruptedException ex) {
                             Thread.currentThread().interrupt();
                         }
-                        biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth());
+                        biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth(), this.hosNumRegex, this.hosNumPad);
                     }
                 } catch (ConnectException ex) {
                     Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);

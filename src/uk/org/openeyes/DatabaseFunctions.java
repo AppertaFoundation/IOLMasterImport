@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.dcm4che3.util.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
@@ -340,13 +342,28 @@ public class DatabaseFunctions {
      * @param gender
      * @param birthDate
      */
-    public void searchPatient(String hosNum, char gender, Calendar birthDate){
+    public void searchPatient(String hosNum, char gender, Calendar birthDate, String hosNumRegex, String hosNumPad){
         Session session = sessionFactory.openSession();
         Criteria crit = session.createCriteria(Patient.class);
-        
-        // add leading 0s to the hosNum string
-        if(hosNum.length() < 7){
-            hosNum = ("0000000" + hosNum).substring(hosNum.length());
+
+        if (!"".equals(hosNumRegex)) {
+            if (!"EXACT".equals(hosNumRegex)) {
+                Pattern regexPattern = Pattern.compile(hosNumRegex);
+                Matcher regexMatcher = regexPattern.matcher(hosNum);
+
+                if (regexMatcher.find()) {
+                    Integer hosNumInt = Integer.parseInt((regexMatcher.groupCount() >= 2) ? regexMatcher.group(2) : regexMatcher.group(1));
+                    hosNum = String.format(("".equals(hosNumPad)) ? "%07d" : hosNumPad, hosNumInt);
+                }
+            }
+
+        } else {
+            // Do it the original way
+
+            // Add leading 0s to the hosNum string
+            if(hosNum.length() < 7){
+                hosNum = ("0000000" + hosNum).substring(hosNum.length());
+            }
         }
         
         //crit.add(Restrictions.eq("hosNum",hosNum));
