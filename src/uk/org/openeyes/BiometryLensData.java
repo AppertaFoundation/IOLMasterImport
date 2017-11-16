@@ -74,22 +74,28 @@ public class BiometryLensData {
         if(extractAconstFromString(AconstTxt, p) > 0.0){
             this.aConst = extractAconstFromString(AconstTxt, p);
         }else{
-            p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);    
-            // Hoffer Q formula constant
+            p = Pattern.compile("A const.: (.*)",Pattern.MULTILINE);
+            // SRK/T formula constant in software version 1.70.X
             if(extractAconstFromString(AconstTxt, p) > 0.0){
-                this.pACDConst = extractAconstFromString(AconstTxt, p);
+                this.aConst = extractAconstFromString(AconstTxt, p);
             }else{
-                p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
-                Matcher m = p.matcher( AconstTxt );
-                if(m.find()){
-                    String[] aConstLines = AconstTxt.split("\n");
-                    String[] aConsts = aConstLines[1].split("\\ ");
-                    //System.out.println(AconstTxt+" --- "+aConsts[0]+" - "+aConsts[1]+" - "+aConsts[2]);
+                p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);    
+                // Hoffer Q formula constant
+                if(extractAconstFromString(AconstTxt, p) > 0.0){
+                    this.pACDConst = extractAconstFromString(AconstTxt, p);
+                }else{
+                    p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
+                    Matcher m = p.matcher( AconstTxt );
+                    if(m.find()){
+                        String[] aConstLines = AconstTxt.split("\n");
+                        String[] aConsts = aConstLines[1].split("\\ ");
+                        //System.out.println(AconstTxt+" --- "+aConsts[0]+" - "+aConsts[1]+" - "+aConsts[2]);
 
-                    // Haigis formula constants
-                    this.A0 = Double.parseDouble(aConsts[0]);
-                    this.A1 = Double.parseDouble(aConsts[1]);
-                    this.A2 = Double.parseDouble(aConsts[2]);
+                        // Haigis formula constants
+                        this.A0 = Double.parseDouble(aConsts[0]);
+                        this.A1 = Double.parseDouble(aConsts[1]);
+                        this.A2 = Double.parseDouble(aConsts[2]);
+                    }
                 }
             }
         }

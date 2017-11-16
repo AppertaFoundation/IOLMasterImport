@@ -33,14 +33,19 @@ import org.apache.pdfbox.text.TextPosition;
 public class PDFFunctions extends PDFTextStripper{
     private Map<String, Coordinates> CoordMap = new HashMap<String, Coordinates>();
     private PDDocument PDFDoc = null;
+    private StudyData Study;
+    private int rowHeight = 9;
+    private int blockHeight = 9;
+    private int rowDiff = 0;
     
     /**
      * Instantiate a new PDFTextStripper object.
      *
      * @throws IOException If there is an error loading the properties.
      */
-    public PDFFunctions() throws IOException
+    public PDFFunctions(StudyData Study) throws IOException
     {
+        this.Study = Study;
         addDataCoordinates();
     }   
     
@@ -83,12 +88,12 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public void dumpPDFStructure(PDDocument PDFDoc) throws IOException{
-        PDFTextStripper stripper = new PDFFunctions();
-	stripper.setSortByPosition( true );
-	stripper.setStartPage( 0 );
-	stripper.setEndPage( PDFDoc.getNumberOfPages() );
+        //PDFTextStripper stripper = new PDFFunctions(parser.Study);
+	this.setSortByPosition( true );
+	this.setStartPage( 0 );
+	this.setEndPage( PDFDoc.getNumberOfPages() );
         Writer dummy = new OutputStreamWriter(new ByteArrayOutputStream());
-        stripper.writeText(PDFDoc, dummy);
+        this.writeText(PDFDoc, dummy);
         
     }
     
@@ -122,7 +127,6 @@ public class PDFFunctions extends PDFTextStripper{
         while(pages.hasNext()){
             currentPage = (PDPage)pages.next();
             String pageTitle = getPageTitleIOLM700(currentPage).trim();
-            System.out.println(pageTitle);
             if(pageTitle.equals("IOL calculation") || pageTitle.equals("IOL calculation (Multiformula)")){
                 System.out.println("Extracting calculation values");
                 System.out.println(getTopLensFormulaNameIOLM700(currentPage));
@@ -147,7 +151,7 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getPageTitleIOLM700(PDPage page) throws IOException{
-        return getTextArea(page, new Rectangle(200,270,250,10)).trim();
+        return getTextArea(page, new Rectangle(getDataCoordinates("PageTitleIOLM700", "T", 1).x,getDataCoordinates("PageTitleIOLM700", "T", 1).y, 250,10)).trim();
     }
     
     /**
@@ -157,7 +161,7 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getTopLensFormulaNameIOLM700(PDPage page)throws IOException{
-        return normaliseLensName(getTextArea(page, new Rectangle(50,180,250,10)));
+        return normaliseLensName(getTextArea(page, new Rectangle(getDataCoordinates("TopLensFormulaNameIOLM700", "T", 1).x,getDataCoordinates("TopLensFormulaNameIOLM700", "T", 1).y,250,10)));
     }
     
     /**
@@ -271,7 +275,7 @@ public class PDFFunctions extends PDFTextStripper{
     
     private Rectangle getRectangleMultiLensFormulaNamesIOLM700(String side, int position){
         Coordinates coord = getDataCoordinates("MultiLensFormulaNamesIOLM700", side, position);
-         return new Rectangle(coord.x, coord.y, 116, 20);
+         return new Rectangle(coord.x, coord.y, 120, 30);
     }
     
     /**
@@ -311,10 +315,11 @@ public class PDFFunctions extends PDFTextStripper{
             coords = getDataCoordinates("MultiLensREFStartIOLM700", side, position);
         }
 
-        String textArea = getTextArea(page, new Rectangle(coords.x, coords.y + (row * 9), 50, 9)).trim();
+        String textArea = getTextArea(page, new Rectangle(coords.x, coords.y + (row * this.rowHeight) + (row * this.rowDiff), 50, this.blockHeight)).trim();
 
         Double result = null;
-
+        //System.out.println("<<<<<<<"+side+"::"+position+":::"+type+"::"+row+">>>"+textArea);
+        //System.out.println("Coords:"+coords.x+","+coords.y+"+"+((row * this.rowHeight)+(row * this.rowDiff))+",50,"+ this.blockHeight );
         if (!"---".equals(textArea)) {
             result = Double.parseDouble(textArea);
         }
@@ -340,69 +345,158 @@ public class PDFFunctions extends PDFTextStripper{
         return output;
     }
 
+    private String dumpTestRectangle(PDPage page, int x, int y, int w, int h) throws IOException{
+        return getTextArea(page, new Rectangle(x, y, w, h));
+    }
+    
+    /**
+     * We need to check the main software version to determine the coordinates as the printouts are slightly different.
+     * @return 
+     */
+    
+    private String checkMainVersion()
+    {
+        String version = Study.getDeviceSoftwareVersion();
+    
+        return version.substring(0, 4);
+    }
     
     private void addDataCoordinates(){
-        CoordMap.put("MultiLensFormulaNamesIOLM700_L_1",new Coordinates(317, 460));
-        CoordMap.put("MultiLensFormulaNamesIOLM700_L_2",new Coordinates(441, 460));
-        CoordMap.put("MultiLensFormulaNamesIOLM700_L_3",new Coordinates(317, 595));
-        CoordMap.put("MultiLensFormulaNamesIOLM700_L_4",new Coordinates(441, 595));
-        CoordMap.put("MultiLensFormulaNamesIOLM700_R_1",new Coordinates(50, 460));
-        CoordMap.put("MultiLensFormulaNamesIOLM700_R_2",new Coordinates(185, 460));
-        CoordMap.put("MultiLensFormulaNamesIOLM700_R_3",new Coordinates(50, 595));
-        CoordMap.put("MultiLensFormulaNamesIOLM700_R_4",new Coordinates(185, 595));
-        
-        CoordMap.put("MultiLensAValuesIOLM700_L_1", new Coordinates(317, 495));
-        CoordMap.put("MultiLensAValuesIOLM700_L_2", new Coordinates(441, 495));
-        CoordMap.put("MultiLensAValuesIOLM700_L_3", new Coordinates(317, 620));
-        CoordMap.put("MultiLensAValuesIOLM700_L_4", new Coordinates(441, 620));
-        CoordMap.put("MultiLensAValuesIOLM700_R_1", new Coordinates(50, 495));
-        CoordMap.put("MultiLensAValuesIOLM700_R_2", new Coordinates(185, 495));
-        CoordMap.put("MultiLensAValuesIOLM700_R_3", new Coordinates(50, 620));
-        CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(185, 620));
 
-        CoordMap.put("MultiLensIOLStartIOLM700_L_1", new Coordinates(317, 532));
-        CoordMap.put("MultiLensIOLStartIOLM700_L_2", new Coordinates(441, 532));
-        CoordMap.put("MultiLensIOLStartIOLM700_L_3", new Coordinates(317, 660));
-        CoordMap.put("MultiLensIOLStartIOLM700_L_4", new Coordinates(441, 660));
-        CoordMap.put("MultiLensIOLStartIOLM700_R_1", new Coordinates(50, 532));
-        CoordMap.put("MultiLensIOLStartIOLM700_R_2", new Coordinates(185, 532));
-        CoordMap.put("MultiLensIOLStartIOLM700_R_3", new Coordinates(50, 660));
-        CoordMap.put("MultiLensIOLStartIOLM700_R_4", new Coordinates(185, 660));
+        if(this.checkMainVersion().equals("1.70")){
+            this.rowHeight = 9;
+            this.blockHeight = 9;
+            this.rowDiff = 1;
+            
+            CoordMap.put("PageTitleIOLM700_T_1", new Coordinates(195,260));
+            CoordMap.put("TopLensFormulaNameIOLM700_T_1", new Coordinates(50,180));
+
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_1",new Coordinates(308, 430));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_2",new Coordinates(439, 430));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_3",new Coordinates(308, 575));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_4",new Coordinates(439, 575));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_1",new Coordinates(48, 430));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_2",new Coordinates(185, 430));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_3",new Coordinates(48, 575));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_4",new Coordinates(183, 575));
+            
+            CoordMap.put("MultiLensAValuesIOLM700_L_1", new Coordinates(312, 470));
+            CoordMap.put("MultiLensAValuesIOLM700_L_2", new Coordinates(441, 470));
+            CoordMap.put("MultiLensAValuesIOLM700_L_3", new Coordinates(312, 615));
+            CoordMap.put("MultiLensAValuesIOLM700_L_4", new Coordinates(441, 615));
+            CoordMap.put("MultiLensAValuesIOLM700_R_1", new Coordinates(50, 470));
+            CoordMap.put("MultiLensAValuesIOLM700_R_2", new Coordinates(185, 470));
+            CoordMap.put("MultiLensAValuesIOLM700_R_3", new Coordinates(50, 615));
+            CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(185, 615));
+
+            CoordMap.put("MultiLensIOLStartIOLM700_L_1", new Coordinates(314, 498));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_2", new Coordinates(438, 498));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_3", new Coordinates(314, 641));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_4", new Coordinates(438, 641));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_1", new Coordinates(47, 498));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_2", new Coordinates(182, 498));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_3", new Coordinates(47, 641));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_4", new Coordinates(182, 641));
+
+            CoordMap.put("MultiLensREFStartIOLM700_L_1", new Coordinates(366, 498));
+            CoordMap.put("MultiLensREFStartIOLM700_L_2", new Coordinates(489, 498));
+            CoordMap.put("MultiLensREFStartIOLM700_L_3", new Coordinates(365, 641));
+            CoordMap.put("MultiLensREFStartIOLM700_L_4", new Coordinates(489, 641));
+            CoordMap.put("MultiLensREFStartIOLM700_R_1", new Coordinates(103, 498));
+            CoordMap.put("MultiLensREFStartIOLM700_R_2", new Coordinates(233, 498));
+            CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(103, 641));
+            CoordMap.put("MultiLensREFStartIOLM700_R_4", new Coordinates(233, 641));
+
+            CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 390));
+            CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(30, 390));
+
+            CoordMap.put("EyeStatusIOLM700_L_1", new Coordinates(295, 400));
+            CoordMap.put("EyeStatusIOLM700_R_1", new Coordinates(15, 400));
+
+            CoordMap.put("ALIOLM700_L_1", new Coordinates(335,320));
+            CoordMap.put("ALIOLM700_R_1", new Coordinates(77,320));
+
+            CoordMap.put("ACDIOLM700_L_1", new Coordinates(335,330));
+            CoordMap.put("ACDIOLM700_R_1", new Coordinates(77,330));
+
+            CoordMap.put("K1IOLM700_L_1", new Coordinates(335,360));
+            CoordMap.put("K1IOLM700_R_1", new Coordinates(77,360));
+            CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(392,360));
+            CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(132,360));
+
+            CoordMap.put("K2IOLM700_L_1", new Coordinates(480,360));
+            CoordMap.put("K2IOLM700_R_1", new Coordinates(223,360));
+            CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(537,360));
+            CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(280,360));        
         
-        CoordMap.put("MultiLensREFStartIOLM700_L_1", new Coordinates(367, 532));
-        CoordMap.put("MultiLensREFStartIOLM700_L_2", new Coordinates(491, 532));
-        CoordMap.put("MultiLensREFStartIOLM700_L_3", new Coordinates(367, 660));
-        CoordMap.put("MultiLensREFStartIOLM700_L_4", new Coordinates(491, 660));
-        CoordMap.put("MultiLensREFStartIOLM700_R_1", new Coordinates(105, 532));
-        CoordMap.put("MultiLensREFStartIOLM700_R_2", new Coordinates(235, 532));
-        CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(105, 660));
-        CoordMap.put("MultiLensREFStartIOLM700_R_4", new Coordinates(235, 660));
-        
-        CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 410));
-        CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(30, 410));
-        
-        CoordMap.put("EyeStatusIOLM700_L_1", new Coordinates(300, 430));
-        CoordMap.put("EyeStatusIOLM700_R_1", new Coordinates(20, 430));
-        
-        CoordMap.put("ALIOLM700_L_1", new Coordinates(340,320));
-        CoordMap.put("ALIOLM700_R_1", new Coordinates(80,320));
-        
-        CoordMap.put("ACDIOLM700_L_1", new Coordinates(340,330));
-        CoordMap.put("ACDIOLM700_R_1", new Coordinates(80,330));
-        
-        CoordMap.put("K1IOLM700_L_1", new Coordinates(340,360));
-        CoordMap.put("K1IOLM700_R_1", new Coordinates(80,360));
-        CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(392,360));
-        CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(132,360));
-        
-        CoordMap.put("K2IOLM700_L_1", new Coordinates(340,370));
-        CoordMap.put("K2IOLM700_R_1", new Coordinates(80,370));
-        CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(392,370));
-        CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(132,370));
+        }else{
+            
+            CoordMap.put("PageTitleIOLM700_T_1", new Coordinates(200,270));
+            CoordMap.put("TopLensFormulaNameIOLM700_T_1", new Coordinates(50,180));
+            
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_1",new Coordinates(317, 460));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_2",new Coordinates(441, 460));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_3",new Coordinates(317, 590));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_4",new Coordinates(441, 590));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_1",new Coordinates(50, 460));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_2",new Coordinates(185, 460));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_3",new Coordinates(50, 590));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_4",new Coordinates(185, 590));
+
+            CoordMap.put("MultiLensAValuesIOLM700_L_1", new Coordinates(317, 495));
+            CoordMap.put("MultiLensAValuesIOLM700_L_2", new Coordinates(441, 495));
+            CoordMap.put("MultiLensAValuesIOLM700_L_3", new Coordinates(317, 620));
+            CoordMap.put("MultiLensAValuesIOLM700_L_4", new Coordinates(441, 620));
+            CoordMap.put("MultiLensAValuesIOLM700_R_1", new Coordinates(50, 495));
+            CoordMap.put("MultiLensAValuesIOLM700_R_2", new Coordinates(185, 495));
+            CoordMap.put("MultiLensAValuesIOLM700_R_3", new Coordinates(50, 620));
+            CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(185, 620));
+
+            CoordMap.put("MultiLensIOLStartIOLM700_L_1", new Coordinates(317, 532));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_2", new Coordinates(441, 532));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_3", new Coordinates(317, 660));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_4", new Coordinates(441, 660));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_1", new Coordinates(50, 532));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_2", new Coordinates(185, 532));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_3", new Coordinates(50, 660));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_4", new Coordinates(185, 660));
+
+            CoordMap.put("MultiLensREFStartIOLM700_L_1", new Coordinates(367, 532));
+            CoordMap.put("MultiLensREFStartIOLM700_L_2", new Coordinates(491, 532));
+            CoordMap.put("MultiLensREFStartIOLM700_L_3", new Coordinates(367, 660));
+            CoordMap.put("MultiLensREFStartIOLM700_L_4", new Coordinates(491, 660));
+            CoordMap.put("MultiLensREFStartIOLM700_R_1", new Coordinates(105, 532));
+            CoordMap.put("MultiLensREFStartIOLM700_R_2", new Coordinates(235, 532));
+            CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(105, 660));
+            CoordMap.put("MultiLensREFStartIOLM700_R_4", new Coordinates(235, 660));
+
+            CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 410));
+            CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(30, 410));
+
+            CoordMap.put("EyeStatusIOLM700_L_1", new Coordinates(300, 430));
+            CoordMap.put("EyeStatusIOLM700_R_1", new Coordinates(20, 430));
+
+            CoordMap.put("ALIOLM700_L_1", new Coordinates(340,320));
+            CoordMap.put("ALIOLM700_R_1", new Coordinates(80,320));
+
+            CoordMap.put("ACDIOLM700_L_1", new Coordinates(340,330));
+            CoordMap.put("ACDIOLM700_R_1", new Coordinates(80,330));
+
+            CoordMap.put("K1IOLM700_L_1", new Coordinates(340,360));
+            CoordMap.put("K1IOLM700_R_1", new Coordinates(80,360));
+            CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(392,360));
+            CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(132,360));
+
+            CoordMap.put("K2IOLM700_L_1", new Coordinates(340,370));
+            CoordMap.put("K2IOLM700_R_1", new Coordinates(80,370));
+            CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(392,370));
+            CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(132,370));
+        }
     }
     
     
     private Coordinates getDataCoordinates(String dataname, String side, int position){
+        // side possible values: L = left, R=right, T=top
         String index = dataname+'_'+side+'_'+position;
         return (Coordinates) CoordMap.get(index);
     }

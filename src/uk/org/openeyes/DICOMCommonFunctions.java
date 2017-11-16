@@ -65,6 +65,13 @@ public class DICOMCommonFunctions {
      */
     protected String inputFileName;
     
+    protected StudyData Study;
+    
+    
+    public void DICOMCommonFunctions(StudyData Study)
+    {
+        this.Study = Study;
+    }
     /**
      *
      * @param tag
@@ -222,7 +229,7 @@ public class DICOMCommonFunctions {
             pdfStripper = new PDFTextStripper();
             pdDoc = parser.getPDDocument();
             if(debug){
-                PDFFunctions PDFHelper = new PDFFunctions();
+                PDFFunctions PDFHelper = new PDFFunctions(Study);
                 debugMessage("<<<<<<< PDFDATA >>>>>>>>\n");
                 //PDFHelper.dumpPDFStructure(pdDoc);
                 PDFHelper.dumpPDFContent(pdDoc);

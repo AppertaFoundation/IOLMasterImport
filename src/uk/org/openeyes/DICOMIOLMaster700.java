@@ -30,9 +30,9 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
      */
     public DICOMIOLMaster700(DICOMParser mainParser) throws IOException
     {
-        this.PDFHelper = new PDFFunctions();
         this.parser = mainParser;
         parser.Study.setDeviceType("IOLM700");
+        this.PDFHelper = new PDFFunctions(parser.Study);
     }
 
     
@@ -146,19 +146,27 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         if(!AconstValue.equals("")){
             return Double.parseDouble(AconstValue);
         }else{
-            p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);    
-            // Hoffer Q formula constant
+            p = Pattern.compile("A const.: (.*)",Pattern.MULTILINE);
+            // SRK/T formula constant in software version 1.70.X
             AconstValue = testAconst(p, AconstTxt);
+            
             if(!AconstValue.equals("")){
                 return Double.parseDouble(AconstValue);
             }else{
-                p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
-                // Haigis formula constants
-                //!!!! TODO: need to work on Haigis here!!! As we have 3 constants and the text is 2 lines!!!
+                p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);    
+                // Hoffer Q formula constant
+                AconstValue = testAconst(p, AconstTxt);
                 if(!AconstValue.equals("")){
                     return Double.parseDouble(AconstValue);
                 }else{
-                    return 0.0;
+                    p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
+                    // Haigis formula constants
+                    //!!!! TODO: need to work on Haigis here!!! As we have 3 constants and the text is 2 lines!!!
+                    if(!AconstValue.equals("")){
+                        return Double.parseDouble(AconstValue);
+                    }else{
+                        return 0.0;
+                    }
                 }
             }
         }
@@ -178,6 +186,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private Double getTargetRefraction(PDPage page, String side) throws IOException{
         Pattern p;
         String targetRef = PDFHelper.getTargetRefractionIOLM700(page, side);
+
         p = Pattern.compile("Target ref.: (.*) D",Pattern.MULTILINE);
         Matcher m = p.matcher( targetRef );
         while( m.find() ){ // should be always 1 match!

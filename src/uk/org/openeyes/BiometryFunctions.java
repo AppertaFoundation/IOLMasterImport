@@ -767,6 +767,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             returnPower = numerator/denominator;				
         }
         
+        //calculationComments+="AL: "+axialLength+" K1: "+r1+" K2: "+r2+" ACD: "+acd+" A-const: "+lens.aConst+" Target: "+dioptresRefraction;
         dicomLogger.addToRawOutput(calculationComments);
         return Double.isNaN(returnPower) ? 0.0 : returnPower;
     }
