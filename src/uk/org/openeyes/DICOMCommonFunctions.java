@@ -199,6 +199,7 @@ public class DICOMCommonFunctions {
             FileOutputStream binfos = new FileOutputStream(fileName+"."+getFileExtension(fileType));
             binfos.write(binaryData);
             binfos.close();
+            System.out.println(fileType+ " file saved to: "+fileName);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DICOMCommonFunctions.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {

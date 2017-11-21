@@ -424,8 +424,8 @@ public class PDFFunctions extends PDFTextStripper{
             CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(392,360));
             CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(132,360));
 
-            CoordMap.put("K2IOLM700_L_1", new Coordinates(480,360));
-            CoordMap.put("K2IOLM700_R_1", new Coordinates(223,360));
+            CoordMap.put("K2IOLM700_L_1", new Coordinates(484,360));
+            CoordMap.put("K2IOLM700_R_1", new Coordinates(227,360));
             CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(537,360));
             CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(280,360));        
         

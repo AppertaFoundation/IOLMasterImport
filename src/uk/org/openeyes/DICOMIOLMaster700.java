@@ -444,7 +444,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                 //TODO: to be able to set in configuration where to save PDF files and also to save PDF file or not
                 // removed until we can configure it
                 
-                // parser.saveBinaryDataToFile(pdfBytes, fileType, fileName);
+                //parser.saveBinaryDataToFile(pdfBytes, fileType, fileName);
                 
                 // loop through pages and extract calculation from each page
                 PDFHelper.setPDFDoc(pdfBytes);
