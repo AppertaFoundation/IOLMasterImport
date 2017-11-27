@@ -611,6 +611,8 @@ public class BiometryFunctions extends DatabaseFunctions{
         try {
             switch (formulaName) {
                 case "Haigis suite":
+                case "Haigis Suite":
+                case "Haigis":
                     // will call Haigis calculation Here
                     calculateMethod = this.getClass().getMethod("calculateHaigis", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
@@ -625,39 +627,41 @@ public class BiometryFunctions extends DatabaseFunctions{
             }
             double K1 = convertDioptricPowerToRadius(sideData.getK1());
             double K2 = convertDioptricPowerToRadius(sideData.getK2());
-            IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
-            
-            // TODO: need to make sure that we can use the calculated value here!
-            sideData.setLensEmmetropia(IOLPower, sideData.getMeasurementsIndex());
-            // Select IOL that gives power nearest to target refraction
-            
-            double roundDownIOLPower = Math.floor(IOLPower * 2)/2;
-            double nextUpIOLPower = roundDownIOLPower + 0.5;
-            double roundDownRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, roundDownIOLPower, "REF");
-            double nextUpRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, nextUpIOLPower, "REF");
-            if (Math.abs(sideData.getTargetRef() - roundDownRefraction) < Math.abs(sideData.getTargetRef() - nextUpRefraction)) {
-                    closestIOLPower = roundDownIOLPower;
-            }
-            else {
-                    closestIOLPower = nextUpIOLPower;
-            }
 
-            // Produce results for a range of refraction around this one, starting two 0.5D less powerful
-            double startPower = closestIOLPower + 1.0;
-            
-            for (int i = 0; i < 5; i++)
-            {
-                    refraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, startPower, "REF");
-                        
-                    refraction = round2Decimals(BigDecimal.valueOf(refraction));
+            if(calculateMethod != null){
+                IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
 
-                    // need to add values to the check object here!
-                    controlMeasure.setIOL(startPower);
-                    controlMeasure.setREF(refraction);
-                    startPower = startPower - 0.5;
-                    
+                // TODO: need to make sure that we can use the calculated value here!
+                sideData.setLensEmmetropia(IOLPower, sideData.getMeasurementsIndex());
+                // Select IOL that gives power nearest to target refraction
+
+                double roundDownIOLPower = Math.floor(IOLPower * 2)/2;
+                double nextUpIOLPower = roundDownIOLPower + 0.5;
+                double roundDownRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, roundDownIOLPower, "REF");
+                double nextUpRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, nextUpIOLPower, "REF");
+                if (Math.abs(sideData.getTargetRef() - roundDownRefraction) < Math.abs(sideData.getTargetRef() - nextUpRefraction)) {
+                        closestIOLPower = roundDownIOLPower;
+                }
+                else {
+                        closestIOLPower = nextUpIOLPower;
+                }
+
+                // Produce results for a range of refraction around this one, starting two 0.5D less powerful
+                double startPower = closestIOLPower + 1.0;
+
+                for (int i = 0; i < 5; i++)
+                {
+                        refraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, startPower, "REF");
+
+                        refraction = round2Decimals(BigDecimal.valueOf(refraction));
+
+                        // need to add values to the check object here!
+                        controlMeasure.setIOL(startPower);
+                        controlMeasure.setREF(refraction);
+                        startPower = startPower - 0.5;
+
+                }
             }
-          
 
         } catch (NoSuchMethodException ex) {
                 Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);

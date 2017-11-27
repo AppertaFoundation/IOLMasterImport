@@ -89,7 +89,7 @@ public class BiometryLensData {
                     if(m.find()){
                         String[] aConstLines = AconstTxt.split("\n");
                         String[] aConsts = aConstLines[1].split("\\ ");
-                        //System.out.println(AconstTxt+" --- "+aConsts[0]+" - "+aConsts[1]+" - "+aConsts[2]);
+                        //System.out.println("AconstTxt: "+AconstTxt+" --- "+aConsts[0]+" - "+aConsts[1]+" - "+aConsts[2]);
 
                         // Haigis formula constants
                         this.A0 = Double.parseDouble(aConsts[0]);

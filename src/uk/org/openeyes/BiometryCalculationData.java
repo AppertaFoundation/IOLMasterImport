@@ -152,15 +152,18 @@ public class BiometryCalculationData {
         List<Double> compareREF = new ArrayList<Double>();
         compareIOL = toCompare.getIOL();
         compareREF = toCompare.getREF();
-        for(int k=0; k<this.IOL.size(); k++){
-            if(Math.abs(this.IOL.get(k) - compareIOL.get(k)) > tolerance){
-                return false;
-            }
-            if(Math.abs(this.REF.get(k) - compareREF.get(k)) > tolerance){
-                return false;
-            }
-        } 
-        return true;      
+        if(this.IOL.size() > 0 && compareIOL.size() == this.IOL.size()){
+            for(int k=0; k<this.IOL.size(); k++){
+                if(Math.abs(this.IOL.get(k) - compareIOL.get(k)) > tolerance){
+                    return false;
+                }
+                if(Math.abs(this.REF.get(k) - compareREF.get(k)) > tolerance){
+                    return false;
+                }
+            } 
+            return true;      
+        }
+        return false;
     }
     
     /**

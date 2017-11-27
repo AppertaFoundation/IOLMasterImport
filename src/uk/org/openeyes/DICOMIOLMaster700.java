@@ -376,9 +376,12 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                     
                     // we need to check the values by calculating using our methods
                     if(checkCalculationResults(FormulaName, AconstTxt, sideData, sideData.getMeasurementsIndex())){
-                        System.out.println("Formula calculation check OK for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                        parser.debugMessage("Formula calculation check OK for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
                     }else{
-                        System.out.println("Formula calculation check FAILED for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                        parser.debugMessage("Formula calculation check FAILED for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                        if(FormulaName.equals("Holladay 2")){
+                            parser.debugMessage("Formula "+FormulaName+" is not supported yet!");
+                        }
                     }
                     
                 }
