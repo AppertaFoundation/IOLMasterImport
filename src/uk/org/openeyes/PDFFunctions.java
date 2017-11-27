@@ -261,6 +261,17 @@ public class PDFFunctions extends PDFTextStripper{
         Rectangle area = new Rectangle(getDataCoordinates("ACDIOLM700", side, 1).x, getDataCoordinates("ACDIOLM700", side, 1).y, 25, 10);
         return getTextArea(page, area).trim().replace("---","0"); 
     }
+    
+    public boolean checkMultiLensIOLTitle(PDPage page, String side, int position) throws IOException{
+        Coordinates coord = getDataCoordinates("MultiLensIOLTitleIOLM700", side, position);
+        String IOLTitle = getTextArea(page, new Rectangle(coord.x, coord.y, 50, 9));
+        //System.out.println("IOL TITLE: |"+IOLTitle+"|");
+        if(IOLTitle.trim().equals("IOL (D)")){
+            return true;
+        }
+        return false;
+    }
+    
     /**
      *
      * @param page
@@ -355,7 +366,7 @@ public class PDFFunctions extends PDFTextStripper{
      * @return 
      */
     
-    private String checkMainVersion()
+    protected String checkMainVersion()
     {
         String version = Study.getDeviceSoftwareVersion();
     
@@ -390,6 +401,15 @@ public class PDFFunctions extends PDFTextStripper{
             CoordMap.put("MultiLensAValuesIOLM700_R_3", new Coordinates(48, 605));
             CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(185, 605));
 
+            CoordMap.put("MultiLensIOLTitleIOLM700_L_1", new Coordinates(314, 489));
+            CoordMap.put("MultiLensIOLTitleIOLM700_L_2", new Coordinates(438, 489));
+            CoordMap.put("MultiLensIOLTitleIOLM700_L_3", new Coordinates(314, 632));
+            CoordMap.put("MultiLensIOLTitleIOLM700_L_4", new Coordinates(438, 632));
+            CoordMap.put("MultiLensIOLTitleIOLM700_R_1", new Coordinates(47, 489));
+            CoordMap.put("MultiLensIOLTitleIOLM700_R_2", new Coordinates(182, 489));
+            CoordMap.put("MultiLensIOLTitleIOLM700_R_3", new Coordinates(47, 632));
+            CoordMap.put("MultiLensIOLTitleIOLM700_R_4", new Coordinates(182, 632));
+            
             CoordMap.put("MultiLensIOLStartIOLM700_L_1", new Coordinates(314, 498));
             CoordMap.put("MultiLensIOLStartIOLM700_L_2", new Coordinates(438, 498));
             CoordMap.put("MultiLensIOLStartIOLM700_L_3", new Coordinates(314, 641));

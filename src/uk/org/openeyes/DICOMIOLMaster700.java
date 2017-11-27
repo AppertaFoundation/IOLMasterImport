@@ -351,6 +351,12 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             sideData.setEyeStatus(parser.biometryHelper.getEyeStatusFromSting(getEyeStatus(page, side)).toString());
             for(int pos=1; pos< 5; pos++){
                 String FormulaLens = PDFHelper.getMultiLensFormulaNamesIOLM700(page, side, pos);
+                if(PDFHelper.checkMainVersion().equals("1.70")){
+                    if(!PDFHelper.checkMultiLensIOLTitle(page, side, pos)){
+                        FormulaLens = "";
+                    }
+                }
+
                 if(FormulaLens.length() > 2){
                     if(CalcType.equals("F")){
                         LensName = FormulaLens;
