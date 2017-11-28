@@ -19,7 +19,7 @@ public class BiometryCalculationData {
     private String LensName;
     private String FormulaName;
     private Double AConst;
-    private Double Emmetropia;
+    private Double Emmetropia = 0.0;
     private List<Double> IOL = new ArrayList<Double>();
     private List<Double> REF = new ArrayList<Double>();
     

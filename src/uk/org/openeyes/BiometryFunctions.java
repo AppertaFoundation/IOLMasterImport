@@ -357,7 +357,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             dicomLogger.addToRawOutput("New surgeon has been created...");    
         }else{
             surgeonData = (OphinbiometrySurgeon) surgeons.get(0);
-            dicomLogger.addToRawOutput("Surgeon is already exists, using exiting data...");    
+            dicomLogger.addToRawOutput("Surgeon is already exists, using existing data...");    
         }
         return surgeonData;
     }
