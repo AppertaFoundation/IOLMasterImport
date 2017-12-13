@@ -30,9 +30,9 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
      */
     public DICOMIOLMaster700(DICOMParser mainParser) throws IOException
     {
-        this.PDFHelper = new PDFFunctions();
         this.parser = mainParser;
         parser.Study.setDeviceType("IOLM700");
+        this.PDFHelper = new PDFFunctions(parser.Study);
     }
 
     
@@ -146,19 +146,27 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         if(!AconstValue.equals("")){
             return Double.parseDouble(AconstValue);
         }else{
-            p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);    
-            // Hoffer Q formula constant
+            p = Pattern.compile("A const.: (.*)",Pattern.MULTILINE);
+            // SRK/T formula constant in software version 1.70.X
             AconstValue = testAconst(p, AconstTxt);
+            
             if(!AconstValue.equals("")){
                 return Double.parseDouble(AconstValue);
             }else{
-                p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
-                // Haigis formula constants
-                //!!!! TODO: need to work on Haigis here!!! As we have 3 constants and the text is 2 lines!!!
+                p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);    
+                // Hoffer Q formula constant
+                AconstValue = testAconst(p, AconstTxt);
                 if(!AconstValue.equals("")){
                     return Double.parseDouble(AconstValue);
                 }else{
-                    return 0.0;
+                    p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
+                    // Haigis formula constants
+                    //!!!! TODO: need to work on Haigis here!!! As we have 3 constants and the text is 2 lines!!!
+                    if(!AconstValue.equals("")){
+                        return Double.parseDouble(AconstValue);
+                    }else{
+                        return 0.0;
+                    }
                 }
             }
         }
@@ -178,6 +186,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private Double getTargetRefraction(PDPage page, String side) throws IOException{
         Pattern p;
         String targetRef = PDFHelper.getTargetRefractionIOLM700(page, side);
+
         p = Pattern.compile("Target ref.: (.*) D",Pattern.MULTILINE);
         Matcher m = p.matcher( targetRef );
         while( m.find() ){ // should be always 1 match!
@@ -342,6 +351,12 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             sideData.setEyeStatus(parser.biometryHelper.getEyeStatusFromSting(getEyeStatus(page, side)).toString());
             for(int pos=1; pos< 5; pos++){
                 String FormulaLens = PDFHelper.getMultiLensFormulaNamesIOLM700(page, side, pos);
+                if(PDFHelper.checkMainVersion().equals("1.70")){
+                    if(!PDFHelper.checkMultiLensIOLTitle(page, side, pos)){
+                        FormulaLens = "";
+                    }
+                }
+
                 if(FormulaLens.length() > 2){
                     if(CalcType.equals("F")){
                         LensName = FormulaLens;
@@ -367,9 +382,12 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                     
                     // we need to check the values by calculating using our methods
                     if(checkCalculationResults(FormulaName, AconstTxt, sideData, sideData.getMeasurementsIndex())){
-                        System.out.println("Formula calculation check OK for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                        parser.debugMessage("Formula calculation check OK for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
                     }else{
-                        System.out.println("Formula calculation check FAILED for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                        parser.debugMessage("Formula calculation check FAILED for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                        if(FormulaName.equals("Holladay 2")){
+                            parser.debugMessage("Formula "+FormulaName+" is not supported yet!");
+                        }
                     }
                     
                 }
@@ -435,7 +453,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                 //TODO: to be able to set in configuration where to save PDF files and also to save PDF file or not
                 // removed until we can configure it
                 
-                // parser.saveBinaryDataToFile(pdfBytes, fileType, fileName);
+                //parser.saveBinaryDataToFile(pdfBytes, fileType, fileName);
                 
                 // loop through pages and extract calculation from each page
                 PDFHelper.setPDFDoc(pdfBytes);
