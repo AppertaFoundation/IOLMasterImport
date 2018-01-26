@@ -65,6 +65,13 @@ public class DICOMCommonFunctions {
      */
     protected String inputFileName;
     
+    protected StudyData Study;
+    
+    
+    public void DICOMCommonFunctions(StudyData Study)
+    {
+        this.Study = Study;
+    }
     /**
      *
      * @param tag
@@ -192,6 +199,7 @@ public class DICOMCommonFunctions {
             FileOutputStream binfos = new FileOutputStream(fileName+"."+getFileExtension(fileType));
             binfos.write(binaryData);
             binfos.close();
+            System.out.println(fileType+ " file saved to: "+fileName);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DICOMCommonFunctions.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -222,7 +230,7 @@ public class DICOMCommonFunctions {
             pdfStripper = new PDFTextStripper();
             pdDoc = parser.getPDDocument();
             if(debug){
-                PDFFunctions PDFHelper = new PDFFunctions();
+                PDFFunctions PDFHelper = new PDFFunctions(Study);
                 debugMessage("<<<<<<< PDFDATA >>>>>>>>\n");
                 //PDFHelper.dumpPDFStructure(pdDoc);
                 PDFHelper.dumpPDFContent(pdDoc);
