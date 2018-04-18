@@ -28,12 +28,12 @@ import uk.org.openeyes.models.DicomFiles;
  */
 public class DICOMParser extends DICOMCommonFunctions{
     private PatientData Patient = new PatientData();
-    
+
     /**
      *
      */
     protected StudyData Study = new StudyData();
-    
+
     /**
      *
      */
@@ -51,7 +51,7 @@ public class DICOMParser extends DICOMCommonFunctions{
 
 
     private String APIconfigFile = "";
-    
+
     /**
      *
      */
@@ -61,13 +61,13 @@ public class DICOMParser extends DICOMCommonFunctions{
      *
      */
     protected SpecificCharacterSet CharacterSet = SpecificCharacterSet.DEFAULT;
-    
+
     /**
      *
      */
     protected BiometryFunctions biometryHelper;
-   
-    
+
+
     /**
      *  Initiate the parser
      * @param debugState
@@ -82,11 +82,11 @@ public class DICOMParser extends DICOMCommonFunctions{
         this.hosNumRegex = hosNumRegex;
         this.hosNumPad = hosNumPad;
 
-        biometryHelper = new BiometryFunctions(logger);            
+        biometryHelper = new BiometryFunctions(logger);
         biometryHelper.initSessionFactory(configFile, SystemLogger);
-        debugMessage("Connection status: "+biometryHelper.checkConnection());    
+        debugMessage("Connection status: "+biometryHelper.checkConnection());
     }
-    
+
     /**
      *
      * @return
@@ -94,7 +94,7 @@ public class DICOMParser extends DICOMCommonFunctions{
     public StudyData getStudyData(){
         return this.Study;
     }
-    
+
     /**
      *
      * @return
@@ -102,7 +102,7 @@ public class DICOMParser extends DICOMCommonFunctions{
     public PatientData getPatientData(){
         return this.Patient;
     }
-    
+
     /**
      *
      * @return
@@ -110,7 +110,7 @@ public class DICOMParser extends DICOMCommonFunctions{
     public BiometryData getBiometryData(){
         return this.Biometry;
     }
-    
+
     /**
      *
      * @param message
@@ -121,7 +121,7 @@ public class DICOMParser extends DICOMCommonFunctions{
             //System.out.println(message);
         }
     }
-    
+
     /**
      *
      * @param inputFile
@@ -133,7 +133,7 @@ public class DICOMParser extends DICOMCommonFunctions{
         crit.add(Restrictions.eq("filename", inputFile));
         crit.add(Restrictions.eq("filesize", file.length()));
         crit.add(Restrictions.eq("filedate", new Date(file.lastModified())));
-        
+
         if(! crit.list().isEmpty()){
             DicomFiles selectedFile = (DicomFiles) crit.list().get(0);
             return selectedFile;
@@ -147,47 +147,47 @@ public class DICOMParser extends DICOMCommonFunctions{
             biometryHelper.session.save(newFile);
             return newFile;
         }
-        
+
     }
-       
+
     /**
      *
      * @param inputFile
      */
     public void parseDicomFile(String inputFile) throws IOException  {
-        
+
         this.inputFileName = inputFile;
-        
+
         Attributes attrs = new Attributes();
-        
-        DicomInputStream dis = null;        
+
+        DicomInputStream dis = null;
         try {
             dis = new DicomInputStream(new File(inputFile));
         } catch (IOException ex) {
             logger.systemExitWithLog(2, "Failed to open DICOM file, not a valid file or file not exists!", biometryHelper);
             //System.exit(2);
         }
-        
+
         dis.setDicomInputHandler(dis);
         try {
             attrs = dis.readDataset(-1, -1);
         } catch (IOException ex) {
             logger.systemExitWithLog(3, "Failed to read DICOM file, not a valid file or file not exists!", biometryHelper);
         }
-        
+
         //dumpDCMStructure(attrs);
 
         collectPatientData(attrs);
         collectStudyData(attrs);
-   
+
         DICOMTools DicomTool = new DICOMTools();
-        
+
         String TypeTag = attrs.getString(getTagInteger("00080016"));
-        
+
         //System.out.println("+++++++++++++++++++++++++++++++++++++++"+TypeTag+"++++"+DicomTool.getDICOMType(TypeTag));
-        
+
         Class importerClass = DicomTool.getDICOMType(TypeTag);
-        
+
         if(importerClass.equals(DICOMIOLMaster500.class)){
             debugMessage("Importing IOLMaster 500");
             DICOMIOLMaster500 importer = new DICOMIOLMaster500(this);
@@ -217,7 +217,7 @@ public class DICOMParser extends DICOMCommonFunctions{
         try {
             Class importerClass = DicomTool.getDICOMType(TypeTag);
             Object DataParser = importerClass.newInstance();
-            
+
             try {
                 Method method = DataParser.getClass().getMethod("collectData", Attributes.class);
                 method.invoke(DataParser, attrs);
@@ -230,7 +230,7 @@ public class DICOMParser extends DICOMCommonFunctions{
             Logger.getLogger(DICOMParser.class.getName()).log(Level.SEVERE, null, ex);
         }*/
     }
-    
+
     private void collectPatientData(Attributes Attrs){
         //CharacterSet = SpecificCharacterSet.valueOf(VR.CS.toStrings(Attrs.getValue(getTagInteger("00080005")), true, SpecificCharacterSet.DEFAULT).toString());
         Patient.setPatientName(Attrs.getString(getTagInteger("00100010")));
@@ -240,9 +240,9 @@ public class DICOMParser extends DICOMCommonFunctions{
         if(gender != null){
             Patient.setPatientGender(gender.charAt(0));
         }
-        
+
     }
-    
+
     private void collectStudyData(Attributes Attrs){
         String studyDate;
 	String studyTime;
@@ -272,13 +272,14 @@ public class DICOMParser extends DICOMCommonFunctions{
         Study.setStudyInstanceID(Attrs.getString(getTagInteger("0020000D")));
         Study.setSeriesInstanceID(Attrs.getString(getTagInteger("0020000E")));
         Study.setStudyID(Attrs.getString(getTagInteger("00200010")));
+        Study.setSopUID(Attrs.getString(getTagInteger("00080018")));
         Study.setAcquisitionDateTime(Attrs.getString(getTagInteger("0008002A")));
         Study.setDeviceSerial(Attrs.getString(getTagInteger("00181000")));
         if(Attrs.contains(getTagInteger("771B102C"))){
             Study.setSurgeonName(VR.PN.toStrings(Attrs.getValue(getTagInteger("771B102C")), true, CharacterSet).toString());
         }
     }
-    
+
     /**
      *
      * @param s
@@ -293,10 +294,10 @@ public class DICOMParser extends DICOMCommonFunctions{
         }
         return data;
     }
-    
 
-    
-    
+
+
+
     private void dumpDCMStructure(Attributes Attrs){
         debugMessage("--==< DATA STRUCTURE DUMP START >==--");
         int[] biometryTags = Attrs.tags();
@@ -318,8 +319,8 @@ public class DICOMParser extends DICOMCommonFunctions{
             }
         }
     }
-    
-    
+
+
     /**
      *
      * @return
@@ -333,15 +334,15 @@ public class DICOMParser extends DICOMCommonFunctions{
             debugMessage(Study.printStudyData());
             debugMessage(Biometry.printBiometryData());
         }
-        
+
         biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth(), this.hosNumRegex, this.hosNumPad);
-        
+
         if(biometryHelper.getSelectedPatient() != null){
             biometryHelper.processBiometryEvent(Study,  Biometry);
         }else{
             // we try to search through the API, and if that one is successfull then try to search again
-            // the reason of this is to check if the patient is already exists in the PAS and 
-            
+            // the reason of this is to check if the patient is already exists in the PAS and
+
             logger.addToRawOutput("Patient not exists, starting API search...");
             if(APIconfigFile.equals("")){
                 logger.addToRawOutput("No API config file specified, skipping API search...");
@@ -358,7 +359,7 @@ public class DICOMParser extends DICOMCommonFunctions{
                     //System.out.println("API status CODE: "+APIstatus);
                     //System.out.println(API.getResponse());
 
-                    logger.addToRawOutput("API return status: "+APIstatus);                
+                    logger.addToRawOutput("API return status: "+APIstatus);
                     // OK: 200
                     if( APIstatus == 200){
                         // try the patient search again
@@ -387,13 +388,13 @@ public class DICOMParser extends DICOMCommonFunctions{
         }
 
 
-        
+
         logger.getLogger().setStatus("success");
         logger.saveLogEntry(biometryHelper.session);
         biometryHelper.session.flush();
         biometryHelper.transaction.commit();
         biometryHelper.session.close();
-        
+
         biometryHelper.closeSessionFactory();
         return true;
     }

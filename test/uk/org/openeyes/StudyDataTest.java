@@ -16,14 +16,14 @@ import static org.junit.Assert.*;
  * @author VEDELEKT
  */
 public class StudyDataTest {
-    
+
     public StudyDataTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
@@ -244,6 +244,33 @@ public class StudyDataTest {
     }
 
     /**
+     * Test of setSopUID method, of class StudyData.
+     */
+    @Test
+    public void testSetSSopUID() {
+        System.out.println("testSetSSopUID");
+        String SSopUID = "";
+        StudyData instance = new StudyData();
+        instance.setSopUID(SSopUID);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of getStudyID method, of class StudyData.
+     */
+    @Test
+    public void testGetSopUID() {
+        System.out.println("getSopUID");
+        StudyData instance = new StudyData();
+        String expResult = "";
+        String result = instance.getSopUID();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
      * Test of printStudyData method, of class StudyData.
      */
     @Test
@@ -349,5 +376,5 @@ public class StudyDataTest {
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
-    
+
 }

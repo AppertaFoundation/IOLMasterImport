@@ -39,22 +39,22 @@ import uk.org.openeyes.models.User;
 
 /**
  * A class for generic Biometry related methods
- * 
+ *
  * @author vetusko
  */
 public class BiometryFunctions extends DatabaseFunctions{
 
     private DICOMLogger dicomLogger;
-    
+
     /**
-     * Constructor - sets the logger class to the logger instance from the main 
-     * 
+     * Constructor - sets the logger class to the logger instance from the main
+     *
      * @param SystemLogger
      */
     public BiometryFunctions(DICOMLogger SystemLogger){
-        this.dicomLogger = SystemLogger;    
+        this.dicomLogger = SystemLogger;
     }
-    
+
     /**
      *
      * @param lensName the value of lensName
@@ -70,7 +70,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             }
         }
         if (lensType == null) {
-            
+
             lensType = new OphinbiometryLenstypeLens();
             lensType.setName(lensName);
             lensType.setDisplayName(lensName);
@@ -91,9 +91,9 @@ public class BiometryFunctions extends DatabaseFunctions{
         }
         return lensType;
     }
-    
+
   /*  private OphinbiometryLenstypeLens createNewLens(){
-        
+
     }
 */
     /**
@@ -137,11 +137,11 @@ public class BiometryFunctions extends DatabaseFunctions{
         sideData.setK1(0.0);
         sideData.setK2(0.0);
         sideData.setAxisK1(0.0);
-        sideData.setAL(0.0); 
-        sideData.setSNR(0.0);       
+        sideData.setAL(0.0);
+        sideData.setSNR(0.0);
         return  sideData;
     }
-    
+
     /**
      *
      * @param basicMeasurementData the value of basicMeasurementData
@@ -149,7 +149,7 @@ public class BiometryFunctions extends DatabaseFunctions{
     private void setMeasurementData(EtOphinbiometryMeasurement basicMeasurementData) {
         BiometrySide sideData;
         BigDecimal SNR = BigDecimal.ZERO;
-        
+
         if (basicMeasurementData.getEventId() == null) {
             basicMeasurementData.setEventId(importedBiometryEvent.getEventId());
             basicMeasurementData.setEyeId(new Eye(eventBiometry.getEyeId()));
@@ -158,7 +158,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             basicMeasurementData.setLastModifiedDate(new Date());
             basicMeasurementData.setLastModifiedUserId(selectedUser);
         }
-        
+
         // saving left side
         sideData = eventBiometry.getBiometryValue("L");
         if(sideData == null){
@@ -177,7 +177,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         basicMeasurementData.setK2AxisLeft(BigDecimal.valueOf(sideData.getAxisK2()));
 
         Double currentDeltaK = sideData.getDeltaK();
-        
+
         // Make sure that the Delta K value is negative
         if(currentDeltaK > 0){
             currentDeltaK = -1 * currentDeltaK;
@@ -193,7 +193,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         basicMeasurementData.setEyeStatusLeft(eyeStatusLeft);
         basicMeasurementData.setKModifiedLeft(sideData.getisKModified());
         basicMeasurementData.setAlModifiedLeft(sideData.getisALModified());
-        
+
         // saving right side
         sideData = eventBiometry.getBiometryValue("R");
         if(sideData == null){
@@ -212,7 +212,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         basicMeasurementData.setK2AxisRight(BigDecimal.valueOf(sideData.getAxisK2()));
 
         currentDeltaK = sideData.getDeltaK();
-        
+
         // Make sure that the Delta K value is negative
         if(currentDeltaK > 0){
             currentDeltaK = -1 * currentDeltaK;
@@ -282,28 +282,28 @@ public class BiometryFunctions extends DatabaseFunctions{
             return null;
         }
     }
-    
+
     private String mergeIolRefValues(EtOphinbiometryIolRefValues currentIolRefValues, String newIolRefValues, String side){
         String IOLJSON = "";
         if(side.equals("L")){
-            IOLJSON = currentIolRefValues.getIolRefValuesLeft();    
+            IOLJSON = currentIolRefValues.getIolRefValuesLeft();
         }else if(side.equals("R")){
-            IOLJSON = currentIolRefValues.getIolRefValuesRight();    
+            IOLJSON = currentIolRefValues.getIolRefValuesRight();
         }
         if(IOLJSON == null){
             return newIolRefValues;
         }else{
             JSONObject currentIOLRefData = decodeJSONData(IOLJSON);
             JSONObject newIOLRefData = decodeJSONData(newIolRefValues);
-                        
+
             // merge logic based on IOL values
             JSONArray currentIOLArray = (JSONArray) currentIOLRefData.get("IOL");
             JSONArray currentREFArray = (JSONArray) currentIOLRefData.get("REF");
             JSONArray newIOLArray = (JSONArray) newIOLRefData.get("IOL");
             JSONArray newREFArray = (JSONArray) newIOLRefData.get("REF");
-            
+
             JSONObject mergedIOLRefData = new JSONObject();
-           
+
             for(Integer i=0; i<newIOLArray.size(); i++){
                 if(!currentIOLArray.contains(newIOLArray.get(i))){
                     currentIOLArray.add(newIOLArray.get(i));
@@ -312,17 +312,17 @@ public class BiometryFunctions extends DatabaseFunctions{
             }
             mergedIOLRefData.put("IOL", currentIOLArray);
             mergedIOLRefData.put("REF", currentREFArray);
-        
+
             return mergedIOLRefData.toJSONString();
         }
     }
-    
-    private EtOphinbiometryIolRefValues searchCurrentIolRefValues( OphinbiometryLenstypeLens lensType, 
+
+    private EtOphinbiometryIolRefValues searchCurrentIolRefValues( OphinbiometryLenstypeLens lensType,
                                         OphinbiometryCalculationFormula formulaType){
         // we need to check if there is a saved value in the database now, and merge the new values to the existing records
         if(importedBiometryEvent.getEventId() != null){
             Criteria crit = getSession().createCriteria(EtOphinbiometryIolRefValues.class);
-        
+
             crit.add(Restrictions.eq("eventId",importedBiometryEvent.getEventId()));
             crit.add(Restrictions.eq("lensId", lensType));
             crit.add(Restrictions.eq("formulaId", formulaType));
@@ -337,14 +337,14 @@ public class BiometryFunctions extends DatabaseFunctions{
             return null;
         }
     }
-    
+
     private OphinbiometrySurgeon searchSurgeon(String surgeonName){
         OphinbiometrySurgeon surgeonData;
         if(surgeonName == null){
             surgeonName = "IOLM700 Import";
         }
-        
-        Criteria crit = getSession().createCriteria(OphinbiometrySurgeon.class); 
+
+        Criteria crit = getSession().createCriteria(OphinbiometrySurgeon.class);
         crit.add(Restrictions.eq("name", surgeonName));
         List surgeons = crit.list();
 
@@ -354,41 +354,41 @@ public class BiometryFunctions extends DatabaseFunctions{
             surgeonData = new OphinbiometrySurgeon();
             surgeonData.setName(surgeonName);
             session.save(surgeonData);
-            dicomLogger.addToRawOutput("New surgeon has been created...");    
+            dicomLogger.addToRawOutput("New surgeon has been created...");
         }else{
             surgeonData = (OphinbiometrySurgeon) surgeons.get(0);
-            dicomLogger.addToRawOutput("Surgeon is already exists, using existing data...");    
+            dicomLogger.addToRawOutput("Surgeon is already exists, using existing data...");
         }
         return surgeonData;
     }
-    
+
     private boolean isDataModified(){
-        return eventBiometry.getBiometryValue("L").getisACDModified() || 
+        return eventBiometry.getBiometryValue("L").getisACDModified() ||
                eventBiometry.getBiometryValue("L").getisALModified() ||
                eventBiometry.getBiometryValue("L").getisKModified() ||
-               eventBiometry.getBiometryValue("R").getisACDModified() || 
+               eventBiometry.getBiometryValue("R").getisACDModified() ||
                eventBiometry.getBiometryValue("R").getisALModified() ||
                eventBiometry.getBiometryValue("R").getisKModified();
     }
-    
+
     private void saveIolRefValuesForSide(String side, ArrayList<BiometryCalculationData> sideData)
     {
         Integer ArrayListSize = sideData.size();
         OphinbiometryLenstypeLens lensType = null;
         OphinbiometryCalculationFormula formulaType = null;
-        
+
         for (Integer i = 0; i < ArrayListSize; i++) {
             BiometryCalculationData rowData;
             rowData = sideData.get(i);
-                        
+
             // TODO: what is the A constant and emmetropia value here??
             lensType = searchForLensData(rowData.getLensName(), rowData.getAConst());
             formulaType = searchForFormulaData(rowData.getFormulaName());
-            
+
             // we search for current values
             EtOphinbiometryIolRefValues iolRefValues = null;
-            iolRefValues = searchCurrentIolRefValues(lensType, formulaType);    
-            
+            iolRefValues = searchCurrentIolRefValues(lensType, formulaType);
+
             if(isDataModified()){
                 if(iolRefValues != null){
                     iolRefValues.setActive(false);
@@ -437,12 +437,12 @@ public class BiometryFunctions extends DatabaseFunctions{
             lensType = null;
         }
     }
-    
+
     /**
      *
      */
-    private void saveIolRefValues() 
-    {    
+    private void saveIolRefValues()
+    {
         saveIolRefValuesForSide("L", eventBiometry.getBiometryValue("L").getMeasurements());
         saveIolRefValuesForSide("R", eventBiometry.getBiometryValue("R").getMeasurements());
 
@@ -452,10 +452,10 @@ public class BiometryFunctions extends DatabaseFunctions{
         Criteria crit = getSession().createCriteria(EtOphinbiometryMeasurement.class);
 
         crit.add(Restrictions.eq("eventId", importedBiometryEvent.getEventId()));
-        EtOphinbiometryMeasurement currentMeasurement = (EtOphinbiometryMeasurement) crit.list().get(0);        
+        EtOphinbiometryMeasurement currentMeasurement = (EtOphinbiometryMeasurement) crit.list().get(0);
         return currentMeasurement;
     }
-    
+
     /**
      *
      * @param IOLStudy the value of IOLStudy
@@ -488,15 +488,15 @@ public class BiometryFunctions extends DatabaseFunctions{
         setMeasurementData(basicMeasurementData);
         //databaseFunctions.session.merge(basicMeasurementData);
         session.saveOrUpdate(basicMeasurementData);
-        
+
         addVersionTableData(basicMeasurementData, basicMeasurementData.getId());
 
         this.saveIolRefValues();
-        
+
         // we save the log entry for the import
         dicomLogger.getLogger().setStudyInstanceId(eventStudy.getStudyInstanceID());
         dicomLogger.getLogger().setSeriesInstanceId(eventStudy.getSeriesInstanceID());
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         dicomLogger.getLogger().setStudyDatetime(df.parse(getStudyYMD(eventStudy.getStudyDateTime())));
         dicomLogger.getLogger().setStudyLocation(eventStudy.getInstituionName());
         dicomLogger.getLogger().setStationId(eventStudy.getStationName());
@@ -507,10 +507,11 @@ public class BiometryFunctions extends DatabaseFunctions{
         dicomLogger.getLogger().setPatientNumber(selectedPatient.getHosNum());
         dicomLogger.getLogger().setImportDatetime(new Date());
         dicomLogger.getLogger().setImportType("F");
+        dicomLogger.getLogger().setSopUId(eventStudy.getSopUID());
 
     }
 
-    
+
     /**
      *
      *
@@ -518,7 +519,7 @@ public class BiometryFunctions extends DatabaseFunctions{
      */
     private OphinbiometryImportedEvents processImportedEvent() {
         OphinbiometryImportedEvents importedEvent = null;
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Criteria currentEvent = session.createCriteria(OphinbiometryImportedEvents.class);
         // For IOL Master 700 we can use the Device Serial Number and Acquisition Datetime fields to check if it's the same study
         if(eventStudy.getDeviceType().equals("IOLM700")){
@@ -531,7 +532,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             currentEvent.add(Restrictions.eq("surgeonName", eventStudy.getSurgeonName()));
             currentEvent.add(Restrictions.sqlRestriction("event_id = (SELECT max(event_id) FROM ophinbiometry_imported_events WHERE study_id='"+eventStudy.getStudyInstanceID()+"' AND series_id='"+eventStudy.getSeriesInstanceID()+"'  AND surgeon_name='"+eventStudy.getSurgeonName()+"')"));
         }
-        
+
         // we should check if event is deleted, and we should create a new one if yes
         if (!currentEvent.list().isEmpty()) {
             importedEvent = (OphinbiometryImportedEvents) currentEvent.list().get(0);
@@ -539,19 +540,20 @@ public class BiometryFunctions extends DatabaseFunctions{
             if(importedEvent.getEventId().getDeleted() == 0){
                 dicomLogger.addToRawOutput("StudyID exists in database, merging with existing event...");
 
+                importedEvent.setSopUId(eventStudy.getSopUID());
                 isNewEvent = false;
                 // we decide if the imported file content time is newer then the stored content date
                 if(importedEvent.getContentDateTime() != null){
                     Calendar lastContentDateTime = new GregorianCalendar();
                     Calendar studyContentDateTime = new GregorianCalendar();
-                    
+
                     try {
                         lastContentDateTime.setTime(df.parse(getSQLFormattedDate(importedEvent.getContentDateTime())));
                         studyContentDateTime.setTime(df.parse(getSQLFormattedDate(eventStudy.getContentDateTime().getTime())));
                     } catch (ParseException ex) {
                         Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
+
                     if(studyContentDateTime.after(lastContentDateTime)){
                         try {
                             importedEvent.setContentDateTime(df.parse(getSQLFormattedDate(eventStudy.getContentDateTime().getTime())));
@@ -565,16 +567,16 @@ public class BiometryFunctions extends DatabaseFunctions{
             }else{
                 isNewEvent = true;
             }
-        } 
+        }
 
         if(isNewEvent){
             Event newEvent = createNewEvent();
             importedEvent = createNewImportedEvent(newEvent);
         }
-        
+
         return importedEvent;
     }
-    
+
     /**
      *
      * @param K
@@ -583,7 +585,7 @@ public class BiometryFunctions extends DatabaseFunctions{
     protected double convertDioptricPowerToRadius(double K){
         return 337.5/K;
     }
-    
+
     /**
      *
      * @param number
@@ -593,7 +595,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         number = number.setScale(2, RoundingMode.HALF_UP);
         return number.doubleValue();
     }
-    
+
     /**
      *
      * @param formulaName
@@ -607,7 +609,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         double refraction;
         BiometryCalculationData controlMeasure = new BiometryCalculationData();
         Method calculateMethod = null;
-        
+
         try {
             switch (formulaName) {
                 case "Haigis suite":
@@ -674,10 +676,10 @@ public class BiometryFunctions extends DatabaseFunctions{
         } catch (InvocationTargetException ex) {
             Logger.getLogger(BiometryFunctions.class.getName()).log(Level.SEVERE, null, ex);
         }
-                    
+
         return controlMeasure;
     }
-    
+
     /**
      *
      * @param axialLength   -- Axial length
@@ -697,11 +699,11 @@ public class BiometryFunctions extends DatabaseFunctions{
 	double vd = 12.0;			// Vertex distance
         String calculationComments = "SRK/T formula calculation has been called\n";        // comments for debug
         double returnPower;                     // the return value
-        
+
         // Calculate average radius of curvature and corneal power in dioptres
 	double averageRadius = (r1 + r2) / 2;
 	double dioptresCornea = (n - 1) * 1000 / averageRadius;
-    
+
         // Difference in refractive indices (NB uses different value of n here)
         double diffRI = nc - 1;
 
@@ -735,8 +737,8 @@ public class BiometryFunctions extends DatabaseFunctions{
         else
         {
             correctedAxialLength = axialLength;
-        }        
-                
+        }
+
         // Corneal width
         double cornealWidth = -5.40948 + 0.58412 * correctedAxialLength + 0.098 * dioptresCornea;
 
@@ -753,11 +755,11 @@ public class BiometryFunctions extends DatabaseFunctions{
             cornealDomeHeight = 5.5;
             calculationComments += "Corneal dome height capped at 5.5\n";
         }
-        
+
         // Post-op anterior chamber depth
         double postopACDepth = cornealDomeHeight + diff;
         double numerator, denominator;
-        
+
         // IOL power - we use this to determine the start value of IOL power
         if (resultType.equals("IOL")) {
             numerator = 1000 * na * (na * averageRadius - diffRI * opticalAxialLength - 0.001 * dioptresRefraction * (vd * (na * averageRadius - diffRI * opticalAxialLength) + opticalAxialLength * averageRadius));
@@ -768,9 +770,9 @@ public class BiometryFunctions extends DatabaseFunctions{
         else {
             numerator = 1000 * na * (na * averageRadius - diffRI * opticalAxialLength) - dioptresRefraction * (opticalAxialLength - postopACDepth) * (na * averageRadius - diffRI * postopACDepth);
             denominator = (na * (vd * (na * averageRadius - diffRI * opticalAxialLength) + opticalAxialLength * averageRadius) - 0.001 * dioptresRefraction * (opticalAxialLength - postopACDepth) * (vd * (na * averageRadius - diffRI * postopACDepth) + postopACDepth * averageRadius));
-            returnPower = numerator/denominator;				
+            returnPower = numerator/denominator;
         }
-        
+
         //calculationComments+="AL: "+axialLength+" K1: "+r1+" K2: "+r2+" ACD: "+acd+" A-const: "+lens.aConst+" Target: "+dioptresRefraction;
         dicomLogger.addToRawOutput(calculationComments);
         return Double.isNaN(returnPower) ? 0.0 : returnPower;
@@ -786,21 +788,21 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @param dioptresRefraction  -- Target refraction or power of IOL
      * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
      * @return              -- Refractive power in Dioptres
-     */    
+     */
     public double calculateHofferQ(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
         // Constants
         double n = 1.3375;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
         double vd =12.0;			// Vertex distance
         String calculationComments = "HofferQ formula calculation has been called\n";        // comments for debug
         double returnPower;                     // the return value
-        
+
         // Calculate average radius of curvature and corneal power in dioptres
         double averageRadius = (r1 + r2) / 2;
         double dioptresCornea = (n - 1) * 1000 / averageRadius;
 
         // Calculate refractive error at corneal plane
         double R = dioptresRefraction / (1 - vd * dioptresRefraction/1000);
-        
+
         // Hoffer's factors
         double M, G;
         if (axialLength <= 23 ) {
@@ -813,7 +815,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             G = +23.5;
             calculationComments += "Hoffer factors for AL > 23 applied</br>";
         }
-                
+
         // Constrain axial length (NB used ONLY for ACD calculation and replaces ACD constraint as described in erratum)
         double AL = axialLength;
         if (AL > 31) {
@@ -824,17 +826,17 @@ public class BiometryFunctions extends DatabaseFunctions{
             AL = 18.5;
             calculationComments += "Axial length constrained up to 18.5</br>";
         }
-        
-        // Predicted ACD 
+
+        // Predicted ACD
         double ACD = lens.pACDConst
                 + 0.3 * (AL - 23.5)
                 + Math.tan(dioptresCornea * Math.PI/180) * Math.tan(dioptresCornea * Math.PI/180)
                 + 0.1 * M * (23.5 - AL) * (23.5 - AL) * Math.tan(Math.PI * (0.1 * (G - AL) * (G - AL))/180)
                 - 0.99166;
-	
+
         // IOL power
         // TODO: need to check if we need to use the original Axial Lenght here or the constrained AL?
-        if (resultType.equals("IOL")) {				
+        if (resultType.equals("IOL")) {
             returnPower = 1336/(axialLength - ACD - 0.05) - 1.336/((1.336/(dioptresCornea + R)) - (ACD + 0.05)/1000);
         }
         // Predicted refraction
@@ -842,10 +844,10 @@ public class BiometryFunctions extends DatabaseFunctions{
             R = (1.336/(1.336/(1336/(axialLength - ACD - 0.05) - dioptresRefraction)+ (ACD + 0.05)/1000)) - dioptresCornea;
             returnPower = R/(1 + vd * R/1000);
         }
-        
+
         return returnPower;
     }
-    
+
      /**
      *
      * @param axialLength   -- Axial length
@@ -877,15 +879,15 @@ public class BiometryFunctions extends DatabaseFunctions{
         double opticalACD = (a0 + a1 * acd + a2 * axialLength);
 
         // IOL power
-        if (resultType.equals("IOL")) {	    				
+        if (resultType.equals("IOL")) {
                 double z = dioptresCornea + dioptresRefraction/(1 - dioptresRefraction * vd/1000);
                 returnPower = na/(axialLength/1000 - opticalACD/1000) - na/(na/z - opticalACD/1000);
         }
         // Predicted refraction
         else {
                 double z = 1000 * na/((1/(1/(axialLength - opticalACD) - dioptresRefraction/(1000 * na))) + opticalACD);
-                returnPower = (z - dioptresCornea)/(1 + vd * (z - dioptresCornea)/1000);	    				
+                returnPower = (z - dioptresCornea)/(1 + vd * (z - dioptresCornea)/1000);
         }
         return returnPower;
-    }    
+    }
 }

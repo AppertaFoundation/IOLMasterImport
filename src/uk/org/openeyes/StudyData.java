@@ -18,7 +18,7 @@ public class StudyData {
     private String SurgeonName;
     private String InstitutionName;
     private String StationName;             // unique station ID
-    private String StudyID;         
+    private String StudyID;
     private String StudyInstanceID;
     private String SeriesInstanceID;
     private String DeviceManufacturer;
@@ -30,7 +30,8 @@ public class StudyData {
     private String ContentDate;
     private String AcquisitionDateTime;
     private String DeviceSerial;
-    
+    private String SopUID;
+
     /**
      *
      * @param SDateTime
@@ -39,7 +40,7 @@ public class StudyData {
         //System.out.println(SDateTime);
         this.StudyDateTime.set(Integer.parseInt(SDateTime.substring(0,4)), Integer.parseInt(SDateTime.substring(4,6))-1, Integer.parseInt(SDateTime.substring(6,8)), Integer.parseInt(SDateTime.substring(8,10)), Integer.parseInt(SDateTime.substring(10,12)));
     }
-    
+
     /**
      *
      * @return
@@ -47,7 +48,7 @@ public class StudyData {
     public Calendar getStudyDateTime(){
         return this.StudyDateTime;
     }
-    
+
     /**
      *
      * @param SPhysicianName
@@ -55,7 +56,7 @@ public class StudyData {
     public void setPhysicianName(String SPhysicianName){
         this.PhysicianName = SPhysicianName;
     }
-    
+
     /**
      *
      * @param SSurgeonName
@@ -63,7 +64,7 @@ public class StudyData {
     public void setSurgeonName(String SSurgeonName){
         this.SurgeonName = SSurgeonName;
     }
-    
+
     /**
      *
      * @return
@@ -79,7 +80,7 @@ public class StudyData {
     public void setInstituionName(String SInstitutionName){
         this.InstitutionName = SInstitutionName;
     }
-    
+
     /**
      *
      * @return
@@ -87,7 +88,7 @@ public class StudyData {
     public String getInstituionName(){
         return this.InstitutionName;
     }
-    
+
     /**
      *
      * @param SStationName
@@ -95,7 +96,7 @@ public class StudyData {
     public void setStationName(String SStationName){
         this.StationName = SStationName;
     }
-    
+
     /**
      *
      * @return
@@ -103,7 +104,7 @@ public class StudyData {
     public String getStationName(){
         return this.StationName;
     }
-    
+
     /**
      *
      * @param SStudyID
@@ -111,7 +112,7 @@ public class StudyData {
     public void setStudyID(String SStudyID){
         this.StudyID = SStudyID;
     }
-    
+
     /**
      *
      * @return
@@ -119,7 +120,7 @@ public class StudyData {
     public String getStudyID(){
         return this.StudyID;
     }
-    
+
     /**
      *
      * @param SStudyInstanceID
@@ -127,7 +128,7 @@ public class StudyData {
     public void setStudyInstanceID(String SStudyInstanceID){
         this.StudyInstanceID = SStudyInstanceID;
     }
-    
+
     /**
      *
      * @return
@@ -135,7 +136,7 @@ public class StudyData {
     public String getStudyInstanceID(){
         return this.StudyInstanceID;
     }
-    
+
     /**
      *
      * @param SSeriesInstanceID
@@ -143,7 +144,7 @@ public class StudyData {
     public void setSeriesInstanceID(String SSeriesInstanceID){
         this.SeriesInstanceID = SSeriesInstanceID;
     }
-    
+
     /**
      *
      * @return
@@ -151,7 +152,7 @@ public class StudyData {
     public String getSeriesInstanceID(){
         return this.SeriesInstanceID;
     }
-    
+
     /**
      *
      * @param SDeviceManufacturer
@@ -159,7 +160,7 @@ public class StudyData {
     public void setDeviceManufacturer(String SDeviceManufacturer){
         this.DeviceManufacturer = SDeviceManufacturer;
     }
-    
+
     /**
      *
      * @return
@@ -167,7 +168,7 @@ public class StudyData {
     public String getDeviceManufacturer(){
         return this.DeviceManufacturer;
     }
-    
+
     /**
      *
      * @param SDeviceModel
@@ -175,7 +176,7 @@ public class StudyData {
     public void setDeviceModel(String SDeviceModel){
         this.DeviceModel = SDeviceModel;
     }
-    
+
     /**
      *
      * @return
@@ -183,7 +184,7 @@ public class StudyData {
     public String getDeviceModel(){
         return this.DeviceModel;
     }
-    
+
     /**
      *
      * @param SDeviceSoftwareVersion
@@ -191,7 +192,7 @@ public class StudyData {
     public void setDeviceSoftwareVersion(String SDeviceSoftwareVersion){
         this.DeviceSoftwareVersion = SDeviceSoftwareVersion;
     }
-    
+
     /**
      *
      * @return
@@ -199,7 +200,23 @@ public class StudyData {
     public String getDeviceSoftwareVersion(){
         return this.DeviceSoftwareVersion;
     }
-   
+
+    /**
+     *
+     * @param SSopUID
+     */
+    public void setSopUID(String SSopUID){
+        this.SopUID = SSopUID;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getSopUID(){
+        return this.SopUID;
+    }
+
     /**
      *
      * @param PComments
@@ -207,7 +224,7 @@ public class StudyData {
     public void setComments(String PComments){
         this.Comments = PComments;
     }
-    
+
     /**
      *
      * @return
@@ -215,7 +232,7 @@ public class StudyData {
     public String getComments(){
         return this.Comments;
     }
-    
+
     /**
      *
      * @param PContentTime
@@ -223,7 +240,7 @@ public class StudyData {
     public void setContentTime(String PContentTime){
         this.ContentTime = PContentTime;
     }
-    
+
     /**
      *
      * @param PContentDate
@@ -231,23 +248,23 @@ public class StudyData {
     public void setContentDate(String PContentDate){
         this.ContentDate = PContentDate;
     }
-    
+
     public void setAcquisitionDateTime(String AcDateTime){
         this.AcquisitionDateTime = AcDateTime;
     }
-    
+
     public String getAcquisitionDateTime(){
         return this.AcquisitionDateTime;
     }
-    
+
     public void setDeviceSerial(String DevSer){
         this.DeviceSerial = DevSer;
     }
-    
+
     public String getDeviceSerial(){
         return this.DeviceSerial;
     }
-    
+
     /**
      *
      * @return
@@ -261,11 +278,11 @@ public class StudyData {
     public void setDeviceType(String DeviceType){
         this.DeviceType = DeviceType;
     }
-    
+
     public String getDeviceType(){
         return this.DeviceType;
     }
-    
+
     /**
      *
      * @return
@@ -280,6 +297,7 @@ public class StudyData {
         output += "Study instance ID: "+this.StudyInstanceID+"\n";
         output += "Series instance ID: "+this.SeriesInstanceID+"\n";
         output += "Study ID: "+this.StudyID+"\n";
+        output += "SOP Instance UID: "+this.SopUID+"\n";
         output += "Device name: "+this.InstitutionName+"\n";
         output += "Device ID: "+this.StationName+"\n";
         output += "Device Model: "+this.DeviceModel+"\n";
@@ -289,5 +307,5 @@ public class StudyData {
         output += "\n";
         return output;
     }
-    
+
 }

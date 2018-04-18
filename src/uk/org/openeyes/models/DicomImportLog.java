@@ -45,7 +45,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "DicomImportLog.findByPatientNumber", query = "SELECT d FROM DicomImportLog d WHERE d.patientNumber = :patientNumber"),
     @NamedQuery(name = "DicomImportLog.findByStatus", query = "SELECT d FROM DicomImportLog d WHERE d.status = :status"),
     @NamedQuery(name = "DicomImportLog.findByComment", query = "SELECT d FROM DicomImportLog d WHERE d.comment = :comment"),
-    @NamedQuery(name = "DicomImportLog.findByImportType", query = "SELECT d FROM DicomImportLog d WHERE d.importType = :importType")})
+    @NamedQuery(name = "DicomImportLog.findByImportType", query = "SELECT d FROM DicomImportLog d WHERE d.importType = :importType")
+})
+
 public class DicomImportLog implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -88,6 +90,8 @@ public class DicomImportLog implements Serializable {
     private String rawImporterOutput;
     @Column(name = "series_instance_id")
     private String seriesInstanceId;
+    @Column(name = "sop_uid")
+    private String sopUId;
 
 
     public DicomImportLog() {
@@ -224,13 +228,21 @@ public class DicomImportLog implements Serializable {
     public void setRawImporterOutput(String rawImporterOutput) {
         this.rawImporterOutput = rawImporterOutput;
     }
-   
+
     public String getSeriesInstanceId() {
         return seriesInstanceId;
     }
 
     public void setSeriesInstanceId(String seriesInstanceId) {
         this.seriesInstanceId = seriesInstanceId;
+    }
+
+    public String getSopUId() {
+        return sopUId;
+    }
+
+    public void setSopUId(String sopUId) {
+        this.sopUId = sopUId;
     }
 
     @Override
@@ -257,5 +269,5 @@ public class DicomImportLog implements Serializable {
     public String toString() {
         return "uk.org.openeyes.models.DicomImportLog[ id=" + id + " ]";
     }
-    
+
 }
