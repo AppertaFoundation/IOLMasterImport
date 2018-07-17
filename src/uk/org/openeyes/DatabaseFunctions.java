@@ -149,7 +149,6 @@ public class DatabaseFunctions {
                 returnUser.setCreatedUserId(new User(1));
                 returnUser.setCreatedDate(new Date());
                 returnUser.setIsClinical(false);
-                returnUser.setIsDoctor(false);
                 returnUser.setIsConsultant(false);
                 returnUser.setIsSurgeon(false);
                 returnUser.setHasSelectedFirms(false);
