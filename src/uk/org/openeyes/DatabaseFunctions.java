@@ -99,7 +99,7 @@ public class DatabaseFunctions {
      *
      */
     protected DICOMLogger dicomLogger;
-    
+
     /**
      *
      * @param userName
@@ -109,29 +109,29 @@ public class DatabaseFunctions {
 
         Criteria crit = session.createCriteria(User.class);
         Disjunction or = Restrictions.disjunction();
-        
+
         User returnUser = null;
-        
+
         String[] userNameArr = userName.split(" ");
         String lastName = "";
-        
+
         // we cannot rely on the user name format coming from the dicom file!!!
         if(userNameArr.length == 1){
             lastName = "";
         }else{
             for(int i=1; i<userNameArr.length; i++){
-                lastName += userNameArr[i]+" "; 
+                lastName += userNameArr[i]+" ";
             }
         }
         crit.add(Restrictions.eq("firstName", userNameArr[0]));
         crit.add(Restrictions.eq("lastName", lastName));
-        
+
         if(crit.list().isEmpty()){
             // we search for unknown user
             Criteria crit2 = session.createCriteria(User.class);
             crit2.add(Restrictions.eq("firstName", "Unknown"));
             crit2.add(Restrictions.eq("lastName", "IOLMaster"));
-            
+
             if(crit2.list().isEmpty()){
                 // we create the user
                 returnUser = new User();
@@ -149,7 +149,6 @@ public class DatabaseFunctions {
                 returnUser.setCreatedUserId(new User(1));
                 returnUser.setCreatedDate(new Date());
                 returnUser.setIsClinical(false);
-                returnUser.setIsDoctor(false);
                 returnUser.setIsConsultant(false);
                 returnUser.setIsSurgeon(false);
                 returnUser.setHasSelectedFirms(false);
@@ -157,13 +156,13 @@ public class DatabaseFunctions {
             }else{
                 returnUser = (User) crit2.list().get(0);
             }
-            
+
         }else{
             returnUser = (User) crit.list().get(0);
         }
         return returnUser;
     }
-    
+
     private Configuration configureHibernate(String iniFile){
         try {
             Wini ini = new Wini(new File(iniFile));
@@ -211,15 +210,15 @@ public class DatabaseFunctions {
             configuration.addAnnotatedClass (uk.org.openeyes.models.SpecialtyType.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.Subspecialty.class);
             configuration.addAnnotatedClass (uk.org.openeyes.models.User.class);
-            
+
             return configuration;
         } catch (IOException ex) {
             Logger.getLogger(DatabaseFunctions.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
-        
+
     }
-    
+
     /**
      *
      * @param configFile
@@ -228,13 +227,13 @@ public class DatabaseFunctions {
     public void initSessionFactory(String configFile, DICOMLogger SystemLogger){
         // A SessionFactory is set up once for an application!
         // if no config specified we should use the default one
-        
+
         // TODO: need to check for /etc/openeyes/db.conf here!!
-        
+
         if(this.dicomLogger == null){
             this.dicomLogger = SystemLogger;
         }
-        
+
         if(configFile.matches("(?i).*hibernate.cfg.xml") || configFile.equals("")){
             String defaultConfig = "resources/hibernate.cfg.xml";
             File inputFile = null;
@@ -271,17 +270,18 @@ public class DatabaseFunctions {
             }
         }else{
             // try to open /etc/ database config
-            
+
             try {
                 sessionFactory = configureHibernate(configFile).buildSessionFactory();
                 setSession();
                 setTransaction();
             }catch(Exception e){
+                e.printStackTrace();
                 dicomLogger.systemExitWithLog(5, "Failed to connect to the database, please check your hibernate configuration file!", this);
             }
         }
     }
-    
+
     /**
      *
      * @param originalTable
@@ -290,20 +290,20 @@ public class DatabaseFunctions {
      */
     public int addVersionTableData(Object originalTable, Integer originalID){
           // http://www.tutorialspoint.com/hibernate/hibernate_native_sql.htm
-          AbstractEntityPersister aep=((AbstractEntityPersister)session.getSessionFactory().getClassMetadata(originalTable.getClass()));  
+          AbstractEntityPersister aep=((AbstractEntityPersister)session.getSessionFactory().getClassMetadata(originalTable.getClass()));
           String tableName = aep.getTableName();
-          String[] properties=aep.getPropertyNames();  
+          String[] properties=aep.getPropertyNames();
           String[] originalColumns = new String[properties.length];
-          
-          for(int nameIndex=0;nameIndex!=properties.length;nameIndex++){  
-             //System.out.println("Property name: "+properties[nameIndex]);  
-             String[] columns=aep.getPropertyColumnNames(nameIndex);  
-             for(int columnIndex=0;columnIndex!=columns.length;columnIndex++){  
-                //System.out.println("Column name: "+columns[columnIndex]);  
+
+          for(int nameIndex=0;nameIndex!=properties.length;nameIndex++){
+             //System.out.println("Property name: "+properties[nameIndex]);
+             String[] columns=aep.getPropertyColumnNames(nameIndex);
+             for(int columnIndex=0;columnIndex!=columns.length;columnIndex++){
+                //System.out.println("Column name: "+columns[columnIndex]);
                 originalColumns[nameIndex] = columns[columnIndex];
-             }  
-          } 
-  
+             }
+          }
+
           //System.out.println("INSERT INTO "+tableName+"_version (id, "+String.join(",", originalColumns)+",`version_date`,`version_id`) SELECT id, "+String.join(",", originalColumns)+", now(), NULL FROM "+tableName+" WHERE id="+originalID.toString());
           Query query = this.session.createSQLQuery("INSERT INTO "+tableName+"_version (id, "+StringUtils.concat(originalColumns, ',')+",`version_date`,`version_id`) SELECT id, "+StringUtils.concat(originalColumns, ',')+", now(), NULL FROM "+tableName+" WHERE id="+originalID.toString());
           dicomLogger.addToRawOutput("Version audit trail has been added to: "+tableName+"_version");
@@ -318,7 +318,7 @@ public class DatabaseFunctions {
         //Session session = sessionFactory.openSession();
         return session.isConnected();
     }
-    
+
     /**
      *
      */
@@ -327,7 +327,7 @@ public class DatabaseFunctions {
             sessionFactory.close();
 	}
     }
-    
+
     /**
      *
      * @return
@@ -335,7 +335,7 @@ public class DatabaseFunctions {
     public Patient getSelectedPatient(){
         return this.selectedPatient;
     }
-    
+
     /**
      *
      * @param hosNum
@@ -365,7 +365,7 @@ public class DatabaseFunctions {
                 hosNum = ("0000000" + hosNum).substring(hosNum.length());
             }
         }
-        
+
         //crit.add(Restrictions.eq("hosNum",hosNum));
         crit.add(Restrictions.sqlRestriction("lower(hos_num) = '"+hosNum.toLowerCase()+"'"));
         // we should search for M or F only
@@ -377,7 +377,7 @@ public class DatabaseFunctions {
         int dateDay = birthDate.get(Calendar.DAY_OF_MONTH);
         crit.add(Restrictions.sqlRestriction("dob = '"+dateYear+"-"+dateMonth+"-"+dateDay+"'"));
         List patientList = crit.list();
-        
+
         if(patientList.isEmpty()){
             // TODO: How to handle this case??
             dicomLogger.addToRawOutput("ERROR: Patient not found for the data specified (hos_num: "+hosNum+", gender: "+gender+", dob: "+dateYear+"-"+dateMonth+"-"+dateDay+")");
@@ -393,7 +393,7 @@ public class DatabaseFunctions {
         }
         session.close();
     }
-    
+
     /**
      *
      */
@@ -423,7 +423,7 @@ public class DatabaseFunctions {
                 //System.out.println("Selected episode: "+selectedEpisode.toString());
                 dicomLogger.addToRawOutput("Selected episode: "+selectedEpisode.toString());
             }
-            
+
             session.close();
         }
         if(selectedEpisode == null){
@@ -432,24 +432,24 @@ public class DatabaseFunctions {
         }
         */
     }
-    
+
     /**
      *
      * @return
      */
     public Episode getSelectedEpisode(){
-        return this.selectedEpisode;        
+        return this.selectedEpisode;
     }
-    
+
     /**
     *
-    * 
+    *
      * @param studyDate
      * @param studyDate
-     * @return 
+     * @return
     **/
     public String getStudyYMD(Calendar studyDate) {
-        
+
         String formattedStudyDate = String.format("%04d-%02d-%02d %02d:%02d:%02d",
                 studyDate.get(Calendar.YEAR),
                 studyDate.get(Calendar.MONTH) + 1,
@@ -460,24 +460,24 @@ public class DatabaseFunctions {
         );
         return formattedStudyDate;
     }
-    
+
     /**
      *
      * @param inputDate
      * @return
      */
     public String getSQLFormattedDate(Date inputDate){
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return df.format(inputDate);
     }
-    
+
     /**
      *
      * @param newEvent
      * @return
      */
     protected OphinbiometryImportedEvents createNewImportedEvent(Event newEvent){
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         OphinbiometryImportedEvents importedEvent = new OphinbiometryImportedEvents();
 
         importedEvent.setDeviceName(eventStudy.getInstituionName());
@@ -487,6 +487,7 @@ public class DatabaseFunctions {
         importedEvent.setDeviceSoftwareVersion(eventStudy.getDeviceSoftwareVersion());
         importedEvent.setStudyId(eventStudy.getStudyInstanceID());
         importedEvent.setSeriesId(eventStudy.getSeriesInstanceID());
+        importedEvent.setSopUId(eventStudy.getSopUID());
         importedEvent.setPatientId(getSelectedPatient());
         importedEvent.setSurgeonName(eventStudy.getSurgeonName());
         importedEvent.setAcquisitionDatetime(eventStudy.getAcquisitionDateTime());
@@ -512,14 +513,14 @@ public class DatabaseFunctions {
 
         return importedEvent;
     }
-    
+
     /**
      *
      * @return
      */
     protected Event createNewEvent(){
         Event newBiometryEvent = new Event();
-        
+
         //System.out.println("Starting event...");
         dicomLogger.addToRawOutput("Starting event...");
         if(this.selectedEpisode != null){
@@ -537,7 +538,7 @@ public class DatabaseFunctions {
         newBiometryEvent.setLastModifiedUserId(selectedUser);
 
         // TODO: need to check, because it display one month more!!!!
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             newBiometryEvent.setEventDate(df.parse(getStudyYMD(eventStudy.getStudyDateTime())));
         } catch (ParseException ex) {
@@ -549,10 +550,10 @@ public class DatabaseFunctions {
         session.save(newBiometryEvent);
         //System.out.println("Event saved...");
         dicomLogger.addToRawOutput("Event saved... Event id: "+newBiometryEvent.getId());
-        
+
         return newBiometryEvent;
     }
-    
+
     /**
      *
      */
@@ -567,7 +568,7 @@ public class DatabaseFunctions {
             ManagedSessionContext.bind(session);
         }
     }
-    
+
     /**
      *
      * @return
@@ -576,7 +577,7 @@ public class DatabaseFunctions {
         setSession();
         return this.session;
     }
-    
+
     // for unit testing it need to be public
 
     /**
@@ -588,7 +589,7 @@ public class DatabaseFunctions {
         // }
         this.transaction = this.session.beginTransaction();
     }
-    
+
     /**
      *
      * @return
@@ -596,7 +597,7 @@ public class DatabaseFunctions {
     public Transaction getTransaction(){
         return this.transaction;
     }
-    
+
     // for unit testing it need to be public
 
     /**
@@ -606,11 +607,11 @@ public class DatabaseFunctions {
     public void setEventStudy(StudyData inputStudy){
         this.eventStudy = inputStudy;
     }
-    
+
     private StudyData getEventStudy(){
         return this.eventStudy;
     }
-    
+
     // for unit testing it need to be public
 
     /**
@@ -620,11 +621,11 @@ public class DatabaseFunctions {
     public void setEventBiometry(BiometryData inputBiometry){
         this.eventBiometry = inputBiometry;
     }
-    
+
     private BiometryData getEventBiometry(){
         return this.eventBiometry;
     }
-    
+
     // for unit testing it need to be public
 
     /**
@@ -639,7 +640,7 @@ public class DatabaseFunctions {
             this.selectedUser = searchStudyUser(SurgeonName);
         }
     }
-    
+
     /**
      *  This method can be used with IOLM700 when we extract the string representation of the Eye Status
      * @param EyeStatus
@@ -650,16 +651,16 @@ public class DatabaseFunctions {
         Criteria crit = session.createCriteria(DicomEyeStatus.class);
         crit.add(Restrictions.eq("name", eyeStatus));
         List statusList = crit.list();
-        
+
         System.out.println("Eye status: "+eyeStatus);
-        
+
         if(statusList.isEmpty()){
             DetachedCriteria criteria = DetachedCriteria.forClass(DicomEyeStatus.class).setProjection(Projections.max("id"));
             Integer maxId =(Integer) criteria.getExecutableCriteria(session).list().get(0);
             Integer newId = 0;
             status = new DicomEyeStatus();
             status.setName(eyeStatus);
-            
+
             if(maxId < 1000){
                 newId = 1000;
             }else{
@@ -671,7 +672,7 @@ public class DatabaseFunctions {
         }else{
             status = (DicomEyeStatus) statusList.get(0);
         }
-        
+
         return status.getId();
     }
 }

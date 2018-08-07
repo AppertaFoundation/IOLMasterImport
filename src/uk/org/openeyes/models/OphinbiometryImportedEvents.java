@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "OphinbiometryImportedEvents.findAll", query = "SELECT o FROM OphinbiometryImportedEvents o"),
     @NamedQuery(name = "OphinbiometryImportedEvents.findById", query = "SELECT o FROM OphinbiometryImportedEvents o WHERE o.id = :id"),
     @NamedQuery(name = "OphinbiometryImportedEvents.findByStudyId", query = "SELECT o FROM OphinbiometryImportedEvents o WHERE o.studyId = :studyId"),
+    @NamedQuery(name = "OphinbiometryImportedEvents.findBySopUId", query = "SELECT o FROM OphinbiometryImportedEvents o WHERE o.sopUId = :sopUId"),
     @NamedQuery(name = "OphinbiometryImportedEvents.findByDeviceId", query = "SELECT o FROM OphinbiometryImportedEvents o WHERE o.deviceId = :deviceId"),
     @NamedQuery(name = "OphinbiometryImportedEvents.findByDeviceName", query = "SELECT o FROM OphinbiometryImportedEvents o WHERE o.deviceName = :deviceName"),
     @NamedQuery(name = "OphinbiometryImportedEvents.findByDeviceModel", query = "SELECT o FROM OphinbiometryImportedEvents o WHERE o.deviceModel = :deviceModel"),
@@ -96,6 +97,8 @@ public class OphinbiometryImportedEvents implements Serializable {
     private Patient patientId;
     @Column(name = "series_id")
     private String seriesId;
+    @Column(name = "sop_uid")
+    private String sopUId;
 
     public OphinbiometryImportedEvents() {
     }
@@ -124,6 +127,14 @@ public class OphinbiometryImportedEvents implements Serializable {
 
     public void setStudyId(String studyId) {
         this.studyId = studyId;
+    }
+
+    public String getSopUId(){
+        return sopUId;
+    }
+
+    public void setSopUId(String sopUId){
+        this.sopUId = sopUId;
     }
 
     public String getDeviceId() {
@@ -169,19 +180,19 @@ public class OphinbiometryImportedEvents implements Serializable {
     public String getDeviceSerialNumber(){
         return this.deviceSerialNumber;
     }
-    
+
     public void setDeviceSerialNumber(String devSerialNumber){
         this.deviceSerialNumber = devSerialNumber;
     }
-    
+
     public String getAcquisitionDatetime(){
         return this.acquisitionDatetime;
     }
-    
+
     public void setAcquisitionDatetime(String acDatetime){
         this.acquisitionDatetime = acDatetime;
     }
-    
+
     public Boolean getIsLinked() {
         return isLinked;
     }
@@ -197,7 +208,7 @@ public class OphinbiometryImportedEvents implements Serializable {
     public void setIsMerged(Boolean isMerged) {
         this.isMerged = isMerged;
     }
-    
+
     public Date getContentDateTime() {
         return contentDateTime;
     }
@@ -205,7 +216,7 @@ public class OphinbiometryImportedEvents implements Serializable {
     public void setContentDateTime(Date contentDateTime) {
         this.contentDateTime = contentDateTime;
     }
-    
+
     public String getSurgeonName() {
         return surgeonName;
     }
@@ -213,7 +224,7 @@ public class OphinbiometryImportedEvents implements Serializable {
     public void setSurgeonName(String surgeonName) {
         this.surgeonName = surgeonName;
     }
-    
+
     public Date getLastModifiedDate() {
         return lastModifiedDate;
     }
@@ -261,7 +272,7 @@ public class OphinbiometryImportedEvents implements Serializable {
     public void setPatientId(Patient patientId) {
         this.patientId = patientId;
     }
-    
+
     public String getSeriesId() {
         return seriesId;
     }
@@ -269,7 +280,7 @@ public class OphinbiometryImportedEvents implements Serializable {
     public void setSeriesId(String seriesId) {
         this.seriesId = seriesId;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -294,5 +305,5 @@ public class OphinbiometryImportedEvents implements Serializable {
     public String toString() {
         return "uk.org.openeyes.models.OphinbiometryImportedEvents[ id=" + id + " ]";
     }
-    
+
 }
