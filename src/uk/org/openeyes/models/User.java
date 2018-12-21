@@ -50,7 +50,6 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "User.findBySalt", query = "SELECT u FROM User u WHERE u.salt = :salt"),
     @NamedQuery(name = "User.findByLastModifiedDate", query = "SELECT u FROM User u WHERE u.lastModifiedDate = :lastModifiedDate"),
     @NamedQuery(name = "User.findByCreatedDate", query = "SELECT u FROM User u WHERE u.createdDate = :createdDate"),
-    @NamedQuery(name = "User.findByIsClinical", query = "SELECT u FROM User u WHERE u.isClinical = :isClinical"),
     @NamedQuery(name = "User.findByIsConsultant", query = "SELECT u FROM User u WHERE u.isConsultant = :isConsultant"),
     @NamedQuery(name = "User.findByIsSurgeon", query = "SELECT u FROM User u WHERE u.isSurgeon = :isSurgeon"),
     @NamedQuery(name = "User.findByHasSelectedFirms", query = "SELECT u FROM User u WHERE u.hasSelectedFirms = :hasSelectedFirms"),
@@ -103,9 +102,6 @@ public class User implements Serializable {
     @Column(name = "created_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-    @Basic(optional = false)
-    @Column(name = "is_clinical")
-    private boolean isClinical;
     @Basic(optional = false)
     @Column(name = "is_consultant")
     private boolean isConsultant;
@@ -261,7 +257,7 @@ public class User implements Serializable {
         this.id = id;
     }
 
-    public User(Integer id, String username, String firstName, String lastName, String email, boolean active, boolean globalFirmRights, String title, String qualifications, String role, Date lastModifiedDate, Date createdDate, boolean isClinical, boolean isConsultant, boolean isSurgeon, boolean hasSelectedFirms) {
+    public User(Integer id, String username, String firstName, String lastName, String email, boolean active, boolean globalFirmRights, String title, String qualifications, String role, Date lastModifiedDate, Date createdDate, boolean isConsultant, boolean isSurgeon, boolean hasSelectedFirms) {
         this.id = id;
         this.username = username;
         this.firstName = firstName;
@@ -274,7 +270,6 @@ public class User implements Serializable {
         this.role = role;
         this.lastModifiedDate = lastModifiedDate;
         this.createdDate = createdDate;
-        this.isClinical = isClinical;
         this.isConsultant = isConsultant;
         this.isSurgeon = isSurgeon;
         this.hasSelectedFirms = hasSelectedFirms;
@@ -398,14 +393,6 @@ public class User implements Serializable {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
-    }
-
-    public boolean getIsClinical() {
-        return isClinical;
-    }
-
-    public void setIsClinical(boolean isClinical) {
-        this.isClinical = isClinical;
     }
 
     public boolean getIsConsultant() {
