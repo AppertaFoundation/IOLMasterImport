@@ -160,13 +160,23 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                 if(!AconstValue.equals("")){
                     return Double.parseDouble(AconstValue);
                 }else{
-                    p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
                     // Haigis formula constants
-                    //!!!! TODO: need to work on Haigis here!!! As we have 3 constants and the text is 2 lines!!!
-                    if(!AconstValue.equals("")){
-                        return Double.parseDouble(AconstValue);
+                    p = Pattern.compile("A0:\\s+A1:\\s+A2:(.*)",Pattern.MULTILINE);
+                    Matcher m = p.matcher( AconstTxt );
+                    if(m.find()){
+                        String[] aConstLines = AconstTxt.split("\n");
+                        String[] aConsts = aConstLines[1].split("\\ ");
+                        //System.out.println("AconstTxt: "+AconstTxt+" --- "+aConsts[0]+" - "+aConsts[1]+" - "+aConsts[2]);
+                        return Double.parseDouble(aConsts[0]);
                     }else{
-                        return 0.0;
+                        p = Pattern.compile("A0:(.*)A1:(.*)A2:(.*)",Pattern.MULTILINE);
+                        m = p.matcher( AconstTxt );
+                        if(m.find()){
+                            //System.out.println("AconstTxt: "+AconstTxt+" --- "+m.group(1)+" - "+m.group(2)+" - "+m.group(3));
+                            return Double.parseDouble(m.group(1));
+                        }else{
+                            return 0.0;
+                        }
                     }
                 }
             }
