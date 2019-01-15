@@ -435,9 +435,9 @@ public class PDFFunctions extends PDFTextStripper{
             CoordMap.put("MultiLensAValuesIOLM700_L_3", new Coordinates(308, 605));
             CoordMap.put("MultiLensAValuesIOLM700_L_4", new Coordinates(439, 605));
             CoordMap.put("MultiLensAValuesIOLM700_R_1", new Coordinates(48, 470));
-            CoordMap.put("MultiLensAValuesIOLM700_R_2", new Coordinates(185, 470));
+            CoordMap.put("MultiLensAValuesIOLM700_R_2", new Coordinates(183, 470));
             CoordMap.put("MultiLensAValuesIOLM700_R_3", new Coordinates(48, 605));
-            CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(185, 605));
+            CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(183, 605));
 
             CoordMap.put("MultiLensIOLTitleIOLM700_L_1", new Coordinates(314, 489));
             CoordMap.put("MultiLensIOLTitleIOLM700_L_2", new Coordinates(438, 489));
