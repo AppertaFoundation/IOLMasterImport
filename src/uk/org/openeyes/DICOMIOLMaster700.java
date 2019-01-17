@@ -407,9 +407,8 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                         parser.debugMessage("Formula calculation check OK for side: "+side+" position: "+pos+" index: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
                     }else{
                         parser.debugMessage("Formula calculation check FAILED for side: "+side+" position: "+pos+" index: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
-                        if(FormulaName.equals("Holladay 2")){
-                            parser.debugMessage("Formula "+FormulaName+" is not supported yet!");
-                        }
+                        // Calculated lens emmetropia cannot be used.
+                        sideData.setLensEmmetropia(0.0, sideData.getMeasurementsIndex());
                     }
                 }
             }
