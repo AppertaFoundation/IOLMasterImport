@@ -204,7 +204,7 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getK1Side(PDPage page, String side)throws IOException{
-        Rectangle area = new Rectangle(getDataCoordinates("K1IOLM700", side, 1).x, getDataCoordinates("K1IOLM700", side, 1).y, 25, 10);
+        Rectangle area = new Rectangle(getDataCoordinates("K1IOLM700", side, 1).x, getDataCoordinates("K1IOLM700", side, 1).y, 27, 10);
         String result = getTextArea(page, area).trim();
         //System.out.println("K1Side: "+side+" "+result);
         return result.replace("---","0");
@@ -233,7 +233,7 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getK2Side(PDPage page, String side)throws IOException{
-        Rectangle area = new Rectangle(getDataCoordinates("K2IOLM700", side, 1).x, getDataCoordinates("K2IOLM700", side, 1).y, 25, 10);
+        Rectangle area = new Rectangle(getDataCoordinates("K2IOLM700", side, 1).x, getDataCoordinates("K2IOLM700", side, 1).y, 27, 10);
         String result = getTextArea(page, area).trim();
         //System.out.println("K2Side: "+side+" "+result);
         return result.replace("---","0");
