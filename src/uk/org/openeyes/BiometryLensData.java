@@ -30,6 +30,11 @@ public class BiometryLensData {
     protected double pACDConst;
 
     /**
+     * The ACD constant used by Holladay formula
+     */
+    protected double ACDConst;
+
+    /**
      * The A0 constant used by Haigis suite formula
      */
     protected double A0;
@@ -62,6 +67,7 @@ public class BiometryLensData {
      * Sets the A constants based on the input string. It's looking for matches:
      * A-Const: (.*) - SRK/T formula
      * pACD: (.*) - HofferQ formula
+     * ACD: (.*) - Holladay formula
      * A0 (.*)  - Haigis
      * 
      * @param AconstTxt The input string extracted from the PDF file
@@ -69,22 +75,22 @@ public class BiometryLensData {
     public void setAconstants(String AconstTxt){
         Pattern p;
         String AconstValue = "";
-        p = Pattern.compile("A-Const: (.*)",Pattern.MULTILINE);
+        p = Pattern.compile("A[- ][Cc]onst\\.?: (.*)",Pattern.MULTILINE);
         // SRK/T formula constant
         if(extractAconstFromString(AconstTxt, p) > 0.0){
             this.aConst = extractAconstFromString(AconstTxt, p);
         }else{
-            p = Pattern.compile("A const.: (.*)",Pattern.MULTILINE);
-            // SRK/T formula constant in software version 1.70.X
+            p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);
+            // Hoffer Q formula constant
             if(extractAconstFromString(AconstTxt, p) > 0.0){
-                this.aConst = extractAconstFromString(AconstTxt, p);
+                this.pACDConst = extractAconstFromString(AconstTxt, p);
             }else{
-                p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);    
-                // Hoffer Q formula constant
+                p = Pattern.compile("ACD: (.*)",Pattern.MULTILINE);
+                // Holladay formula constant
                 if(extractAconstFromString(AconstTxt, p) > 0.0){
-                    this.pACDConst = extractAconstFromString(AconstTxt, p);
+                    this.ACDConst = extractAconstFromString(AconstTxt, p);
                 }else{
-                    p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
+                    p = Pattern.compile("A0:\\s+A1:\\s+A2:(.*)",Pattern.MULTILINE);
                     Matcher m = p.matcher( AconstTxt );
                     if(m.find()){
                         String[] aConstLines = AconstTxt.split("\n");
@@ -95,6 +101,17 @@ public class BiometryLensData {
                         this.A0 = Double.parseDouble(aConsts[0]);
                         this.A1 = Double.parseDouble(aConsts[1]);
                         this.A2 = Double.parseDouble(aConsts[2]);
+                    }else{
+                        p = Pattern.compile("A0:(.*)A1:(.*)A2:(.*)",Pattern.MULTILINE);
+                        m = p.matcher( AconstTxt );
+                        if(m.find()){
+                            //System.out.println("AconstTxt: "+AconstTxt+" --- "+m.group(1)+" - "+m.group(2)+" - "+m.group(3));
+
+                            // Haigis formula constants
+                            this.A0 = Double.parseDouble(m.group(1));
+                            this.A1 = Double.parseDouble(m.group(2));
+                            this.A2 = Double.parseDouble(m.group(3));
+                        }
                     }
                 }
             }
@@ -117,7 +134,8 @@ public class BiometryLensData {
         String output = "";
         output += "Lens name: "+this.lensName;
         output += "Aconst: "+this.aConst;
-        output += "pACDconst: "+this.pACDConst;
+        output += "pACDConst: "+this.pACDConst;
+        output += "ACDConst: "+this.ACDConst;
         output += "A0: "+this.A0;
         output += "A1: "+this.A1;
         output += "A2: "+this.A2;

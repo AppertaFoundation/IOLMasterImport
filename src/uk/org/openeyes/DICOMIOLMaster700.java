@@ -139,33 +139,44 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private Double getAconstValue(String AconstTxt){
         Pattern p;
         String AconstValue = "";
-        p = Pattern.compile("A-Const: (.*)",Pattern.MULTILINE);
+        p = Pattern.compile("A[- ][Cc]onst\\.?: (.*)",Pattern.MULTILINE);
         // SRK/T formula constant
         AconstValue = testAconst(p, AconstTxt);
 
         if(!AconstValue.equals("")){
             return Double.parseDouble(AconstValue);
         }else{
-            p = Pattern.compile("A const.: (.*)",Pattern.MULTILINE);
-            // SRK/T formula constant in software version 1.70.X
+            p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);
+            // Hoffer Q formula constant
             AconstValue = testAconst(p, AconstTxt);
             
             if(!AconstValue.equals("")){
                 return Double.parseDouble(AconstValue);
             }else{
-                p = Pattern.compile("pACD: (.*)",Pattern.MULTILINE);    
-                // Hoffer Q formula constant
+                p = Pattern.compile("ACD: (.*)",Pattern.MULTILINE);
+                // Holladay formula constant
                 AconstValue = testAconst(p, AconstTxt);
+
                 if(!AconstValue.equals("")){
                     return Double.parseDouble(AconstValue);
                 }else{
-                    p = Pattern.compile("A0: (.*)",Pattern.MULTILINE);
                     // Haigis formula constants
-                    //!!!! TODO: need to work on Haigis here!!! As we have 3 constants and the text is 2 lines!!!
-                    if(!AconstValue.equals("")){
-                        return Double.parseDouble(AconstValue);
+                    p = Pattern.compile("A0:\\s+A1:\\s+A2:(.*)",Pattern.MULTILINE);
+                    Matcher m = p.matcher( AconstTxt );
+                    if(m.find()){
+                        String[] aConstLines = AconstTxt.split("\n");
+                        String[] aConsts = aConstLines[1].split("\\ ");
+                        //System.out.println("AconstTxt: "+AconstTxt+" --- "+aConsts[0]+" - "+aConsts[1]+" - "+aConsts[2]);
+                        return Double.parseDouble(aConsts[0]);
                     }else{
-                        return 0.0;
+                        p = Pattern.compile("A0:(.*)A1:(.*)A2:(.*)",Pattern.MULTILINE);
+                        m = p.matcher( AconstTxt );
+                        if(m.find()){
+                            //System.out.println("AconstTxt: "+AconstTxt+" --- "+m.group(1)+" - "+m.group(2)+" - "+m.group(3));
+                            return Double.parseDouble(m.group(1));
+                        }else{
+                            return 0.0;
+                        }
                     }
                 }
             }
@@ -175,10 +186,10 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private String getEyeStatus(PDPage page, String side) throws IOException{
         Pattern p;
         String eyeStatus = PDFHelper.getEyeStatusIOLM700(page, side);
-        p = Pattern.compile("LS: (.*); ",Pattern.MULTILINE);
+        p = Pattern.compile("LS:\\s+(\\S+)\\s+",Pattern.MULTILINE);
         Matcher m = p.matcher( eyeStatus );
         while( m.find() ){ // should be always 1 match!
-            return m.group(1);
+            return m.group(1).replace(";", "");
         }
         return "Unknown";
     }
@@ -333,7 +344,11 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             sideData = parser.BiometryRight;
         }
         
-        if(PDFHelper.getPageTitleIOLM700(page).equals("IOL calculation")){
+        if(PDFHelper.getPageTitleIOLM700(page).equals("IOL calculation") && PDFHelper.checkMainVersion().equals("1.80")){
+            // lens and formula both present in each box
+            CalcType = "B";
+            isPageCalculation = true;
+        }else if(PDFHelper.getPageTitleIOLM700(page).equals("IOL calculation")){
             // single formula multi lens    
             CalcType = "F";
             mainFormulaName = getFormulaLensName(PDFHelper.getTopLensFormulaNameIOLM700(page), CalcType);
@@ -350,14 +365,18 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
             sideData.setTargetRef(getTargetRefraction(page, side));
             sideData.setEyeStatus(parser.biometryHelper.getEyeStatusFromSting(getEyeStatus(page, side)).toString());
             for(int pos=1; pos< 5; pos++){
-                String FormulaLens = PDFHelper.getMultiLensFormulaNamesIOLM700(page, side, pos);
-                if(PDFHelper.checkMainVersion().equals("1.70")){
-                    if(!PDFHelper.checkMultiLensIOLTitle(page, side, pos)){
-                        FormulaLens = "";
-                    }
-                }
+                if(CalcType.equals("B")){
+                    LensName = PDFHelper.getMultiLensNamesIOLM700(page, side, pos);
+                    FormulaName = PDFHelper.getMultiFormulaNamesIOLM700(page, side, pos);
+                }else{
+                    String FormulaLens = PDFHelper.getMultiLensFormulaNamesIOLM700(page, side, pos);
 
-                if(FormulaLens.length() > 2){
+                    if(PDFHelper.checkMainVersion().equals("1.70")){
+                        if(!PDFHelper.checkMultiLensIOLTitle(page, side, pos)){
+                            FormulaLens = "";
+                        }
+                    }
+
                     if(CalcType.equals("F")){
                         LensName = FormulaLens;
                         FormulaName = mainFormulaName;
@@ -365,6 +384,9 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                         FormulaName = FormulaLens;
                         LensName = mainLensName;
                     }
+               }
+
+               if(LensName.length() > 0 && FormulaName.length() > 0){
                     sideData.addCalculations();
                     sideData.setFormulaName(FormulaName, sideData.getMeasurementsIndex() );
                     sideData.setLensName(LensName, sideData.getMeasurementsIndex() );
@@ -382,19 +404,15 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                     
                     // we need to check the values by calculating using our methods
                     if(checkCalculationResults(FormulaName, AconstTxt, sideData, sideData.getMeasurementsIndex())){
-                        parser.debugMessage("Formula calculation check OK for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                        parser.debugMessage("Formula calculation check OK for side: "+side+" position: "+pos+" index: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
                     }else{
-                        parser.debugMessage("Formula calculation check FAILED for side: "+side+" position: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
-                        if(FormulaName.equals("Holladay 2")){
-                            parser.debugMessage("Formula "+FormulaName+" is not supported yet!");
-                        }
+                        parser.debugMessage("Formula calculation check FAILED for side: "+side+" position: "+pos+" index: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
+                        // Calculated lens emmetropia cannot be used.
+                        sideData.setLensEmmetropia(0.0, sideData.getMeasurementsIndex());
                     }
-                    
                 }
             }
         }
-        
-        
     }
     
     private byte[] getPDFBinary(Attributes Attrs) throws IOException
