@@ -126,7 +126,7 @@ public class PDFFunctions extends PDFTextStripper{
         Iterator pages = allPages.iterator();
         while(pages.hasNext()){
             currentPage = (PDPage)pages.next();
-            String pageTitle = getPageTitleIOLM700(currentPage).trim();
+            String pageTitle = getPageTitleIOLM700(currentPage);
             if(pageTitle.equals("IOL calculation") || pageTitle.equals("IOL calculation (Multiformula)")){
                 System.out.println("Extracting calculation values");
                 System.out.println(getTopLensFormulaNameIOLM700(currentPage));
@@ -151,7 +151,9 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getPageTitleIOLM700(PDPage page) throws IOException{
-        return getTextArea(page, new Rectangle(getDataCoordinates("PageTitleIOLM700", "T", 1).x,getDataCoordinates("PageTitleIOLM700", "T", 1).y, 250,10)).trim();
+        String result = getTextArea(page, new Rectangle(getDataCoordinates("PageTitleIOLM700", "T", 1).x,getDataCoordinates("PageTitleIOLM700", "T", 1).y, 250,10)).trim();
+        //System.out.println("PageTitle: "+result);
+        return result;
     }
     
     /**
@@ -161,7 +163,9 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getTopLensFormulaNameIOLM700(PDPage page)throws IOException{
-        return normaliseLensName(getTextArea(page, new Rectangle(getDataCoordinates("TopLensFormulaNameIOLM700", "T", 1).x,getDataCoordinates("TopLensFormulaNameIOLM700", "T", 1).y,250,10)));
+        String result = normaliseLensName(getTextArea(page, new Rectangle(getDataCoordinates("TopLensFormulaNameIOLM700", "T", 1).x,getDataCoordinates("TopLensFormulaNameIOLM700", "T", 1).y,300,10)));
+        //System.out.println("TopLensFormulaName: "+result);
+        return result;
     }
     
     /**
@@ -173,7 +177,9 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String getTargetRefractionIOLM700(PDPage page, String side) throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("TargetRefractionIOLM700", side, 1).x, getDataCoordinates("TargetRefractionIOLM700", side, 1).y, 110, 10);
-        return getTextArea(page, area).trim();
+        String result = getTextArea(page, area).trim();
+        //System.out.println("TargetRefraction: "+side+" "+result);
+        return result;
     }
     
     /**
@@ -185,7 +191,9 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String getEyeStatusIOLM700(PDPage page, String side) throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("EyeStatusIOLM700", side, 1).x, getDataCoordinates("EyeStatusIOLM700", side, 1).y, 200, 10);
-        return getTextArea(page, area).trim();
+        String result = getTextArea(page, area).trim();
+        //System.out.println("EyeStatus: "+side+" "+result);
+        return result;
     }
     
     /**
@@ -196,8 +204,10 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getK1Side(PDPage page, String side)throws IOException{
-        Rectangle area = new Rectangle(getDataCoordinates("K1IOLM700", side, 1).x, getDataCoordinates("K1IOLM700", side, 1).y, 25, 10);
-        return getTextArea(page, area).trim().replace("---","0"); 
+        Rectangle area = new Rectangle(getDataCoordinates("K1IOLM700", side, 1).x, getDataCoordinates("K1IOLM700", side, 1).y, 27, 10);
+        String result = getTextArea(page, area).trim();
+        //System.out.println("K1Side: "+side+" "+result);
+        return result.replace("---","0");
     }
     
     /**
@@ -209,7 +219,9 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String getAxisK1Side(PDPage page, String side)throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("AxisK1IOLM700", side, 1).x, getDataCoordinates("AxisK1IOLM700", side, 1).y, 19, 10);
-        String result = getTextArea(page, area).replace("º","").trim().replace("---","0");
+        String result = getTextArea(page, area).trim();
+        //System.out.println("AxisK1Side: "+side+" "+result);
+        result = result.replace("º","").replace("°","").trim().replace("---","0");
         return ("".equals(result) ? "0" : result);
     }
     
@@ -221,8 +233,10 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getK2Side(PDPage page, String side)throws IOException{
-        Rectangle area = new Rectangle(getDataCoordinates("K2IOLM700", side, 1).x, getDataCoordinates("K2IOLM700", side, 1).y, 25, 10);
-        return getTextArea(page, area).trim().replace("---","0"); 
+        Rectangle area = new Rectangle(getDataCoordinates("K2IOLM700", side, 1).x, getDataCoordinates("K2IOLM700", side, 1).y, 27, 10);
+        String result = getTextArea(page, area).trim();
+        //System.out.println("K2Side: "+side+" "+result);
+        return result.replace("---","0");
     }
     
     /**
@@ -234,7 +248,9 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String getAxisK2Side(PDPage page, String side)throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("AxisK2IOLM700", side, 1).x, getDataCoordinates("AxisK2IOLM700", side, 1).y, 19, 10);
-        String result = getTextArea(page, area).replace("º","").trim().replace("---","0");
+        String result = getTextArea(page, area).trim();
+        //System.out.println("AxisK2Side: "+side+" "+result);
+        result = result.replace("º","").replace("°","").trim().replace("---","0");
         return ("".equals(result) ? "0" : result);
     }
     
@@ -247,7 +263,9 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String getALSide(PDPage page, String side)throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("ALIOLM700", side, 1).x, getDataCoordinates("ALIOLM700", side, 1).y, 25, 10);
-        return getTextArea(page, area).trim().replace("---","0"); 
+        String result = getTextArea(page, area).trim();
+        //System.out.println("ALSide: "+side+" "+result);
+        return result.replace("---","0");
     }
     
     /**
@@ -259,7 +277,9 @@ public class PDFFunctions extends PDFTextStripper{
      */
     public String getACDSide(PDPage page, String side)throws IOException{
         Rectangle area = new Rectangle(getDataCoordinates("ACDIOLM700", side, 1).x, getDataCoordinates("ACDIOLM700", side, 1).y, 25, 10);
-        return getTextArea(page, area).trim().replace("---","0"); 
+        String result = getTextArea(page, area).trim();
+        //System.out.println("ACDSide: "+side+" "+result);
+        return result.replace("---","0");
     }
     
     public boolean checkMultiLensIOLTitle(PDPage page, String side, int position) throws IOException{
@@ -286,7 +306,25 @@ public class PDFFunctions extends PDFTextStripper{
     
     private Rectangle getRectangleMultiLensFormulaNamesIOLM700(String side, int position){
         Coordinates coord = getDataCoordinates("MultiLensFormulaNamesIOLM700", side, position);
-         return new Rectangle(coord.x, coord.y, 120, 30);
+        return new Rectangle(coord.x, coord.y, 120, 30);
+    }
+
+    public String getMultiLensNamesIOLM700(PDPage page, String side, int position) throws IOException{
+        return normaliseLensName(getTextArea(page, getRectangleMultiLensNamesIOLM700(side, position)));
+    }
+
+    private Rectangle getRectangleMultiLensNamesIOLM700(String side, int position){
+        Coordinates coord = getDataCoordinates("MultiLensNamesIOLM700", side, position);
+        return new Rectangle(coord.x, coord.y, 115, 21);
+    }
+
+    public String getMultiFormulaNamesIOLM700(PDPage page, String side, int position) throws IOException{
+        return normaliseFormulaName(getTextArea(page, getRectangleMultiFormulaNamesIOLM700(side, position)));
+    }
+
+    private Rectangle getRectangleMultiFormulaNamesIOLM700(String side, int position){
+        Coordinates coord = getDataCoordinates("MultiFormulaNamesIOLM700", side, position);
+        return new Rectangle(coord.x, coord.y, 115, 8);
     }
     
     /**
@@ -384,22 +422,22 @@ public class PDFFunctions extends PDFTextStripper{
             CoordMap.put("TopLensFormulaNameIOLM700_T_1", new Coordinates(50,180));
 
             CoordMap.put("MultiLensFormulaNamesIOLM700_L_1",new Coordinates(308, 430));
-            CoordMap.put("MultiLensFormulaNamesIOLM700_L_2",new Coordinates(439, 430));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_2",new Coordinates(436, 430));
             CoordMap.put("MultiLensFormulaNamesIOLM700_L_3",new Coordinates(308, 575));
-            CoordMap.put("MultiLensFormulaNamesIOLM700_L_4",new Coordinates(439, 575));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_L_4",new Coordinates(436, 575));
             CoordMap.put("MultiLensFormulaNamesIOLM700_R_1",new Coordinates(48, 430));
-            CoordMap.put("MultiLensFormulaNamesIOLM700_R_2",new Coordinates(185, 430));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_2",new Coordinates(179, 430));
             CoordMap.put("MultiLensFormulaNamesIOLM700_R_3",new Coordinates(48, 575));
-            CoordMap.put("MultiLensFormulaNamesIOLM700_R_4",new Coordinates(183, 575));
+            CoordMap.put("MultiLensFormulaNamesIOLM700_R_4",new Coordinates(179, 575));
             
             CoordMap.put("MultiLensAValuesIOLM700_L_1", new Coordinates(308, 470));
             CoordMap.put("MultiLensAValuesIOLM700_L_2", new Coordinates(439, 470));
             CoordMap.put("MultiLensAValuesIOLM700_L_3", new Coordinates(308, 605));
             CoordMap.put("MultiLensAValuesIOLM700_L_4", new Coordinates(439, 605));
             CoordMap.put("MultiLensAValuesIOLM700_R_1", new Coordinates(48, 470));
-            CoordMap.put("MultiLensAValuesIOLM700_R_2", new Coordinates(185, 470));
+            CoordMap.put("MultiLensAValuesIOLM700_R_2", new Coordinates(183, 470));
             CoordMap.put("MultiLensAValuesIOLM700_R_3", new Coordinates(48, 605));
-            CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(185, 605));
+            CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(183, 605));
 
             CoordMap.put("MultiLensIOLTitleIOLM700_L_1", new Coordinates(314, 489));
             CoordMap.put("MultiLensIOLTitleIOLM700_L_2", new Coordinates(438, 489));
@@ -442,14 +480,88 @@ public class PDFFunctions extends PDFTextStripper{
 
             CoordMap.put("K1IOLM700_L_1", new Coordinates(335,360));
             CoordMap.put("K1IOLM700_R_1", new Coordinates(77,360));
-            CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(392,360));
+            CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(388,360));
             CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(132,360));
 
             CoordMap.put("K2IOLM700_L_1", new Coordinates(484,360));
             CoordMap.put("K2IOLM700_R_1", new Coordinates(227,360));
-            CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(537,360));
-            CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(280,360));        
+            CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(540,360));
+            CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(283,360));
         
+        }else if(this.checkMainVersion().equals("1.80")){
+            this.rowHeight = 9;
+            this.blockHeight = 9;
+            this.rowDiff = 1;
+
+            CoordMap.put("PageTitleIOLM700_T_1", new Coordinates(185,235));
+
+            CoordMap.put("MultiLensNamesIOLM700_L_1",new Coordinates(318, 444));
+            CoordMap.put("MultiLensNamesIOLM700_L_2",new Coordinates(444, 444));
+            CoordMap.put("MultiLensNamesIOLM700_L_3",new Coordinates(318, 571));
+            CoordMap.put("MultiLensNamesIOLM700_L_4",new Coordinates(444, 571));
+            CoordMap.put("MultiLensNamesIOLM700_R_1",new Coordinates(62, 444));
+            CoordMap.put("MultiLensNamesIOLM700_R_2",new Coordinates(189, 444));
+            CoordMap.put("MultiLensNamesIOLM700_R_3",new Coordinates(62, 571));
+            CoordMap.put("MultiLensNamesIOLM700_R_4",new Coordinates(189, 571));
+
+            CoordMap.put("MultiFormulaNamesIOLM700_L_1",new Coordinates(318, 465));
+            CoordMap.put("MultiFormulaNamesIOLM700_L_2",new Coordinates(444, 465));
+            CoordMap.put("MultiFormulaNamesIOLM700_L_3",new Coordinates(318, 593));
+            CoordMap.put("MultiFormulaNamesIOLM700_L_4",new Coordinates(444, 593));
+            CoordMap.put("MultiFormulaNamesIOLM700_R_1",new Coordinates(62, 465));
+            CoordMap.put("MultiFormulaNamesIOLM700_R_2",new Coordinates(189, 465));
+            CoordMap.put("MultiFormulaNamesIOLM700_R_3",new Coordinates(62, 593));
+            CoordMap.put("MultiFormulaNamesIOLM700_R_4",new Coordinates(189, 593));
+
+            CoordMap.put("MultiLensAValuesIOLM700_L_1", new Coordinates(315, 474));
+            CoordMap.put("MultiLensAValuesIOLM700_L_2", new Coordinates(441, 474));
+            CoordMap.put("MultiLensAValuesIOLM700_L_3", new Coordinates(315, 602));
+            CoordMap.put("MultiLensAValuesIOLM700_L_4", new Coordinates(441, 602));
+            CoordMap.put("MultiLensAValuesIOLM700_R_1", new Coordinates(59, 474));
+            CoordMap.put("MultiLensAValuesIOLM700_R_2", new Coordinates(186, 474));
+            CoordMap.put("MultiLensAValuesIOLM700_R_3", new Coordinates(59, 602));
+            CoordMap.put("MultiLensAValuesIOLM700_R_4", new Coordinates(186, 602));
+
+            CoordMap.put("MultiLensIOLStartIOLM700_L_1", new Coordinates(321, 498));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_2", new Coordinates(448, 498));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_3", new Coordinates(321, 626));
+            CoordMap.put("MultiLensIOLStartIOLM700_L_4", new Coordinates(448, 626));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_1", new Coordinates(66, 498));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_2", new Coordinates(193, 498));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_3", new Coordinates(66, 626));
+            CoordMap.put("MultiLensIOLStartIOLM700_R_4", new Coordinates(193, 626));
+
+            CoordMap.put("MultiLensREFStartIOLM700_L_1", new Coordinates(371, 498));
+            CoordMap.put("MultiLensREFStartIOLM700_L_2", new Coordinates(498, 498));
+            CoordMap.put("MultiLensREFStartIOLM700_L_3", new Coordinates(371, 626));
+            CoordMap.put("MultiLensREFStartIOLM700_L_4", new Coordinates(498, 626));
+            CoordMap.put("MultiLensREFStartIOLM700_R_1", new Coordinates(115, 498));
+            CoordMap.put("MultiLensREFStartIOLM700_R_2", new Coordinates(243, 498));
+            CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(115, 626));
+            CoordMap.put("MultiLensREFStartIOLM700_R_4", new Coordinates(243, 626));
+
+            CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 325));
+            CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(55, 325));
+
+            CoordMap.put("EyeStatusIOLM700_L_1", new Coordinates(310, 291));
+            CoordMap.put("EyeStatusIOLM700_R_1", new Coordinates(55, 291));
+
+            CoordMap.put("ALIOLM700_L_1", new Coordinates(333,350));
+            CoordMap.put("ALIOLM700_R_1", new Coordinates(78,350));
+
+            CoordMap.put("ACDIOLM700_L_1", new Coordinates(333,362));
+            CoordMap.put("ACDIOLM700_R_1", new Coordinates(78,362));
+
+            CoordMap.put("K1IOLM700_L_1", new Coordinates(474,395));
+            CoordMap.put("K1IOLM700_R_1", new Coordinates(218,395));
+            CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(535,395));
+            CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(279,395));
+
+            CoordMap.put("K2IOLM700_L_1", new Coordinates(474,407));
+            CoordMap.put("K2IOLM700_R_1", new Coordinates(218,407));
+            CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(535,407));
+            CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(279,407));
+
         }else{
             
             CoordMap.put("PageTitleIOLM700_T_1", new Coordinates(200,270));
@@ -505,13 +617,13 @@ public class PDFFunctions extends PDFTextStripper{
 
             CoordMap.put("K1IOLM700_L_1", new Coordinates(340,360));
             CoordMap.put("K1IOLM700_R_1", new Coordinates(80,360));
-            CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(392,360));
-            CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(132,360));
+            CoordMap.put("AxisK1IOLM700_L_1", new Coordinates(397,360));
+            CoordMap.put("AxisK1IOLM700_R_1", new Coordinates(140,360));
 
             CoordMap.put("K2IOLM700_L_1", new Coordinates(340,370));
             CoordMap.put("K2IOLM700_R_1", new Coordinates(80,370));
-            CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(392,370));
-            CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(132,370));
+            CoordMap.put("AxisK2IOLM700_L_1", new Coordinates(397,370));
+            CoordMap.put("AxisK2IOLM700_R_1", new Coordinates(140,370));
         }
     }
     
@@ -533,6 +645,12 @@ public class PDFFunctions extends PDFTextStripper{
     private String normaliseLensName(String lensName) {
         String result = lensName.replaceAll("(\\r|\\n)", " ");  // Replace any LF/CR characters with space
         result = result.replaceAll(" +", " ");  // Replace any consecutive spaces with a single space
+        return result.trim();
+    }
+
+    private String normaliseFormulaName(String formulaName) {
+        String result = formulaName.replace("- ", "");
+        result = result.replace(" -", "");
         return result.trim();
     }
     
