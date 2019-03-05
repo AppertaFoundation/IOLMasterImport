@@ -617,7 +617,9 @@ public class BiometryFunctions extends DatabaseFunctions{
                 case "Haigis":
                     calculateMethod = this.getClass().getMethod("calculateHaigis", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
+                case "Haigis Suite (Myopic)":
                 case "Haigis-L":
+                case "Haigis-L (Myopic)":
                     calculateMethod = this.getClass().getMethod("calculateHaigisL", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
                 case "SRK/T":

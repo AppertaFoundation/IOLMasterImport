@@ -197,13 +197,23 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private Double getTargetRefraction(PDPage page, String side) throws IOException{
         Pattern p;
         String targetRef = PDFHelper.getTargetRefractionIOLM700(page, side);
-
         p = Pattern.compile("Target ref.: (.*) D",Pattern.MULTILINE);
         Matcher m = p.matcher( targetRef );
         while( m.find() ){ // should be always 1 match!
             return Double.parseDouble(m.group(1));
         }
         return 0.0; // plano
+    }
+
+    private String getLVCMode(PDPage page, String side) throws IOException{
+        Pattern p;
+        String lvcMode = PDFHelper.getLVCModeIOLM700(page, side);
+        p = Pattern.compile(".*LVC mode:\\s+(\\S+)\\s?",Pattern.MULTILINE);
+        Matcher m = p.matcher( lvcMode );
+        while( m.find() ){ // should be always 1 match!
+            return m.group(1).replace("-", "");
+        }
+        return "";
     }
     
     private boolean checkCalculationResults(String FormulaName, String AconstTxt, BiometrySide sideData, int index){
@@ -363,6 +373,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         if(isPageCalculation){
             System.out.println("Page is calculation");
             sideData.setTargetRef(getTargetRefraction(page, side));
+            sideData.setLVCMode(getLVCMode(page, side));
             sideData.setEyeStatus(parser.biometryHelper.getEyeStatusFromSting(getEyeStatus(page, side)).toString());
             for(int pos=1; pos< 5; pos++){
                 if(CalcType.equals("B")){
@@ -387,6 +398,9 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                }
 
                if(LensName.length() > 0 && FormulaName.length() > 0){
+                    if(!"".equals(sideData.getLVCMode())){
+                        FormulaName += " (" + sideData.getLVCMode() + ")";
+                    }
                     sideData.addCalculations();
                     sideData.setFormulaName(FormulaName, sideData.getMeasurementsIndex() );
                     sideData.setLensName(LensName, sideData.getMeasurementsIndex() );
