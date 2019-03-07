@@ -780,7 +780,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         }
 
         //calculationComments+="AL: "+axialLength+" K1: "+r1+" K2: "+r2+" ACD: "+acd+" A-const: "+lens.aConst+" Target: "+dioptresRefraction;
-        dicomLogger.addToRawOutput(calculationComments);
+        //dicomLogger.addToRawOutput(calculationComments);
         return Double.isNaN(returnPower) ? 0.0 : returnPower;
     }
 
@@ -819,18 +819,18 @@ public class BiometryFunctions extends DatabaseFunctions{
         else {
             M = -1;
             G = +23.5;
-            calculationComments += "Hoffer factors for AL > 23 applied</br>";
+            calculationComments += "Hoffer factors for AL > 23 applied\n";
         }
 
         // Constrain axial length (NB used ONLY for ACD calculation and replaces ACD constraint as described in erratum)
         double AL = axialLength;
         if (AL > 31) {
             AL = 31;
-            calculationComments += "Axial length constrained down to 31</br>";
+            calculationComments += "Axial length constrained down to 31\n";
         }
         if (AL < 18.5) {
             AL = 18.5;
-            calculationComments += "Axial length constrained up to 18.5</br>";
+            calculationComments += "Axial length constrained up to 18.5\n";
         }
 
         // Predicted ACD
@@ -851,6 +851,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             returnPower = R/(1 + vd * R/1000);
         }
 
+        //dicomLogger.addToRawOutput(calculationComments);
         return returnPower;
     }
 
