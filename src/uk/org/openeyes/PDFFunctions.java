@@ -190,7 +190,7 @@ public class PDFFunctions extends PDFTextStripper{
      * @throws IOException
      */
     public String getLVCModeIOLM700(PDPage page, String side) throws IOException{
-        Rectangle area = new Rectangle(getDataCoordinates("LVCModeIOLM700", side, 1).x, getDataCoordinates("LVCModeIOLM700", side, 1).y, 200, 10);
+        Rectangle area = new Rectangle(getDataCoordinates("LVCModeIOLM700", side, 1).x, getDataCoordinates("LVCModeIOLM700", side, 1).y, 250, 10);
         String result = getTextArea(page, area).trim();
         //System.out.println("LVCMode: "+side+" "+result);
         return result;

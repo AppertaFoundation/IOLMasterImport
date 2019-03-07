@@ -611,22 +611,24 @@ public class BiometryFunctions extends DatabaseFunctions{
         Method calculateMethod = null;
 
         try {
-            switch (formulaName) {
-                case "Haigis suite":
-                case "Haigis Suite":
-                case "Haigis":
+            switch (formulaName.toLowerCase()) {
+                case "haigis suite":
+                case "haigis":
                     calculateMethod = this.getClass().getMethod("calculateHaigis", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
-                case "Haigis Suite (Myopic)":
-                case "Haigis-L":
-                case "Haigis-L (Myopic)":
-                    calculateMethod = this.getClass().getMethod("calculateHaigisL", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+                case "haigis suite (myopic)":
+                case "haigis-l (myopic)":
+                    calculateMethod = this.getClass().getMethod("calculateHaigisLM", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
-                case "SRK/T":
-                case "SRK®/T":
+                case "haigis suite (hyperopic)":
+                case "haigis-l (hyperopic)":
+                    calculateMethod = this.getClass().getMethod("calculateHaigisLH", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+                    break;
+                case "srk/t":
+                case "srk®/t":
                     calculateMethod = this.getClass().getMethod("calculateSRKT", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
-                case "Hoffer® Q":
+                case "hoffer® q":
                     calculateMethod = this.getClass().getMethod("calculateHofferQ", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
                 default:
@@ -864,7 +866,6 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @return              -- Refractive power in Dioptres
      */
     public double calculateHaigis(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
-        // TODO: implement this! :)
         double n = 1.3315;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
         double na =1.336;			// Refractive index of aqueous and vitreous
         double vd =12.0;			// Vertex distance
@@ -906,8 +907,7 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
      * @return              -- Refractive power in Dioptres
      */
-    public double calculateHaigisL(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
-        // TODO: implement this! :)
+    public double calculateHaigisLM(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
         double n = 1.3315;                      // Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
         double na =1.336;                       // Refractive index of aqueous and vitreous
         double vd =12.0;                        // Vertex distance
@@ -915,7 +915,50 @@ public class BiometryFunctions extends DatabaseFunctions{
 
         // Calculate average radius of curvature and corneal power in dioptres
         double averageRadius = (r1 + r2) / 2;
-        double corrAverageRadius = 331.5 / ((-5.1625 * averageRadius) + 82.2603 - 0.35);
+        double corrAverageRadius = 331.5 / ((-5.1625 * averageRadius) + 82.2603 - 0.35);  // Myopic correction.
+        double dioptresCornea = (n - 1) * 1000 / corrAverageRadius;
+
+        // Additional Haigis constants
+        double a0 = lens.A0;
+        double a1 = lens.A1;
+        double a2 = lens.A2;
+
+        // Optical ACD
+        double opticalACD = (a0 + a1 * acd + a2 * axialLength);
+
+        // IOL power
+        if (resultType.equals("IOL")) {
+                double z = dioptresCornea + dioptresRefraction/(1 - dioptresRefraction * vd/1000);
+                returnPower = na/(axialLength/1000 - opticalACD/1000) - na/(na/z - opticalACD/1000);
+        }
+        // Predicted refraction
+        else {
+                double z = 1000 * na/((1/(1/(axialLength - opticalACD) - dioptresRefraction/(1000 * na))) + opticalACD);
+                returnPower = (z - dioptresCornea)/(1 + vd * (z - dioptresCornea)/1000);
+        }
+        return returnPower;
+    }
+
+     /**
+     *
+     * @param axialLength   -- Axial length
+     * @param r1            -- Radius of curvature 1
+     * @param r2            -- Radius of curvature 2
+     * @param acd           -- Optical anterior chamber depth
+     * @param lens          -- lens object containing IOL data
+     * @param dioptresRefraction  -- Target refraction or power of IOL
+     * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
+     * @return              -- Refractive power in Dioptres
+     */
+    public double calculateHaigisLH(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
+        double n = 1.3315;                      // Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
+        double na =1.336;                       // Refractive index of aqueous and vitreous
+        double vd =12.0;                        // Vertex distance
+        double returnPower;                     // the return value
+
+        // Calculate average radius of curvature and corneal power in dioptres
+        double averageRadius = (r1 + r2) / 2;
+        double corrAverageRadius = 331.5 / ((-5.1625 * averageRadius) + 82.2603 - 0.35);  // Hyperopic correction. TODO this is still myopic...
         double dioptresCornea = (n - 1) * 1000 / corrAverageRadius;
 
         // Additional Haigis constants
