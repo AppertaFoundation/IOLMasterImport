@@ -639,12 +639,12 @@ public class BiometryFunctions extends DatabaseFunctions{
             double K2 = convertDioptricPowerToRadius(sideData.getK2());
 
             if(calculateMethod != null){
-                IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
-
                 // Set lens emmetropia. Note this will be unset if the calculation check fails later on.
+                IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, 0.0, "IOL");
                 sideData.setLensEmmetropia(IOLPower, sideData.getMeasurementsIndex());
 
-                // Select IOL that gives power nearest to target refraction
+                // Select IOL that gives power nearest to target refraction.
+                IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
                 double roundDownIOLPower = Math.floor(IOLPower * 2)/2;
                 double nextUpIOLPower = roundDownIOLPower + 0.5;
                 double roundDownRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, roundDownIOLPower, "REF");
