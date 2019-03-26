@@ -27,6 +27,7 @@ public class BiometrySide {
     private double AL;      // axial length
     private double ACD = 0;
     private double TargetRef = 0;
+    private String LVCMode;
     private BigDecimal SNR;
     private BigDecimal SNRMin = BigDecimal.ZERO;
     private boolean isALModified = false;
@@ -130,6 +131,22 @@ public class BiometrySide {
      */
     public double getTargetRef(){
         return this.TargetRef;
+    }
+
+    /**
+     *
+     * @param LVCMode
+     */
+    public void setLVCMode(String LVCMode){
+        this.LVCMode = LVCMode;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getLVCMode(){
+        return this.LVCMode;
     }
     
     /**
@@ -465,6 +482,7 @@ public class BiometrySide {
        output += sideName+" Delta K: "+this.getDeltaK()+"\n";
        output += sideName+" Delta K Axis: "+this.getDeltaKAxis()+"\n";
        output += sideName+" Target refraction: "+this.TargetRef+"\n";
+       output += sideName+" LVC mode: "+this.LVCMode+"\n";
        output += sideName+" Refraction sphere: "+this.RefractionSphere+"\n";
        output += sideName+" Refraction delta: "+this.RefractionDelta+"\n";
        output += sideName+" Refraction axis: "+this.RefractionAxis+"\n";

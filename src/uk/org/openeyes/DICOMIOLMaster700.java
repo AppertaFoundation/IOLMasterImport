@@ -197,13 +197,23 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
     private Double getTargetRefraction(PDPage page, String side) throws IOException{
         Pattern p;
         String targetRef = PDFHelper.getTargetRefractionIOLM700(page, side);
-
         p = Pattern.compile("Target ref.: (.*) D",Pattern.MULTILINE);
         Matcher m = p.matcher( targetRef );
         while( m.find() ){ // should be always 1 match!
             return Double.parseDouble(m.group(1));
         }
         return 0.0; // plano
+    }
+
+    private String getLVCMode(PDPage page, String side) throws IOException{
+        Pattern p;
+        String lvcMode = PDFHelper.getLVCModeIOLM700(page, side);
+        p = Pattern.compile(".*LVC mode:\\s+(\\S+)\\s?",Pattern.MULTILINE);
+        Matcher m = p.matcher( lvcMode );
+        while( m.find() ){ // should be always 1 match!
+            return m.group(1).replace("-", "");
+        }
+        return "";
     }
     
     private boolean checkCalculationResults(String FormulaName, String AconstTxt, BiometrySide sideData, int index){
@@ -363,6 +373,7 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
         if(isPageCalculation){
             System.out.println("Page is calculation");
             sideData.setTargetRef(getTargetRefraction(page, side));
+            sideData.setLVCMode(getLVCMode(page, side));
             sideData.setEyeStatus(parser.biometryHelper.getEyeStatusFromSting(getEyeStatus(page, side)).toString());
             for(int pos=1; pos< 5; pos++){
                 if(CalcType.equals("B")){
@@ -387,11 +398,18 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                }
 
                if(LensName.length() > 0 && FormulaName.length() > 0){
+                    if(!"".equals(sideData.getLVCMode())){
+                        FormulaName += " (" + sideData.getLVCMode() + ")";
+                    }
+
                     sideData.addCalculations();
+
                     sideData.setFormulaName(FormulaName, sideData.getMeasurementsIndex() );
                     sideData.setLensName(LensName, sideData.getMeasurementsIndex() );
+
                     String AconstTxt = PDFHelper.getMultiLensAValuesIOLM700(page, side, pos);
                     sideData.setLensAConst( getAconstValue(AconstTxt), sideData.getMeasurementsIndex());
+
                     for(int calc=0; calc<5; calc++){
                         Double iolValue = PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "IOL", calc);
                         Double refValue = PDFHelper.getIOLREFValueRowIOLM700(page, side, pos, "REF", calc);
@@ -402,13 +420,19 @@ public class DICOMIOLMaster700 extends IOLMasterAbstract{
                         }
                     }
                     
-                    // we need to check the values by calculating using our methods
+                    // Check the values by calculating using our methods.
                     if(checkCalculationResults(FormulaName, AconstTxt, sideData, sideData.getMeasurementsIndex())){
                         parser.debugMessage("Formula calculation check OK for side: "+side+" position: "+pos+" index: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
                     }else{
                         parser.debugMessage("Formula calculation check FAILED for side: "+side+" position: "+pos+" index: "+sideData.getMeasurementsIndex()+" formula: "+FormulaName+" lens: "+LensName);
                         // Calculated lens emmetropia cannot be used.
                         sideData.setLensEmmetropia(0.0, sideData.getMeasurementsIndex());
+                    }
+
+                    // Later versions have the emmetropia on the report, so use that irrespective of what has been calculated above.
+                    if(!PDFHelper.checkMainVersion().equals("1.50")){
+                        Double emmValue = PDFHelper.getEmmetropiaIOLM700(page, side, pos);
+                        sideData.setLensEmmetropia(emmValue, sideData.getMeasurementsIndex());
                     }
                 }
             }
