@@ -591,8 +591,8 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @param number
      * @return
      */
-    public double round2Decimals(BigDecimal number){
-        number = number.setScale(2, RoundingMode.HALF_UP);
+    public double roundDecimals(BigDecimal number, Integer scale){
+        number = number.setScale(scale, RoundingMode.HALF_UP);
         return number.doubleValue();
     }
 
@@ -635,20 +635,23 @@ public class BiometryFunctions extends DatabaseFunctions{
                     dicomLogger.addToRawOutput("Formula "+formulaName+" is not supported");
                     break;
             }
-            double K1 = convertDioptricPowerToRadius(sideData.getK1());
-            double K2 = convertDioptricPowerToRadius(sideData.getK2());
+
+            double R1 = convertDioptricPowerToRadius(sideData.getK1());
+            double R2 = convertDioptricPowerToRadius(sideData.getK2());
+            double AL = sideData.getAL();
+            double ACD = sideData.getACD();
 
             if(calculateMethod != null){
                 // Set lens emmetropia. Note this will be unset if the calculation check fails later on.
-                IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, 0.0, "IOL");
+                IOLPower = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, 0.0, "IOL");
                 sideData.setLensEmmetropia(IOLPower, sideData.getMeasurementsIndex());
 
                 // Select IOL that gives power nearest to target refraction.
-                IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
+                IOLPower = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, sideData.getTargetRef(), "IOL");
                 double roundDownIOLPower = Math.floor(IOLPower * 2)/2;
                 double nextUpIOLPower = roundDownIOLPower + 0.5;
-                double roundDownRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, roundDownIOLPower, "REF");
-                double nextUpRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, nextUpIOLPower, "REF");
+                double roundDownRefraction = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, roundDownIOLPower, "REF");
+                double nextUpRefraction = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, nextUpIOLPower, "REF");
                 if (Math.abs(sideData.getTargetRef() - roundDownRefraction) < Math.abs(sideData.getTargetRef() - nextUpRefraction)) {
                     closestIOLPower = roundDownIOLPower;
                 } else {
@@ -660,13 +663,11 @@ public class BiometryFunctions extends DatabaseFunctions{
 
                 for (int i = 0; i < 5; i++)
                 {
-                    refraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, startPower, "REF");
+                    refraction = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, startPower, "REF");
 
-                    refraction = round2Decimals(BigDecimal.valueOf(refraction));
-
-                    // need to add values to the check object here!
                     controlMeasure.setIOL(startPower);
                     controlMeasure.setREF(refraction);
+
                     startPower = startPower - 0.5;
                 }
             }
@@ -779,7 +780,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             returnPower = numerator/denominator;
         }
 
-        //calculationComments+="AL: "+axialLength+" K1: "+r1+" K2: "+r2+" ACD: "+acd+" A-const: "+lens.aConst+" Target: "+dioptresRefraction;
+        //calculationComments+="AL: "+axialLength+" R1: "+r1+" R2: "+r2+" ACD: "+acd+" A-const: "+lens.aConst+" Target: "+dioptresRefraction;
         //dicomLogger.addToRawOutput(calculationComments);
         return Double.isNaN(returnPower) ? 0.0 : returnPower;
     }
