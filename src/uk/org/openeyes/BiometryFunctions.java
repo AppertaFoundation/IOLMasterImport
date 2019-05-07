@@ -493,22 +493,7 @@ public class BiometryFunctions extends DatabaseFunctions{
 
         this.saveIolRefValues();
 
-        // we save the log entry for the import
-        dicomLogger.getLogger().setStudyInstanceId(eventStudy.getStudyInstanceID());
-        dicomLogger.getLogger().setSeriesInstanceId(eventStudy.getSeriesInstanceID());
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dicomLogger.getLogger().setStudyDatetime(df.parse(getStudyYMD(eventStudy.getStudyDateTime())));
-        dicomLogger.getLogger().setStudyLocation(eventStudy.getInstituionName());
-        dicomLogger.getLogger().setStationId(eventStudy.getStationName());
-        dicomLogger.getLogger().setMachineManufacturer(eventStudy.getDeviceManufacturer());
-        dicomLogger.getLogger().setMachineModel(eventStudy.getDeviceModel());
-        dicomLogger.getLogger().setMachineSoftwareVersion(eventStudy.getDeviceSoftwareVersion());
-        dicomLogger.getLogger().setReportType("biometry");
         dicomLogger.getLogger().setPatientNumber(selectedPatient.getHosNum());
-        dicomLogger.getLogger().setImportDatetime(new Date());
-        dicomLogger.getLogger().setImportType("F");
-        dicomLogger.getLogger().setSopUId(eventStudy.getSopUID());
-
     }
 
 
