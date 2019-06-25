@@ -493,22 +493,7 @@ public class BiometryFunctions extends DatabaseFunctions{
 
         this.saveIolRefValues();
 
-        // we save the log entry for the import
-        dicomLogger.getLogger().setStudyInstanceId(eventStudy.getStudyInstanceID());
-        dicomLogger.getLogger().setSeriesInstanceId(eventStudy.getSeriesInstanceID());
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dicomLogger.getLogger().setStudyDatetime(df.parse(getStudyYMD(eventStudy.getStudyDateTime())));
-        dicomLogger.getLogger().setStudyLocation(eventStudy.getInstituionName());
-        dicomLogger.getLogger().setStationId(eventStudy.getStationName());
-        dicomLogger.getLogger().setMachineManufacturer(eventStudy.getDeviceManufacturer());
-        dicomLogger.getLogger().setMachineModel(eventStudy.getDeviceModel());
-        dicomLogger.getLogger().setMachineSoftwareVersion(eventStudy.getDeviceSoftwareVersion());
-        dicomLogger.getLogger().setReportType("biometry");
         dicomLogger.getLogger().setPatientNumber(selectedPatient.getHosNum());
-        dicomLogger.getLogger().setImportDatetime(new Date());
-        dicomLogger.getLogger().setImportType("F");
-        dicomLogger.getLogger().setSopUId(eventStudy.getSopUID());
-
     }
 
 
@@ -591,8 +576,8 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @param number
      * @return
      */
-    public double round2Decimals(BigDecimal number){
-        number = number.setScale(2, RoundingMode.HALF_UP);
+    public double roundDecimals(BigDecimal number, Integer scale){
+        number = number.setScale(scale, RoundingMode.HALF_UP);
         return number.doubleValue();
     }
 
@@ -611,40 +596,47 @@ public class BiometryFunctions extends DatabaseFunctions{
         Method calculateMethod = null;
 
         try {
-            switch (formulaName) {
-                case "Haigis suite":
-                case "Haigis Suite":
-                case "Haigis":
+            switch (formulaName.toLowerCase()) {
+                case "haigis suite":
+                case "haigis":
                     calculateMethod = this.getClass().getMethod("calculateHaigis", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
-                case "Haigis-L":
-                    calculateMethod = this.getClass().getMethod("calculateHaigisL", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+                case "haigis suite (myopic)":
+                case "haigis-l (myopic)":
+                    calculateMethod = this.getClass().getMethod("calculateHaigisLM", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
-                case "SRK/T":
-                case "SRK®/T":
+                case "haigis suite (hyperopic)":
+                case "haigis-l (hyperopic)":
+                    calculateMethod = this.getClass().getMethod("calculateHaigisLH", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
+                    break;
+                case "srk/t":
+                case "srk®/t":
                     calculateMethod = this.getClass().getMethod("calculateSRKT", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
-                case "Hoffer® Q":
+                case "hoffer® q":
                     calculateMethod = this.getClass().getMethod("calculateHofferQ", double.class, double.class, double.class, double.class, BiometryLensData.class, double.class, String.class);
                     break;
                 default:
                     dicomLogger.addToRawOutput("Formula "+formulaName+" is not supported");
                     break;
             }
-            double K1 = convertDioptricPowerToRadius(sideData.getK1());
-            double K2 = convertDioptricPowerToRadius(sideData.getK2());
+
+            double R1 = convertDioptricPowerToRadius(sideData.getK1());
+            double R2 = convertDioptricPowerToRadius(sideData.getK2());
+            double AL = sideData.getAL();
+            double ACD = sideData.getACD();
 
             if(calculateMethod != null){
-                IOLPower = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, sideData.getTargetRef(), "IOL");
-
                 // Set lens emmetropia. Note this will be unset if the calculation check fails later on.
+                IOLPower = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, 0.0, "IOL");
                 sideData.setLensEmmetropia(IOLPower, sideData.getMeasurementsIndex());
 
-                // Select IOL that gives power nearest to target refraction
+                // Select IOL that gives power nearest to target refraction.
+                IOLPower = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, sideData.getTargetRef(), "IOL");
                 double roundDownIOLPower = Math.floor(IOLPower * 2)/2;
                 double nextUpIOLPower = roundDownIOLPower + 0.5;
-                double roundDownRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, roundDownIOLPower, "REF");
-                double nextUpRefraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, nextUpIOLPower, "REF");
+                double roundDownRefraction = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, roundDownIOLPower, "REF");
+                double nextUpRefraction = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, nextUpIOLPower, "REF");
                 if (Math.abs(sideData.getTargetRef() - roundDownRefraction) < Math.abs(sideData.getTargetRef() - nextUpRefraction)) {
                     closestIOLPower = roundDownIOLPower;
                 } else {
@@ -656,13 +648,11 @@ public class BiometryFunctions extends DatabaseFunctions{
 
                 for (int i = 0; i < 5; i++)
                 {
-                    refraction = (double) calculateMethod.invoke(this, sideData.getAL(), K1, K2, sideData.getACD(), lens, startPower, "REF");
+                    refraction = (double) calculateMethod.invoke(this, AL, R1, R2, ACD, lens, startPower, "REF");
 
-                    refraction = round2Decimals(BigDecimal.valueOf(refraction));
-
-                    // need to add values to the check object here!
                     controlMeasure.setIOL(startPower);
                     controlMeasure.setREF(refraction);
+
                     startPower = startPower - 0.5;
                 }
             }
@@ -775,8 +765,8 @@ public class BiometryFunctions extends DatabaseFunctions{
             returnPower = numerator/denominator;
         }
 
-        //calculationComments+="AL: "+axialLength+" K1: "+r1+" K2: "+r2+" ACD: "+acd+" A-const: "+lens.aConst+" Target: "+dioptresRefraction;
-        dicomLogger.addToRawOutput(calculationComments);
+        //calculationComments+="AL: "+axialLength+" R1: "+r1+" R2: "+r2+" ACD: "+acd+" A-const: "+lens.aConst+" Target: "+dioptresRefraction;
+        //dicomLogger.addToRawOutput(calculationComments);
         return Double.isNaN(returnPower) ? 0.0 : returnPower;
     }
 
@@ -815,18 +805,18 @@ public class BiometryFunctions extends DatabaseFunctions{
         else {
             M = -1;
             G = +23.5;
-            calculationComments += "Hoffer factors for AL > 23 applied</br>";
+            calculationComments += "Hoffer factors for AL > 23 applied\n";
         }
 
         // Constrain axial length (NB used ONLY for ACD calculation and replaces ACD constraint as described in erratum)
         double AL = axialLength;
         if (AL > 31) {
             AL = 31;
-            calculationComments += "Axial length constrained down to 31</br>";
+            calculationComments += "Axial length constrained down to 31\n";
         }
         if (AL < 18.5) {
             AL = 18.5;
-            calculationComments += "Axial length constrained up to 18.5</br>";
+            calculationComments += "Axial length constrained up to 18.5\n";
         }
 
         // Predicted ACD
@@ -847,6 +837,7 @@ public class BiometryFunctions extends DatabaseFunctions{
             returnPower = R/(1 + vd * R/1000);
         }
 
+        //dicomLogger.addToRawOutput(calculationComments);
         return returnPower;
     }
 
@@ -862,7 +853,6 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @return              -- Refractive power in Dioptres
      */
     public double calculateHaigis(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
-        // TODO: implement this! :)
         double n = 1.3315;			// Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
         double na =1.336;			// Refractive index of aqueous and vitreous
         double vd =12.0;			// Vertex distance
@@ -904,8 +894,7 @@ public class BiometryFunctions extends DatabaseFunctions{
      * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
      * @return              -- Refractive power in Dioptres
      */
-    public double calculateHaigisL(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
-        // TODO: implement this! :)
+    public double calculateHaigisLM(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
         double n = 1.3315;                      // Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
         double na =1.336;                       // Refractive index of aqueous and vitreous
         double vd =12.0;                        // Vertex distance
@@ -913,7 +902,50 @@ public class BiometryFunctions extends DatabaseFunctions{
 
         // Calculate average radius of curvature and corneal power in dioptres
         double averageRadius = (r1 + r2) / 2;
-        double corrAverageRadius = 331.5 / ((-5.1625 * averageRadius) + 82.2603 - 0.35);
+        double corrAverageRadius = 331.5 / ((-5.1625 * averageRadius) + 82.2603 - 0.35);  // Myopic correction.
+        double dioptresCornea = (n - 1) * 1000 / corrAverageRadius;
+
+        // Additional Haigis constants
+        double a0 = lens.A0;
+        double a1 = lens.A1;
+        double a2 = lens.A2;
+
+        // Optical ACD
+        double opticalACD = (a0 + a1 * acd + a2 * axialLength);
+
+        // IOL power
+        if (resultType.equals("IOL")) {
+                double z = dioptresCornea + dioptresRefraction/(1 - dioptresRefraction * vd/1000);
+                returnPower = na/(axialLength/1000 - opticalACD/1000) - na/(na/z - opticalACD/1000);
+        }
+        // Predicted refraction
+        else {
+                double z = 1000 * na/((1/(1/(axialLength - opticalACD) - dioptresRefraction/(1000 * na))) + opticalACD);
+                returnPower = (z - dioptresCornea)/(1 + vd * (z - dioptresCornea)/1000);
+        }
+        return returnPower;
+    }
+
+     /**
+     *
+     * @param axialLength   -- Axial length
+     * @param r1            -- Radius of curvature 1
+     * @param r2            -- Radius of curvature 2
+     * @param acd           -- Optical anterior chamber depth
+     * @param lens          -- lens object containing IOL data
+     * @param dioptresRefraction  -- Target refraction or power of IOL
+     * @param resultType    -- Result is either IOL power (IOL) or predicted refraction (REF)
+     * @return              -- Refractive power in Dioptres
+     */
+    public double calculateHaigisLH(double axialLength, double r1, double r2, double acd, BiometryLensData lens, double dioptresRefraction, String resultType){
+        double n = 1.3315;                      // Refractive index of cornea with fudge factor for converting radius of curvature to dioptric power
+        double na =1.336;                       // Refractive index of aqueous and vitreous
+        double vd =12.0;                        // Vertex distance
+        double returnPower;                     // the return value
+
+        // Calculate average radius of curvature and corneal power in dioptres
+        double averageRadius = (r1 + r2) / 2;
+        double corrAverageRadius = 331.5 / ((-5.1625 * averageRadius) + 82.2603 - 0.35);  // Hyperopic correction. TODO this is still myopic...
         double dioptresCornea = (n - 1) * 1000 / corrAverageRadius;
 
         // Additional Haigis constants

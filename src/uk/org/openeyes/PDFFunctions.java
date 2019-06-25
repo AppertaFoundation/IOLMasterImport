@@ -181,6 +181,20 @@ public class PDFFunctions extends PDFTextStripper{
         //System.out.println("TargetRefraction: "+side+" "+result);
         return result;
     }
+
+    /**
+     *
+     * @param page
+     * @param side
+     * @return
+     * @throws IOException
+     */
+    public String getLVCModeIOLM700(PDPage page, String side) throws IOException{
+        Rectangle area = new Rectangle(getDataCoordinates("LVCModeIOLM700", side, 1).x, getDataCoordinates("LVCModeIOLM700", side, 1).y, 250, 10);
+        String result = getTextArea(page, area).trim();
+        //System.out.println("LVCMode: "+side+" "+result);
+        return result;
+    }
     
     /**
      *
@@ -376,6 +390,25 @@ public class PDFFunctions extends PDFTextStripper{
 
         return result;
     }
+
+    /**
+     * Returns lens emmetropia value.
+     *
+     * @param page
+     * @param side
+     * @param position
+     * @return
+     * @throws IOException
+     */
+    public Double getEmmetropiaIOLM700(PDPage page, String side, int position) throws IOException{
+        //System.out.println("EmmetropiaIOLM700 "+side+"_"+position+":: "+getTextArea(page, getRectangleEmmetropiaIOLM700(side, position)));
+        return Double.parseDouble(getTextArea(page, getRectangleEmmetropiaIOLM700(side, position)));
+    }
+
+    private Rectangle getRectangleEmmetropiaIOLM700(String side, int position){
+        Coordinates coord = getDataCoordinates("MultiLensEmmetropiaIOLM700", side, position);
+        return new Rectangle(coord.x, coord.y, 50, 10);
+    }
     
     /**
      *
@@ -466,8 +499,20 @@ public class PDFFunctions extends PDFTextStripper{
             CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(103, 641));
             CoordMap.put("MultiLensREFStartIOLM700_R_4", new Coordinates(233, 641));
 
+            CoordMap.put("MultiLensEmmetropiaIOLM700_L_1", new Coordinates(314, 553));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_L_2", new Coordinates(438, 553));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_L_3", new Coordinates(314, 697));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_L_4", new Coordinates(438, 697));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_R_1", new Coordinates(47, 553));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_R_2", new Coordinates(182, 553));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_R_3", new Coordinates(47, 697));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_R_4", new Coordinates(182, 697));
+
             CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 390));
             CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(30, 390));
+
+            CoordMap.put("LVCModeIOLM700_L_1", new Coordinates(295, 408));
+            CoordMap.put("LVCModeIOLM700_R_1", new Coordinates(15, 408));
 
             CoordMap.put("EyeStatusIOLM700_L_1", new Coordinates(295, 400));
             CoordMap.put("EyeStatusIOLM700_R_1", new Coordinates(15, 400));
@@ -540,8 +585,20 @@ public class PDFFunctions extends PDFTextStripper{
             CoordMap.put("MultiLensREFStartIOLM700_R_3", new Coordinates(115, 626));
             CoordMap.put("MultiLensREFStartIOLM700_R_4", new Coordinates(243, 626));
 
+            CoordMap.put("MultiLensEmmetropiaIOLM700_L_1", new Coordinates(321, 549));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_L_2", new Coordinates(448, 549));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_L_3", new Coordinates(321, 677));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_L_4", new Coordinates(448, 677));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_R_1", new Coordinates(66, 549));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_R_2", new Coordinates(193, 549));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_R_3", new Coordinates(66, 677));
+            CoordMap.put("MultiLensEmmetropiaIOLM700_R_4", new Coordinates(193, 677));
+
             CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 325));
             CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(55, 325));
+
+            CoordMap.put("LVCModeIOLM700_L_1", new Coordinates(310, 314));
+            CoordMap.put("LVCModeIOLM700_R_1", new Coordinates(55, 314));
 
             CoordMap.put("EyeStatusIOLM700_L_1", new Coordinates(310, 291));
             CoordMap.put("EyeStatusIOLM700_R_1", new Coordinates(55, 291));
@@ -605,6 +662,9 @@ public class PDFFunctions extends PDFTextStripper{
 
             CoordMap.put("TargetRefractionIOLM700_L_1", new Coordinates(310, 410));
             CoordMap.put("TargetRefractionIOLM700_R_1", new Coordinates(30, 410));
+
+            CoordMap.put("LVCModeIOLM700_L_1", new Coordinates(300, 433));
+            CoordMap.put("LVCModeIOLM700_R_1", new Coordinates(20, 433));
 
             CoordMap.put("EyeStatusIOLM700_L_1", new Coordinates(300, 430));
             CoordMap.put("EyeStatusIOLM700_R_1", new Coordinates(20, 430));
