@@ -8,7 +8,9 @@ package uk.org.openeyes;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -334,6 +336,21 @@ public class DICOMParser extends DICOMCommonFunctions{
             debugMessage(Study.printStudyData());
             debugMessage(Biometry.printBiometryData());
         }
+
+        // Save the log entry for the import
+        logger.getLogger().setStudyInstanceId(Study.getStudyInstanceID());
+        logger.getLogger().setSeriesInstanceId(Study.getSeriesInstanceID());
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        logger.getLogger().setStudyDatetime(df.parse(biometryHelper.getStudyYMD(Study.getStudyDateTime())));
+        logger.getLogger().setStudyLocation(Study.getInstituionName());
+        logger.getLogger().setStationId(Study.getStationName());
+        logger.getLogger().setMachineManufacturer(Study.getDeviceManufacturer());
+        logger.getLogger().setMachineModel(Study.getDeviceModel());
+        logger.getLogger().setMachineSoftwareVersion(Study.getDeviceSoftwareVersion());
+        logger.getLogger().setReportType("biometry");
+        logger.getLogger().setImportDatetime(new Date());
+        logger.getLogger().setImportType("F");
+        logger.getLogger().setSopUId(Study.getSopUID());
 
         biometryHelper.searchPatient(Patient.getPatientID(), Patient.getPatientGender(), Patient.getPatientBirth(), this.hosNumRegex, this.hosNumPad);
 
