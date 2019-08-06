@@ -152,17 +152,21 @@ public class BiometryCalculationData {
         List<Double> compareREF = new ArrayList<Double>();
         compareIOL = toCompare.getIOL();
         compareREF = toCompare.getREF();
-        if(this.IOL.size() > 0 && compareIOL.size() == this.IOL.size()){
+        if(this.IOL.size() > 0 && compareIOL.size() >= this.IOL.size()){
+            int offset = compareIOL.size() - this.IOL.size();  // When there are less than 5 results, and the initial rows are blank in the report.
             for(int k=0; k<this.IOL.size(); k++){
-                if(Math.abs(this.IOL.get(k) - compareIOL.get(k)) > tolerance){
+                if(Math.abs(this.IOL.get(k) - compareIOL.get(k+offset)) > tolerance){
+                    //System.out.println("IOL: this = "+this.IOL.get(k)+"; compare = "+compareIOL.get(k+offset));
                     return false;
                 }
-                if(Math.abs(this.REF.get(k) - compareREF.get(k)) > tolerance){
+                if(Math.abs(this.REF.get(k) - compareREF.get(k+offset)) > tolerance){
+                    //System.out.println("REF: this = "+this.REF.get(k)+"; compare = "+compareREF.get(k+offset));
                     return false;
                 }
             } 
             return true;      
         }
+        //System.out.println("SIZE: this = "+this.IOL.size()+"; compare = "+compareIOL.size());
         return false;
     }
     
