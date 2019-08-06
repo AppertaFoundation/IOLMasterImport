@@ -464,34 +464,38 @@ public class BiometryFunctions extends DatabaseFunctions{
      */
     public void processBiometryEvent(StudyData IOLStudy, BiometryData IOLBiometry) throws ParseException {
 
-        setEventStudy(IOLStudy);
-        //System.out.println("Study data has been set successfully");
-        dicomLogger.addToRawOutput("Study data has been set successfully");
-        setEventBiometry(IOLBiometry);
-        //System.out.println("Biometry data set successfully");
-        dicomLogger.addToRawOutput("Biometry data has been set successfully");
-        this.setSelectedUser();
-        //System.out.println("User selected successfully");
-        dicomLogger.addToRawOutput("User data has been set successfully");
+        if (IOLBiometry.getEyeId() == 0) {
+            dicomLogger.addToRawOutput("No data to save to event");
+        } else {
+            setEventStudy(IOLStudy);
+            //System.out.println("Study data has been set successfully");
+            dicomLogger.addToRawOutput("Study data has been set successfully");
+            setEventBiometry(IOLBiometry);
+            //System.out.println("Biometry data set successfully");
+            dicomLogger.addToRawOutput("Biometry data has been set successfully");
+            this.setSelectedUser();
+            //System.out.println("User selected successfully");
+            dicomLogger.addToRawOutput("User data has been set successfully");
 
-        selectActiveEpisode();
-        importedBiometryEvent = processImportedEvent();
-        EtOphinbiometryMeasurement basicMeasurementData;
-        if (isNewEvent) {
-            basicMeasurementData = new EtOphinbiometryMeasurement();
-            this.createSelectionData();
-            this.createCalculationData();
-        }else{
-            basicMeasurementData = getMeasurementId();
+            selectActiveEpisode();
+            importedBiometryEvent = processImportedEvent();
+            EtOphinbiometryMeasurement basicMeasurementData;
+            if (isNewEvent) {
+                basicMeasurementData = new EtOphinbiometryMeasurement();
+                this.createSelectionData();
+                this.createCalculationData();
+            }else{
+                basicMeasurementData = getMeasurementId();
+            }
+
+            setMeasurementData(basicMeasurementData);
+            //databaseFunctions.session.merge(basicMeasurementData);
+            session.saveOrUpdate(basicMeasurementData);
+
+            addVersionTableData(basicMeasurementData, basicMeasurementData.getId());
+
+            this.saveIolRefValues();
         }
-
-        setMeasurementData(basicMeasurementData);
-        //databaseFunctions.session.merge(basicMeasurementData);
-        session.saveOrUpdate(basicMeasurementData);
-
-        addVersionTableData(basicMeasurementData, basicMeasurementData.getId());
-
-        this.saveIolRefValues();
 
         dicomLogger.getLogger().setPatientNumber(selectedPatient.getHosNum());
     }
