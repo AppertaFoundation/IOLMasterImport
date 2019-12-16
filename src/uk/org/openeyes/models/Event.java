@@ -66,7 +66,7 @@ public class Event implements Serializable {
     private String info;
     @Basic(optional = false)
     @Column(name = "deleted")
-    private int deleted;
+    private boolean deleted;
     @Column(name = "delete_reason")
     private String deleteReason;
     @Basic(optional = false)
@@ -102,7 +102,7 @@ public class Event implements Serializable {
         this.id = id;
     }
 
-    public Event(Integer id, Date lastModifiedDate, Date createdDate, Date eventDate, int deleted, boolean deletePending) {
+    public Event(Integer id, Date lastModifiedDate, Date createdDate, Date eventDate, boolean deleted, boolean deletePending) {
         this.id = id;
         this.lastModifiedDate = lastModifiedDate;
         this.createdDate = createdDate;
@@ -151,11 +151,11 @@ public class Event implements Serializable {
         this.info = info;
     }
 
-    public int getDeleted() {
+    public boolean getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(int deleted) {
+    public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
 
