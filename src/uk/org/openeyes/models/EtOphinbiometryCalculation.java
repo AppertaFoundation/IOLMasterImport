@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -49,11 +48,11 @@ public class EtOphinbiometryCalculation implements Serializable {
     @Column(name = "id")
     private Integer id;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Basic(optional = true)
-    @Column(name = "target_refraction_left", nullable = true)
+    @Basic(optional = false)
+    @Column(name = "target_refraction_left")
     private BigDecimal targetRefractionLeft;
-    @Basic(optional = true)
-    @Column(name = "target_refraction_right", nullable = true)
+    @Basic(optional = false)
+    @Column(name = "target_refraction_right")
     private BigDecimal targetRefractionRight;
     @Basic(optional = false)
     @Column(name = "last_modified_date")
@@ -114,7 +113,7 @@ public class EtOphinbiometryCalculation implements Serializable {
     }
 
     public void setTargetRefractionLeft(BigDecimal targetRefractionLeft) {
-        this.targetRefractionLeft = null;
+        this.targetRefractionLeft = targetRefractionLeft;
     }
 
     public BigDecimal getTargetRefractionRight() {
@@ -122,7 +121,7 @@ public class EtOphinbiometryCalculation implements Serializable {
     }
 
     public void setTargetRefractionRight(BigDecimal targetRefractionRight) {
-        this.targetRefractionRight = null;
+        this.targetRefractionRight = targetRefractionRight;
     }
 
     public Date getLastModifiedDate() {
@@ -228,7 +227,7 @@ public class EtOphinbiometryCalculation implements Serializable {
 
     public void setComments(String comments) {
         
-        this.comments = comments.substring(0,999);
+        this.comments = comments;
     }
     
 }
