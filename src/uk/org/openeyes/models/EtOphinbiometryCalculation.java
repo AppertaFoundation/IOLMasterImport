@@ -226,7 +226,6 @@ public class EtOphinbiometryCalculation implements Serializable {
     }
 
     public void setComments(String comments) {
-        
         this.comments = comments;
     }
     
