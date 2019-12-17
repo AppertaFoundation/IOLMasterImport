@@ -241,10 +241,10 @@ public class BiometryFunctions extends DatabaseFunctions{
         newBasicSelectionData.setLastModifiedUserId(selectedUser);
         newBasicSelectionData.setEventId(importedBiometryEvent.getEventId());
         newBasicSelectionData.setEyeId(new Eye(eventBiometry.getEyeId()));
-        newBasicSelectionData.setIolPowerLeft(BigDecimal.ZERO);
-        newBasicSelectionData.setIolPowerRight(BigDecimal.ZERO);
-        newBasicSelectionData.setPredictedRefractionLeft(BigDecimal.ZERO);
-        newBasicSelectionData.setPredictedRefractionRight(BigDecimal.ZERO);
+        newBasicSelectionData.setIolPowerLeft("0");
+        newBasicSelectionData.setIolPowerRight("0");
+        newBasicSelectionData.setPredictedRefractionLeft("0");
+        newBasicSelectionData.setPredictedRefractionRight("0");
         session.save(newBasicSelectionData);
     }
 
@@ -526,7 +526,7 @@ public class BiometryFunctions extends DatabaseFunctions{
         if (!currentEvent.list().isEmpty()) {
             importedEvent = (OphinbiometryImportedEvents) currentEvent.list().get(0);
             // if the event is in deleted state we cerate a new record
-            if(importedEvent.getEventId().getDeleted() == 0){
+            if(!importedEvent.getEventId().getDeleted()){
                 dicomLogger.addToRawOutput("StudyID exists in database, merging with existing event...");
 
                 importedEvent.setSopUId(eventStudy.getSopUID());

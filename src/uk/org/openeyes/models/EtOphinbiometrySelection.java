@@ -52,16 +52,16 @@ public class EtOphinbiometrySelection implements Serializable {
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Basic(optional = false)
     @Column(name = "iol_power_left")
-    private BigDecimal iolPowerLeft;
+    private String iolPowerLeft;
     @Basic(optional = false)
     @Column(name = "predicted_refraction_left")
-    private BigDecimal predictedRefractionLeft;
+    private String predictedRefractionLeft;
     @Basic(optional = false)
     @Column(name = "iol_power_right")
-    private BigDecimal iolPowerRight;
+    private String iolPowerRight;
     @Basic(optional = false)
     @Column(name = "predicted_refraction_right")
-    private BigDecimal predictedRefractionRight;
+    private String predictedRefractionRight;
     @Basic(optional = false)
     @Column(name = "last_modified_date")
     @Temporal(TemporalType.TIMESTAMP)
@@ -99,7 +99,7 @@ public class EtOphinbiometrySelection implements Serializable {
         this.id = id;
     }
 
-    public EtOphinbiometrySelection(Integer id, BigDecimal iolPowerLeft, BigDecimal predictedRefractionLeft, BigDecimal iolPowerRight, BigDecimal predictedRefractionRight, Date lastModifiedDate, Date createdDate, boolean deleted, int lensIdLeft, int lensIdRight) {
+    public EtOphinbiometrySelection(Integer id, String iolPowerLeft, String predictedRefractionLeft, String iolPowerRight, String predictedRefractionRight, Date lastModifiedDate, Date createdDate, boolean deleted, int lensIdLeft, int lensIdRight) {
         this.id = id;
         this.iolPowerLeft = iolPowerLeft;
         this.predictedRefractionLeft = predictedRefractionLeft;
@@ -120,35 +120,35 @@ public class EtOphinbiometrySelection implements Serializable {
         this.id = id;
     }
 
-    public BigDecimal getIolPowerLeft() {
+    public String getIolPowerLeft() {
         return iolPowerLeft;
     }
 
-    public void setIolPowerLeft(BigDecimal iolPowerLeft) {
+    public void setIolPowerLeft(String iolPowerLeft) {
         this.iolPowerLeft = iolPowerLeft;
     }
 
-    public BigDecimal getPredictedRefractionLeft() {
+    public String getPredictedRefractionLeft() {
         return predictedRefractionLeft;
     }
 
-    public void setPredictedRefractionLeft(BigDecimal predictedRefractionLeft) {
+    public void setPredictedRefractionLeft(String predictedRefractionLeft) {
         this.predictedRefractionLeft = predictedRefractionLeft;
     }
 
-    public BigDecimal getIolPowerRight() {
+    public String getIolPowerRight() {
         return iolPowerRight;
     }
 
-    public void setIolPowerRight(BigDecimal iolPowerRight) {
+    public void setIolPowerRight(String iolPowerRight) {
         this.iolPowerRight = iolPowerRight;
     }
 
-    public BigDecimal getPredictedRefractionRight() {
+    public String getPredictedRefractionRight() {
         return predictedRefractionRight;
     }
 
-    public void setPredictedRefractionRight(BigDecimal predictedRefractionRight) {
+    public void setPredictedRefractionRight(String predictedRefractionRight) {
         this.predictedRefractionRight = predictedRefractionRight;
     }
 

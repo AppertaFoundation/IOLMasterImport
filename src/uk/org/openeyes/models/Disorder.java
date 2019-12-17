@@ -8,6 +8,7 @@ package uk.org.openeyes.models;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.math.BigInteger;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -46,7 +47,7 @@ public class Disorder implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "id")
-    private Integer id;
+    private BigInteger id;
     @Basic(optional = false)
     @Column(name = "fully_specified_name")
     private String fullySpecifiedName;
@@ -79,11 +80,11 @@ public class Disorder implements Serializable {
     public Disorder() {
     }
 
-    public Disorder(Integer id) {
+    public Disorder(BigInteger id) {
         this.id = id;
     }
 
-    public Disorder(Integer id, String fullySpecifiedName, String term, Date lastModifiedDate, Date createdDate, boolean active) {
+    public Disorder(BigInteger id, String fullySpecifiedName, String term, Date lastModifiedDate, Date createdDate, boolean active) {
         this.id = id;
         this.fullySpecifiedName = fullySpecifiedName;
         this.term = term;
@@ -92,11 +93,11 @@ public class Disorder implements Serializable {
         this.active = active;
     }
 
-    public Integer getId() {
+    public BigInteger getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(BigInteger id) {
         this.id = id;
     }
 
